@@ -224,11 +224,16 @@ internal static class JmaForecastMapper{
         var weathers=areaSeries.ItemList("weather");
         var winds=areaSeries.ItemList("wind");
         var points=new List<ForecastPoint>();
+        DateTimeOffset? lastEnd=null;
         for(var i=0;i<timeDefines.Count;i++){
             var start=timeDefines[i].Time("dateTime")??throw new FormatException("dateTime がありません。");
             var duration=TimeSpan.FromHours(3);
             if(timeDefines[i].Str("duration") is {} text){
                 duration=XmlConvert.ToTimeSpan(text);
+            }
+            if(lastEnd is {} le&&start<le){
+                //重複・逆順・重なり。補助プロダクトの異常で予報全体を失わないよう、重なる点は飛ばす(NWS の hourly と同じ)
+                continue;
             }
             var word=At(weathers,i);
             var condition=JmaWeatherCodes.FromTimeSeriesWord(word);
@@ -252,6 +257,7 @@ internal static class JmaForecastMapper{
                 WindDirectionDeg=direction,
                 WindSpeedRangeMs=speedRange,
             });
+            lastEnd=start+duration;
         }
         return points;
     }

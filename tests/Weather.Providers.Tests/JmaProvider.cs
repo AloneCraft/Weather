@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json.Nodes;
 using Weather.Core;
 using Target=Weather.Providers.Jma.JmaProvider;
 
@@ -61,6 +63,26 @@ public class JmaProvider{
         }
     }
 
+    private static JsonNode? FindFirst(JsonNode? node,string name){
+        if(node is JsonObject o){
+            foreach(var pair in o){
+                if(pair.Key==name){
+                    return pair.Value;
+                }
+                if(FindFirst(pair.Value,name) is {} found){
+                    return found;
+                }
+            }
+        }else if(node is JsonArray a){
+            foreach(var item in a){
+                if(FindFirst(item,name) is {} found){
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
     [Fact,Trait("Category","Unit")]public async Task GetForecastAsync_SecondaryFailure(){
         {
             //時系列予報が取れなくても日別は返し、Issues に記録する
@@ -70,6 +92,31 @@ public class JmaProvider{
             Assert.NotEmpty(forecast.Daily);
             var issue=Assert.Single(forecast.Issues);
             Assert.Equal("時系列予報",issue.ProductName);
+        }
+        {
+            //時系列予報の時刻が重複・逆順でも、重なる点を除いて返し、日別を含む予報全体は失わない
+            foreach(var mode in new[]{"重複","逆順"}){
+                var root=JsonNode.Parse(File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath("jma/wdist_130010.json")))!;
+                var times=(JsonArray)FindFirst(root,"timeDefines")!;
+                if(mode=="重複"){
+                    times.Insert(0,times[0]!.DeepClone());
+                }else{
+                    var first=times[0]!.DeepClone();
+                    times[0]=times[1]!.DeepClone();
+                    times[1]=first;
+                }
+                var broken=Encoding.UTF8.GetBytes(root.ToJsonString());
+                using var host=TestHost.Create(Fixtures.MapJmaTokyo);
+                host.Handler.Override=r=>{
+                    if(r.RequestUri!.AbsoluteUri=="https://www.jma.go.jp/bosai/jmatile/data/wdist/VPFD/130010.json"){
+                        return FixtureHttpMessageHandler.Respond(r,broken);
+                    }
+                    return null;
+                };
+                var forecast=await host.Get<Target>().GetForecastAsync(Locations.Tokyo,TestContext.Current.CancellationToken);
+                Assert.NotEmpty(forecast.Daily);
+                Assert.NotEmpty(forecast.TimeSeries);
+            }
         }
         {
             //主プロダクトが取れなければ例外
