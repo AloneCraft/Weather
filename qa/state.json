@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 52,
-  "updated_at": "2026-10-04T15:53:13Z",
+  "revision": 56,
+  "updated_at": "2026-10-04T15:54:56Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 42,
+      "run_minutes": 43,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -992,6 +992,64 @@
       "evidence": [],
       "human_needed": "外周の半セルの扱い",
       "found_at": "2026-10-04T15:53:13Z"
+    },
+    {
+      "id": "BUG-0018",
+      "title": "HTTP キャッシュ: 最終利用時刻がヒットで更新されず、容量・未使用期限の削除が「取得時刻順」になる",
+      "source_ids": [
+        "P-6",
+        "I-4"
+      ],
+      "severity": "中〜低",
+      "fix_priority": 9,
+      "symptom": "LastAccessedAt は取得時と 304 でしか設定されない(FileHttpCacheStore.NeedsAccessUpdate は定義のみで未使用)。頻繁にヒットしても再取得されないエントリ(最低鮮度が長い GFS 7 日・地図タイル 1 日など)が先に消える。14 日使われていないものの削除も取得時刻で判定される",
+      "expected": "CacheAndRouting.md「容量管理」: 最終利用時刻の古い順に削除。使うたびに(1 時間に 1 回まで)更新する設計(NeedsAccessUpdate の意図)",
+      "cause": {
+        "confirmed": "HttpCacheHandler のヒット経路が store に触れない。NeedsAccessUpdate の呼び出し元がない(grep で確認)",
+        "hypotheses": [],
+        "unknown": [
+          "実際の削除の偏りの大きさ"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:54:02Z",
+          "reason": "優先: 実使用に基づくキャッシュ削除の設計意図が実装されていない。決定的に再現できる。独立して修正できる",
+          "code_before": {
+            "commit": "5d75b6d6ce6693226aa25767abce92a5c5b9f1f4",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: ヒット経路は store に触れない。NeedsAccessUpdate は未使用",
+          "hypothesis": "ヒット時に 1 時間に 1 回まで LastAccessedAt を更新すれば設計どおりになる",
+          "planned_change": "src/Weather.Core/Caching/IHttpCacheStore.cs(更新間隔の共有)・src/Weather.Providers/Http/HttpCacheHandler.cs・src/Weather.Infrastructure/FileHttpCacheStore.cs(委譲)+ tests/Weather.Providers.Tests/HttpCacheHandler.cs",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Providers/Infrastructure/Remote/Presentation テスト PASS、30 分以内の再ヒットでは書き込まない",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:54:56Z",
+          "diff_sha256": "5bf41c826dd814602ed3b4d4741efb139006eece86938fbcab47fe7c833ec665",
+          "commit": "909cc607517a5a875e3b299d91c4b4bb75209ace"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/HttpCacheHandler.SendAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:54:02Z",
+      "verified": {
+        "commit": "909cc607517a5a875e3b299d91c4b4bb75209ace",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 43,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1111,8 +1169,8 @@
     },
     {
       "id": "P-6/I-4",
-      "status": "UNREPRODUCED",
-      "note": "キャッシュ LastAccessedAt がヒットで更新されない(NeedsAccessUpdate 未使用はコードで確認済み)"
+      "status": "PROMOTED_TO_BUG",
+      "note": "キャッシュ LastAccessedAt がヒットで更新されない(NeedsAccessUpdate 未使用はコードで確認済み) → BUG-0018"
     },
     {
       "id": "P-7",
