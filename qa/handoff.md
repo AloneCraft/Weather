@@ -8,13 +8,13 @@
 - 製品コード・テストには未着手。キュー・Bug は空。
 - 対象コミット: `62ea11e`(ブランチ `claude/determined-einstein-whn27k`)。準備開始時点の未コミット変更なし。
 - この環境(クラウドのコンテナ)では `dotnet` が無く、ビルド・テスト・エミュレーターは実行できない。Smoke は NOT_RUN。
-- 未 push の commit: 準備用の commit が未 push(push はユーザーの許可待ち)。コンテナが回収されると失われる。
+- push 状況: 準備用の commit `b2df47f` は `claude/determined-einstein-whn27k` へ push 済み。以降も区切りごとに commit し、push は許可ルール(`git push -u origin claude/determined-einstein-whn27k`)の範囲で行う。
 
 ## 人間への確認事項(最大 5 件)
 
 | ID | 内容 | 回答によって変わること |
 |---|---|---|
-| Q-001 | 準備用の commit を `claude/determined-einstein-whn27k` へ push してよいか | 許可がなければ未 push のまま。コンテナ回収で記録が失われうる |
+| Q-001(回答済み) | 準備用の commit の push | ユーザーが許可ルールを追加し、push 済み。他のブランチ・PR 作成・公開は引き続き許可が必要 |
 | Q-002 | 実作業の環境: このコンテナに .NET SDK を導入してよいか(ネットワーク許可に依存)、または GitHub Actions(ci.yml)の結果を検証手段に使うか(PR 作成か手動実行が必要) | 手段がなければ、ビルド・テストが必要な作業は BLOCKED になる |
 
 ## 次の作業
