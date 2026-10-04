@@ -63,6 +63,31 @@ public class GridField{
             Assert.Throws<ArgumentException>(()=>new Core.GridField(new Core.GridGeometry(2,2,1,0,1,1),[0,0,0,0],FieldQuantity.TemperatureC,DateTimeOffset.UnixEpoch,DateTimeOffset.UnixEpoch.AddHours(1),Source));
         }
     }
+
+    [Fact,Trait("Category","Unit")]public void SampleAvailable(){
+        {
+            //欠けた点がなければ Sample と同じ
+            var f=Field([0,10,20,30,40,50,60,70],4,2);
+            Assert.Equal(f.Sample(0.5,45),f.SampleAvailable(0.5,45));
+            Assert.Equal(15f,f.SampleAvailable(1,315));
+        }
+        {
+            //欠けた点を除いて重みを付け直す(海岸近くで陸側の点が欠けていても値を返す)
+            var f=Field([0,float.NaN,20,30,40,50,60,70],4,2);
+            Assert.Equal(0f,f.SampleAvailable(1,40));
+            Assert.Equal(30f,f.SampleAvailable(0.5,45),3);
+        }
+        {
+            //最も近い点が欠けていれば NaN(値のない区画に広げない)
+            var f=Field([0,float.NaN,20,30,40,50,60,70],4,2);
+            Assert.True(float.IsNaN(f.SampleAvailable(0.9,80)));
+        }
+        {
+            //4 点とも欠けていれば NaN
+            var f=Field([float.NaN,float.NaN,20,30,float.NaN,float.NaN,60,70],4,2);
+            Assert.True(float.IsNaN(f.SampleAvailable(0.5,45)));
+        }
+    }
 }
 
 public class Legend{

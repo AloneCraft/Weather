@@ -112,9 +112,15 @@ public static class MapText{
                 return Strings.JapanNoteNotAvailable;
         }
         if(frame.Arrows is {Kind:ArrowKind.Observation}||frame.Points is not null&&frame.Tiles.Count==0){
+            if(frame.JapanWind is not null){
+                return Strings.JapanNoteObservationMarineFlow;
+            }
             return Strings.JapanNoteObservation;
         }
         if(frame.Arrows is {Kind:ArrowKind.Forecast}){
+            if(frame.JapanWind is not null){
+                return Strings.JapanNoteMarineFlow;
+            }
             return Strings.JapanNoteMarine;
         }
         return Strings.JapanNoteJma;

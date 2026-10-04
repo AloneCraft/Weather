@@ -43,6 +43,7 @@ API は予告なく変わり得るため、前提が崩れた場合はこの節�
 | `Legend` / `LegendClass` / `MapLegends` | class / record / static | 地図の凡例(区分 [下限, 上限) と ARGB の色。気象庁の凡例の色をそのまま持つ)。値 → 区分、画素の色 → 区分 |
 | `JmaTileLayer` | sealed record | 気象庁の地図タイルの 1 層(プロダクト・要素・初期時刻・有効時刻・ズーム・凡例・出典。タイルの URL を作る) |
 | `WindArrowSet` / `PointValueSet` | sealed record | 日本周辺の観測・予報の点(アメダスの風・気温、海上分布予報の風向)。補間しない |
+| `MapFrame.JapanWind` | `WindField` | 日本周辺の海上の風(海上分布予報の風向 8 方位と風速の階級から作った 0.5° の格子。陸上は NaN)。加工データ(`Interpolated` · `UnitConverted`)で、地図の粒子だけに使う |
 | `MapFrame` / `MapAvailability` | sealed record | 地図の 1 コマ(層・時刻・GFS の格子・気象庁のタイル・点・日本周辺の状態・凡例・出典・取れなかった部分)と各データ源の有効時刻 |
 
 コンテナ(`Forecast` / `ObservationSeries` / `AlertSet`)は class にする。record の値の等価性はリストを参照比較するため、意味を誤解させる。

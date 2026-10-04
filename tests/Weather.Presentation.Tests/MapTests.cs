@@ -106,6 +106,24 @@ public class MapText{
         Assert.Equal("晴れ",Presentation.MapText.LegendLabel(MapLegends.Weather,0));
     }
 
+    [Fact,Trait("Category","Unit")]public void JapanNote(){
+        var source=new SourceAttribution{Provider=ProviderId.Jma,AgencyName="気象庁",ProductName="t",RetrievedAt=Sample.Now,License=new LicenseInfo("t",null)};
+        var grid=new GridField(new GridGeometry(2,2,35,135,0.5,0.5),[1,1,1,1],FieldQuantity.WindU,Sample.Now,Sample.Now,source);
+        var flow=new WindField(grid,grid);
+        var marine=new WindArrowSet([],ArrowKind.Forecast,Sample.Now,source);
+        var observed=new WindArrowSet([],ArrowKind.Observation,Sample.Now,source);
+        {
+            //海上の流れ(加工)を出すときは、その旨を説明に出す
+            Assert.Equal(Presentation.Resources.Strings.JapanNoteMarineFlow,Presentation.MapText.JapanNote(new MapFrame{Layer=FieldLayer.Wind,Time=Sample.Now,Arrows=marine,JapanWind=flow,Japan=JapanCoverage.Available}));
+            Assert.Equal(Presentation.Resources.Strings.JapanNoteObservationMarineFlow,Presentation.MapText.JapanNote(new MapFrame{Layer=FieldLayer.Wind,Time=Sample.Now,Arrows=observed,JapanWind=flow,Japan=JapanCoverage.Available}));
+        }
+        {
+            //風速が取れず流れがないときは従来どおり
+            Assert.Equal(Presentation.Resources.Strings.JapanNoteMarine,Presentation.MapText.JapanNote(new MapFrame{Layer=FieldLayer.Wind,Time=Sample.Now,Arrows=marine,Japan=JapanCoverage.Available}));
+            Assert.Equal(Presentation.Resources.Strings.JapanNoteObservation,Presentation.MapText.JapanNote(new MapFrame{Layer=FieldLayer.Wind,Time=Sample.Now,Arrows=observed,Japan=JapanCoverage.Available}));
+        }
+    }
+
     [Fact,Trait("Category","Unit")]public void Relative(){
         Assert.Equal("現在",Presentation.MapText.Relative(Sample.Now.AddMinutes(10),Sample.Now));
         Assert.Equal("+3 時間",Presentation.MapText.Relative(Sample.Now.AddHours(3),Sample.Now));

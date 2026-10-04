@@ -75,8 +75,8 @@ public sealed class MapRenderer:IDisposable{
 
     public GeoPoint? Selected{get;set;}
 
-    /// <summary>連続して描く必要があるか(風の粒子)。</summary>
-    public bool NeedsAnimation=>this.Frame?.Wind is not null&&!this.Options.ReduceMotion;
+    /// <summary>連続して描く必要があるか(風の粒子。GFS か日本周辺の海上の風があれば)。</summary>
+    public bool NeedsAnimation=>this.Frame is {} f&&(f.Wind is not null||f.JapanWind is not null)&&!this.Options.ReduceMotion;
 
     public void Render(SKCanvas canvas,SKSizeI pixelSize,double timeSeconds,GRRecordingContext? context=null){
         ArgumentNullException.ThrowIfNull(canvas);
@@ -111,12 +111,15 @@ public sealed class MapRenderer:IDisposable{
                 this.overlay.DrawOutOfRange(canvas,view,size);
             }
             this.isobars.Draw(canvas,view,size);
-            if(frame.Wind is {} wind){
+            if(frame.Wind is not null||frame.JapanWind is not null){
                 if(this.Options.ReduceMotion){
-                    this.DrawStaticWind(canvas,view,size,wind);
+                    //日本周辺は海上分布予報の矢印(frame.Arrows)を静止画として描くため、ここでは GFS だけ
+                    if(frame.Wind is {} wind){
+                        this.DrawStaticWind(canvas,view,size,wind);
+                    }
                 }else{
                     var count=WindParticleLayer.CountFor(this.Options.Tier,size,view.PixelRatio);
-                    this.particles.Draw(canvas,view,size,wind,count,delta,context);
+                    this.particles.Draw(canvas,view,size,frame.Wind,frame.JapanWind,count,delta,context);
                 }
             }
             if(frame.Arrows is {} arrowSet){
@@ -144,7 +147,7 @@ public sealed class MapRenderer:IDisposable{
         this.current=next;
         this.field.Set(next.Scalar,next.Legend);
         this.isobars.Set(next.Pressure);
-        if(next.Wind is null){
+        if(next.Wind is null&&next.JapanWind is null){
             this.particles.Reset();
         }
         if(previousTiles is not null&&!previousTiles.SequenceEqual(next.Tiles)){

@@ -4,9 +4,10 @@ using Weather.Core;
 namespace Weather.Rendering.Map;
 
 /// <summary>
-/// 風の粒子(Windy・earth.nullschool と同じ表現)。粒子は画面座標で持ち、各フレームでその地点の風(GFS の U・V)で動かす。
+/// 風の粒子(Windy・earth.nullschool と同じ表現)。粒子は画面座標で持ち、各フレームでその地点の風(U・V)で動かす。
 /// 軌跡は画面外のサーフェスに描き、毎フレーム薄めて残像にする。
-/// 日本周辺(マスクの中)や風の値がない場所では粒子を生まない・入ったら消す(方針 5)。
+/// 日本周辺(マスクの中)は気象庁の海上分布予報から作った風(japan)だけで動かし、GFS(global)を使わない(方針 5)。
+/// 風の値がない場所(マスクの中の陸上・海上分布予報の範囲外、GFS の欠損)では粒子を生まない・入ったら消す。
 /// メモリ確保: 粒子と線分のバッファは数が変わったときだけ作り直す。
 /// </summary>
 internal sealed class WindParticleLayer(JapanMaskTexture mask):IDisposable{
@@ -27,7 +28,7 @@ internal sealed class WindParticleLayer(JapanMaskTexture mask):IDisposable{
     private SKSizeI trailsSize;
     private GRRecordingContext? trailsContext;
     private int seed=1;
-    private (MapView View,WindField Wind)? last;
+    private (MapView View,WindField? Global,WindField? Japan)? last;
 
     private static readonly SKPoint Hidden=new(-1000,-1000);
 
@@ -49,7 +50,7 @@ internal sealed class WindParticleLayer(JapanMaskTexture mask):IDisposable{
         this.trails?.Canvas.Clear(SKColors.Transparent);
     }
 
-    public void Draw(SKCanvas canvas,MapView view,SKSize size,WindField wind,int count,double deltaSeconds,GRRecordingContext? context){
+    public void Draw(SKCanvas canvas,MapView view,SKSize size,WindField? global,WindField? japan,int count,double deltaSeconds,GRRecordingContext? context){
         this.EnsureParticles(count,size);
         this.EnsureSurface(size,context);
         if(this.trails is null){
@@ -57,13 +58,13 @@ internal sealed class WindParticleLayer(JapanMaskTexture mask):IDisposable{
         }
         var trailCanvas=this.trails.Canvas;
         //カメラ・風が変われば軌跡を消し、粒子を配り直す
-        if(this.last is not {} l||l.View!=view||!ReferenceEquals(l.Wind,wind)){
+        if(this.last is not {} l||l.View!=view||!ReferenceEquals(l.Global,global)||!ReferenceEquals(l.Japan,japan)){
             trailCanvas.Clear(SKColors.Transparent);
             for(var i=0;i<this.x.Length;i++){
                 this.Respawn(i,size);
                 this.age[i]=(int)(DeterministicNoise.Hash(i,this.seed)*this.maxAge[i]);
             }
-            this.last=(view,wind);
+            this.last=(view,global,japan);
         }
         trailCanvas.DrawPaint(this.fade);
         var dt=(float)Math.Clamp(deltaSeconds,0,0.1);
@@ -77,8 +78,8 @@ internal sealed class WindParticleLayer(JapanMaskTexture mask):IDisposable{
                 continue;
             }
             var geo=view.ToGeo(new SKPoint(px,py),size);
-            var (u,v)=wind.Sample(geo.Latitude,geo.Longitude);
-            if(float.IsNaN(u)||float.IsNaN(v)||mask.Contains(geo.Latitude,geo.Longitude)){
+            var (u,v)=Sample(global,japan,mask.Contains(geo.Latitude,geo.Longitude),geo.Latitude,geo.Longitude);
+            if(float.IsNaN(u)||float.IsNaN(v)){
                 this.Respawn(i,size);
                 continue;
             }
@@ -102,6 +103,20 @@ internal sealed class WindParticleLayer(JapanMaskTexture mask):IDisposable{
             trailCanvas.DrawPoints(SKPointMode.Lines,this.segments,this.line);
         }
         this.trails.Draw(canvas,0,0,this.blit);
+    }
+
+    /// <summary>日本周辺は気象庁の風だけ、それ以外は GFS だけを使う(どちらもなければ NaN)。</summary>
+    private static (float U,float V) Sample(WindField? global,WindField? japan,bool inJapan,double latitude,double longitude){
+        if(inJapan){
+            if(japan is null){
+                return (float.NaN,float.NaN);
+            }
+            return japan.SampleAvailable(latitude,longitude);
+        }
+        if(global is null){
+            return (float.NaN,float.NaN);
+        }
+        return global.Sample(latitude,longitude);
     }
 
     private void Respawn(int i,SKSize size){

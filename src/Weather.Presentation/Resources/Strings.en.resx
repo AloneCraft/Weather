@@ -192,4 +192,6 @@
   <data name="Back" xml:space="preserve"><value>Back</value></data>
   <data name="Observed" xml:space="preserve"><value>observed</value></data>
   <data name="AboutGfsUsage" xml:space="preserve"><value>Map wind, precipitation, temperature, clouds and pressure outside the area around Japan (NOAA numerical model output, colored by the app)</value></data>
+  <data name="JapanNoteMarineFlow" xml:space="preserve"><value>Seas around Japan: JMA marine forecast (flow processed from 8-point direction and speed classes)</value></data>
+  <data name="JapanNoteObservationMarineFlow" xml:space="preserve"><value>Around Japan: JMA AMeDAS observations on land; JMA marine forecast at sea (processed into flow)</value></data>
 </root>
