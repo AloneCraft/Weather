@@ -81,9 +81,9 @@ public sealed class LocationResolver(GeoDatabase database):ILocationResolver{
         };
     }
 
-    /// <summary>最寄り都市の timezone。近くに都市がない海上は経度から Etc/GMT±n を使う。</summary>
+    /// <summary>最寄り都市の timezone。近くに都市がない海上、または端末が知らない ID(tzdata が古い端末の新しい IANA ID)は経度から Etc/GMT±n を使う。</summary>
     private string ResolveTimeZone(double lat,double lon){
-        if(database.FindNearestPlace(lat,lon,800) is {} place){
+        if(database.FindNearestPlace(lat,lon,800) is {} place&&IsKnownZone(place.TimeZone)){
             return place.TimeZone;
         }
         var offset=(int)Math.Round(lon/15);
@@ -95,6 +95,16 @@ public sealed class LocationResolver(GeoDatabase database):ILocationResolver{
             return string.Create(CultureInfo.InvariantCulture,$"Etc/GMT-{offset}");
         }
         return string.Create(CultureInfo.InvariantCulture,$"Etc/GMT+{-offset}");
+    }
+
+    /// <summary>この端末で解決できる timezone か。解決できない ID は下流(予報の現地日付・表示時刻)で黙って UTC にされるため、返さない。</summary>
+    private static bool IsKnownZone(string zoneId){
+        try{
+            TimeZoneInfo.FindSystemTimeZoneById(zoneId);
+            return true;
+        }catch(Exception ex) when(ex is TimeZoneNotFoundException or InvalidTimeZoneException){
+            return false;
+        }
     }
 
     /// <summary>探索範囲内に区域がない場合は無限大(20 km より遠い)とする。</summary>

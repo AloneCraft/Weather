@@ -52,6 +52,16 @@ public class LocationResolver{
             Assert.Equal("4720700",ResolveAt(25.75,123.5).JmaArea!.Class20Code);
         }
         {
+            //端末が解決できないタイムゾーン ID の都市は、下流で黙って UTC にならないよう、経度から決める Etc/GMT± を使う
+            var oslo=new PlaceRecord(1,"Oslo","Oslo","オスロ",59.91f,10.75f,"NO","Oslo",600000,"Europe/Oslo");
+            var unknown=new PlaceRecord(2,"Kyiv","Kyiv","キーウ",50.45f,30.52f,"UA","Kyiv",2800000,"Not/AZone");
+            var mask=new JapanAreaMask(0,0,1,1,1,[0]);
+            var database=new Geo.GeoDatabase(static ()=>[],static ()=>[],()=>[oslo,unknown],()=>mask);
+            var resolver=new Geo.LocationResolver(database);
+            Assert.Equal("Europe/Oslo",resolver.Resolve(new GeoPoint(59.91,10.75)).TimeZoneId);
+            Assert.Equal("Etc/GMT-2",resolver.Resolve(new GeoPoint(50.45,30.52)).TimeZoneId);
+        }
+        {
             //米国と準州は NWS の国コード
             Assert.Equal("GU",ResolveAt(13.4443,144.7937).CountryCode);
             Assert.Equal("PR",ResolveAt(18.4655,-66.1057).CountryCode);
