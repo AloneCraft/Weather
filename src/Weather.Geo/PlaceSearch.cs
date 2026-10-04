@@ -12,7 +12,7 @@ public static class TextNormalizer{
         if(string.IsNullOrWhiteSpace(text)){
             return "";
         }
-        var normalized=text.Normalize(NormalizationForm.FormKC).ToLowerInvariant();
+        var normalized=RemoveUnpairedSurrogates(text).Normalize(NormalizationForm.FormKC).ToLowerInvariant();
         var builder=new StringBuilder(normalized.Length);
         foreach(var c in normalized){
             if(char.IsWhiteSpace(c)){
@@ -28,6 +28,29 @@ public static class TextNormalizer{
             }else{
                 builder.Append(c);
             }
+        }
+        return builder.ToString();
+    }
+
+    /// <summary>孤立サロゲート(貼り付けや絵文字の途中切断)は string.Normalize が例外にするので取り除く。</summary>
+    private static string RemoveUnpairedSurrogates(string text){
+        StringBuilder? builder=null;
+        for(var i=0;i<text.Length;i++){
+            var c=text[i];
+            var valid=true;
+            if(char.IsHighSurrogate(c)){
+                valid=i+1<text.Length&&char.IsLowSurrogate(text[i+1]);
+            }else if(char.IsLowSurrogate(c)){
+                valid=i>0&&char.IsHighSurrogate(text[i-1]);
+            }
+            if(valid){
+                builder?.Append(c);
+            }else{
+                builder??=new StringBuilder(text.Length).Append(text,0,i);
+            }
+        }
+        if(builder is null){
+            return text;
         }
         return builder.ToString();
     }

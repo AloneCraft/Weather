@@ -99,8 +99,10 @@ public class PlaceSearch{
             Assert.Equal("US",Search.Search("New York",5)[0].CountryCode);
         }
         {
-            //空の入力は結果なし
+            //空の入力・孤立サロゲートだけの入力は結果なし(例外にしない)
             Assert.Empty(Search.Search("  ",5));
+            Assert.Empty(Search.Search("\uD83D",5));
+            Assert.Equal("jma:1310100",Search.Search("千代\uD83D田区",5)[0].Id);
         }
     }
 }
@@ -118,6 +120,14 @@ public class TextNormalizer{
             Assert.Equal(Geo.TextNormalizer.Normalize("ケ"),Geo.TextNormalizer.Normalize("ヶ"));
             Assert.Equal(Geo.TextNormalizer.Normalize("カ"),Geo.TextNormalizer.Normalize("ヵ"));
             Assert.Equal("けいこ",Geo.TextNormalizer.Normalize("ヶイコ"));
+        }
+        {
+            //孤立サロゲート(貼り付けや絵文字の途中切断)は例外にせず取り除く。正当なサロゲートペアは保つ
+            Assert.Equal("",Geo.TextNormalizer.Normalize("\uD83D"));
+            Assert.Equal("",Geo.TextNormalizer.Normalize("\uDE00"));
+            Assert.Equal("とうきょう",Geo.TextNormalizer.Normalize("と\uD83Dうきょ\uDE00う"));
+            Assert.Equal("😀",Geo.TextNormalizer.Normalize("😀"));
+            Assert.Equal("😀東京",Geo.TextNormalizer.Normalize("😀 東京"));
         }
     }
 }
