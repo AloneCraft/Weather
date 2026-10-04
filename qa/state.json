@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 56,
-  "updated_at": "2026-10-04T15:54:56Z",
+  "revision": 60,
+  "updated_at": "2026-10-04T16:01:14Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 43,
+      "run_minutes": 50,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1050,6 +1050,63 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0019",
+      "title": "地図のタイル層: 読み込みに失敗したタイルをフレームごとに再要求する(連続描画中は毎秒 30 回級)",
+      "source_ids": [
+        "M-1a"
+      ],
+      "severity": "中",
+      "fix_priority": 9,
+      "symptom": "TileLayer.Request は失敗しても pending を外すだけで失敗の記憶がなく、次の Draw が同じタイルを即座に再要求する。風の粒子などで地図が連続描画されている間、失敗中のタイルが毎フレーム要求され、気象庁サーバーへの負荷(WeatherProviders.md:289 がアクセス頻度を要確認としている)と電池消費になる",
+      "expected": "失敗したタイルは一定時間(30 秒)再要求しない",
+      "cause": {
+        "confirmed": "TileLayer.cs の catch に「次の再描画で再び要求する」とコメントされた設計で、待ち時間がない(コード読み)",
+        "hypotheses": [],
+        "unknown": [
+          "気象庁サーバーが実際にどの程度の頻度で制限するか"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:55:36Z",
+          "reason": "優先: ネットワーク障害時の外部サーバーへの過剰リクエストと電池消費。決定的に再現できる。独立して修正できる",
+          "code_before": {
+            "commit": "c998b9fa852a3add3191300b0bc949f987fe78ab",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 失敗しても記憶せず、次の Draw で即再要求",
+          "hypothesis": "失敗したタイルのキーを時刻付きで記憶し、再試行間隔の間は要求しなければ、成功したタイルの再描画では再要求されない",
+          "planned_change": "src/Weather.Rendering/Map/TileLayer.cs と MapRenderer の internal な再試行間隔の公開 + tests/Weather.Rendering.Tests/MapTests.cs",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、間隔経過後は再要求される、Rendering の既存テスト(ゴールデン以外)PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:01:14Z",
+          "diff_sha256": "2dac618f9bf425b4244d4a6c06ebbe088ee098de81fa5b610b0b06a3f38a3c0b",
+          "commit": "8b111804d810461733445b0d7e640293daa81ecf"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Rendering.Tests/MapRenderer.Render_TileFailure"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:55:36Z",
+      "verified": {
+        "commit": "8b111804d810461733445b0d7e640293daa81ecf",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 50,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1210,7 +1267,7 @@
     {
       "id": "M-1",
       "status": "UNREPRODUCED",
-      "note": "TileLayer が失敗タイルを毎回再要求 / キャッシュ上限 192 < 可視タイル"
+      "note": "TileLayer が失敗タイルを毎回再要求 / キャッシュ上限 192 < 可視タイル → 失敗の再要求は BUG-0019。キャッシュ上限 192<可視タイル(iPad)は未再現のまま"
     },
     {
       "id": "M-2",
