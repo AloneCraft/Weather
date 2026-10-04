@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 37,
-  "updated_at": "2026-10-04T15:46:38Z",
+  "revision": 45,
+  "updated_at": "2026-10-04T15:49:06Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 35,
+      "run_minutes": 38,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -734,6 +734,176 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0014",
+      "title": "履歴画面: 今日の要約がまだないとき、昨日の最高/最低が「今日の最高/最低」として表示される",
+      "source_ids": [
+        "I-5b"
+      ],
+      "severity": "中",
+      "fix_priority": 6,
+      "symptom": "summaries.LastOrDefault() を今日として使い、LocalDate を確認しない。昨日だけの要約だと「今日の最高 25° / 最低 15°」と表示(再現テストで確認)",
+      "expected": "今日の要約がなければ表示しない(History.md の「今日の最高/最低」)",
+      "cause": {
+        "confirmed": "HistoryViewModel.LoadAsync が [昨日,今日] を引いて最後の行を今日として使う",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:48:07Z",
+          "reason": "優先: 利用者に誤った数値(昨日の気温)を「今日」として見せる表示の誤り。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "c9fe1981dd54b3ea825a78af845ef24c7ddc3703",
+            "product_fingerprint_excluding_qa": "326489ee5c9b922649e7dd92e6c5271313c74b383d7b9482cb7a7a6db8b90533"
+          },
+          "observed": "再現テストで SummaryText=今日の最高 25° / 最低 15°(昨日の値)",
+          "hypothesis": "今日(現地日付)の要約だけを引けば昨日の値が出ない",
+          "planned_change": "src/Weather.Presentation/ViewModels/HistoryViewModel.cs の要約取得範囲と空のときのリセット",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation/Providers/Infrastructure テスト PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:49:06Z",
+          "diff_sha256": "26c0d1b498c30111fdf0c7f904e93644a809dcab19cabc64668d7b1173a18cd6",
+          "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync",
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/BUG-0014-16-before.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:48:07Z",
+      "verified": {
+        "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 38,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0015",
+      "title": "履歴画面: 範囲を切り替えて観測が見つかっても「保存済みの観測はまだありません」が残る",
+      "source_ids": [
+        "I-5c"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 7,
+      "symptom": "Day が 0 件で Message=NoSavedObservations の後、Range を切り替えて行が表示されても Message が消えない(コード読み。実行再現は修正前テストで)",
+      "expected": "観測があるときは Message を消す(同期失敗の Message は残す)",
+      "cause": {
+        "confirmed": "LoadAsync は観測 0 件のときだけ Message を設定し、1 件以上のときに消す処理がない",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:48:23Z",
+          "reason": "BUG-0014 と同じ画面。範囲を切り替えて行が出ているのに「観測がありません」が残る。再現済み(修正前テストで FAIL)",
+          "code_before": {
+            "commit": "c9fe1981dd54b3ea825a78af845ef24c7ddc3703",
+            "product_fingerprint_excluding_qa": "4f125a440308f8eb371ebc0f3c1a88fdc9d2d65ae3781ed826109fc4e07e118f"
+          },
+          "observed": "再現テストで Range 切替後も Message=保存済みの観測はまだありません",
+          "hypothesis": "観測が見つかったとき、自分が設定した NoSavedObservations の Message だけを消せば、同期失敗の Message は残る",
+          "planned_change": "src/Weather.Presentation/ViewModels/HistoryViewModel.cs の LoadAsync 末尾のみ",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト PASS",
+          "isolation": "BUG-0014 と同じコミットに含めるが、状態と試行は別に記録",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:49:06Z",
+          "diff_sha256": "26c0d1b498c30111fdf0c7f904e93644a809dcab19cabc64668d7b1173a18cd6",
+          "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync",
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:48:07Z",
+      "verified": {
+        "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 38,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0016",
+      "title": "履歴画面: NWS の観測では降水量の棒が常に空になる",
+      "source_ids": [
+        "I-5a"
+      ],
+      "severity": "中",
+      "fix_priority": 8,
+      "symptom": "降水量を ObservedAt.Minute==0 の行だけ使うが、NWS の定時観測は毎時 52 分前後(History.md)なのでほぼ全行が null(コード読み+設計書。実行再現は修正前テストで)",
+      "expected": "NWS でも降水量(precipitationLastHour)の棒が表示される(History.md「降水量の棒」)",
+      "cause": {
+        "confirmed": "JMA の 10 分値前提のフィルタを全 Provider に適用している",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:48:40Z",
+          "reason": "BUG-0014/15 と同じ画面。NWS の観測所では降水量の棒が常に空。再現済み(修正前テストで FAIL)",
+          "code_before": {
+            "commit": "c9fe1981dd54b3ea825a78af845ef24c7ddc3703",
+            "product_fingerprint_excluding_qa": "292ec8fa8f7620fc52fd6cae3483253582378be58f714fe43983d78956516ea9"
+          },
+          "observed": "再現テストで NWS の 01:52Z・02:52Z の行の降水量が null",
+          "hypothesis": "気象庁は正時の行、NWS は各時間帯の最後の観測を降水量の棒に使えば表示される",
+          "planned_change": "src/Weather.Presentation/ViewModels/HistoryViewModel.cs の降水量の行の選び方のみ",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、気象庁の既存の挙動(正時だけ)は不変、Presentation テスト PASS",
+          "isolation": "BUG-0014 と同じコミットに含めるが、状態と試行は別に記録",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:49:06Z",
+          "diff_sha256": "26c0d1b498c30111fdf0c7f904e93644a809dcab19cabc64668d7b1173a18cd6",
+          "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync",
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:48:07Z",
+      "verified": {
+        "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 38,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -877,8 +1047,8 @@
     },
     {
       "id": "I-5",
-      "status": "UNREPRODUCED",
-      "note": "HistoryViewModel の (a) NWS 降水棒が空 (b) 今日が昨日 (c) 古い Message (d) 競合"
+      "status": "PROMOTED_TO_BUG",
+      "note": "HistoryViewModel の (a) NWS 降水棒が空 (b) 今日が昨日 (c) 古い Message (d) 競合 → BUG-0014/0015/0016(d の競合は未対応)"
     },
     {
       "id": "I-6",
