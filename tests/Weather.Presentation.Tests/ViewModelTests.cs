@@ -206,6 +206,16 @@ public class Units{
             Assert.Equal("68°",Presentation.Units.Temperature(20,UnitSystem.Imperial));
             Assert.Equal("--",Presentation.Units.Temperature(null,UnitSystem.Metric));
         }
+        {
+            //丸めて 0 になる値に負号を付けない(「-0°」と表示しない)。0 でない負の値は負号を付ける
+            Assert.Equal("0°",Presentation.Units.Temperature(-0.3,UnitSystem.Metric));
+            Assert.Equal("0°",Presentation.Units.Temperature(-0.49,UnitSystem.Metric));
+            Assert.Equal("0°",Presentation.Units.Temperature(-0.0,UnitSystem.Metric));
+            Assert.Equal("0°",Presentation.Units.Temperature(-17.9,UnitSystem.Imperial));
+            Assert.Equal("-1°",Presentation.Units.Temperature(-0.5,UnitSystem.Metric));
+            Assert.Equal("-1°",Presentation.Units.Temperature(-0.6,UnitSystem.Metric));
+            Assert.Equal("-5°",Presentation.Units.Temperature(-5,UnitSystem.Metric));
+        }
     }
 
     [Fact,Trait("Category","Unit")]public void Wind(){
