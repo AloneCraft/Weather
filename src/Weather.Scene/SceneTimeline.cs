@@ -18,6 +18,13 @@ public sealed class SceneTimeline{
         this.converter=converter;
         this.keyframes=[];
         foreach(var point in forecast.TimeSeries){
+            if(point.Condition is {Transition:ConditionTransition.Later}&&point.Duration>=SceneConverter.LaterMinimumDuration){
+                //「後」は中点で主天気から副天気に切り替わる。中点ちょうどは副天気側なので、1 つのキーフレームでは前半にも副天気が混ざる。
+                //主天気側(1/4)と副天気側(3/4)に分けて置く
+                this.keyframes.Add(converter.Convert(forecast,point.Start+point.Duration/4));
+                this.keyframes.Add(converter.Convert(forecast,point.Start+point.Duration*3/4));
+                continue;
+            }
             var middle=point.Start+point.Duration/2;
             this.keyframes.Add(converter.Convert(forecast,middle));
         }

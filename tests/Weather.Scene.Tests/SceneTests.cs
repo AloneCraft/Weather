@@ -198,6 +198,21 @@ public class SceneTimeline{
                 Assert.InRange(c,0,1);
             }
         }
+        {
+            //「後」(6 時間以上の区間): 中点より前は主天気(晴れ)、後は副天気(雨)。前半に雨が出ない
+            var later=new Core.CompositeCondition(new Core.WeatherCondition(SkyCover.Clear),Core.ConditionTransition.Later,new Core.WeatherCondition(SkyCover.Overcast,Core.PrecipitationType.Rain,Core.PrecipitationIntensity.Moderate));
+            var laterPoints=new[]{
+                new Core.ForecastPoint(start,start.AddHours(6),source){Condition=new Core.WeatherCondition(SkyCover.Clear)},
+                new Core.ForecastPoint(start.AddHours(6),start.AddHours(12),source){Condition=later},
+            };
+            var laterTimeline=new Scene.SceneTimeline(new Forecast(Data.Oslo,laterPoints,[]),new Scene.SceneConverter());
+            for(var m=0;m<=7.5*60;m+=30){
+                var s=laterTimeline.At(start.AddMinutes(m));
+                Assert.Equal(ScenePrecipitationType.None,s.Precipitation.Type);
+            }
+            Assert.Equal(ScenePrecipitationType.Rain,laterTimeline.At(start.AddHours(10.5)).Precipitation.Type);
+            Assert.Equal(ScenePrecipitationType.Rain,laterTimeline.At(start.AddHours(11.5)).Precipitation.Type);
+        }
     }
 }
 
