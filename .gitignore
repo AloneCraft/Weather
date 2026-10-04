@@ -28,3 +28,4 @@ tools/Weather.GeoDataBuilder/.cache/
 tests/**/GoldenOutput/
 src/Weather.Native.iOS/*.xcodeproj/
 src/Weather.Native.iOS/build/
+*.SdkResolver.*.Backup.tmp
