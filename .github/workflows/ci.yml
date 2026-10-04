@@ -54,16 +54,28 @@ jobs:
       # 復元は App の全 TFM(android / ios)を評価するため android のワークロードも入れる
       # (-p:TargetFrameworks で絞ると参照先のライブラリにも伝わり net10.0 が消えるので使わない)
       - run: dotnet workload install maui-ios maui-android
+      # 失敗時はエラー行を注釈(::error::)にも出す(ログの閲覧にはサインインが必要だが、注釈は公開 API で読める)
       - name: アプリ(シミュレーター向け・署名なし)
-        run: dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:EnableCodeSigning=false
+        run: |
+          dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:EnableCodeSigning=false 2>&1 | tee build-ios.log || {
+            grep -iE "error|failed" build-ios.log | sort -u | head -40 | sed 's/^/::error::/'
+            exit 1
+          }
       - name: ウィジェット拡張(Swift / WidgetKit)
         working-directory: src/Weather.Widget.iOS
         run: |
           brew install xcodegen
           xcodegen generate
-          xcodebuild -project WeatherWidget.xcodeproj -target WeatherWidget -configuration Release -sdk iphonesimulator SYMROOT=build CODE_SIGNING_ALLOWED=NO build
+          xcodebuild -project WeatherWidget.xcodeproj -target WeatherWidget -configuration Release -sdk iphonesimulator SYMROOT=build CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build-widget.log || {
+            grep -iE "error|failed" build-widget.log | sort -u | head -40 | sed 's/^/::error::/'
+            exit 1
+          }
       - name: アプリ + ウィジェット拡張
-        run: dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:EnableCodeSigning=false -p:IncludeWidgetExtension=true
+        run: |
+          dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:EnableCodeSigning=false -p:IncludeWidgetExtension=true 2>&1 | tee build-ios-widget.log || {
+            grep -iE "error|failed" build-ios-widget.log | sort -u | head -40 | sed 's/^/::error::/'
+            exit 1
+          }
 
   live:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
