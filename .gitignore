@@ -29,3 +29,7 @@ tests/**/GoldenOutput/
 src/Weather.Native.iOS/*.xcodeproj/
 src/Weather.Native.iOS/build/
 *.SdkResolver.*.Backup.tmp
+
+## QA 運用の大きな一時成果物(QA_WORKFLOW.md)
+qa/scratch/
+qa/.*.tmp

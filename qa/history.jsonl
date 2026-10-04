@@ -1,0 +1,4 @@
+{"ts":"2026-10-04T14:52:12Z","type":"prep_start","run":"RUN-0001","note":"準備開始。製品コード・テストには着手しない","commit":"62ea11e14f4e38a83e4ad080fcef4a360baf669c","branch":"claude/determined-einstein-whn27k","tracked_diff_sha256":"e3b0c442...b855(空)"}
+{"ts":"2026-10-04T14:52:12Z","type":"env_check","run":"RUN-0001","result":"dotnet・adb・xcodebuild・pwsh なし。git・python3・jq・java・node あり。実行中の dotnet/unity/adb プロセスなし","smoke":"NOT_RUN"}
+{"ts":"2026-10-04T14:52:12Z","type":"existing_rules_check","run":"RUN-0001","result":"QA 用の既存の運用ルール・状態・履歴ファイルは無し(qa* handoff* history* state.json を検索)。docs/Design/TestStrategy.md と Phases.md はテスト層・受け入れ基準として存在するため重複作成せず参照する"}
+{"ts":"2026-10-04T14:52:33Z","type":"prep_end","run":"RUN-0001","result":"QA_WORKFLOW.md・qa/・slnx・.gitignore を作成。commit 済み・未 push。製品コード・テストは未着手"}
