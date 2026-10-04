@@ -54,11 +54,14 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
-      - name: Xcode の選択(iOS ワークロードが要求する最新版)
+      # iOS ワークロード 26.5 に合う Xcode 26.5 系を選ぶ。「いちばん新しい版」を選ぶと、
+      # macOS SDK や actool が欠けた版(2026-10-04 時点の Xcode_26.6.0)を選んで失敗するため。なければランナーの既定を使う
+      - name: Xcode の選択(iOS ワークロード 26.5 に合わせる)
         run: |
-          xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
-          sudo xcode-select -s "$xcode"
-          xcodebuild -version
+          ls -d /Applications/Xcode*.app | tr '\n' ' ' | sed 's/^/::notice::Xcode: /'; echo
+          xcode=$(ls -d /Applications/Xcode_26.5*.app 2>/dev/null | sort -V | tail -1 || true)
+          if [ -n "$xcode" ]; then sudo xcode-select -s "$xcode"; fi
+          echo "::notice::$(xcodebuild -version | tr '\n' ' ') ($(xcode-select -p))"
       # 復元は App の全 TFM(android / ios)を評価するため android のワークロードも入れる
       # (-p:TargetFrameworks で絞ると参照先のライブラリにも伝わり net10.0 が消えるので使わない)
       # 版を固定しないと最新のワークロード セット(10.0.401.1 = iOS 27.0)が入り、ランナーにない Xcode 27 を要求して失敗する。

@@ -91,7 +91,7 @@
 | S1 iOS SKMetalView | ハンドラーを実装し、CI(macOS)でシミュレーター向けにビルドできることを確認。実機での描画・フレームレートは未確認(Mac / iPhone が必要) |
 | S2 Android SKGLView | エミュレーター(Android 16)で連続描画・画面遷移・背景移行を確認。中位機種の実機での 60 fps は未確認 |
 | S3 GeoDataBuilder | 合計約 4.3 MB(目標 15 MB 以下)。解決・検索はテストとエミュレーター(ローマ字・かな検索)で確認 |
-| S4 Microsoft.Data.Sqlite | Windows のテストと Android エミュレーター(Debug)で動作を確認。iOS リリースビルド(トリミング・AOT)での動作は未確認 |
+| S4 Microsoft.Data.Sqlite | Windows のテスト、Android エミュレーターで Debug と Release(トリミングあり。警告 0)の両方で動作を確認(お気に入りの保存・観測履歴・世界地図)。iOS リリースビルド(AOT)での動作は未確認 |
 | S5 Adapter | 記録データと実 API の両方で確認 |
 
 ### エミュレーターでの確認で見つけて直した不具合
@@ -106,7 +106,7 @@
 
 - **iOS の実機確認**(SKMetalView の描画性能、BGTaskScheduler、通知、ウィジェット、SQLite のリリースビルド): iPhone と Mac(署名)が必要。
 - **Android の中位機種の実機での性能確認**: エミュレーターは GPU 性能が実機と異なる。
-- **公開前の確定事項**: アプリ ID(現在は仮の `com.weatherapp.soramoyou`)と署名、iOS の App Group の登録(ウィジェットを同梱する場合)、ストア用のプライバシーポリシー。User-Agent の連絡先は公開リポジトリ `github.com/AloneCraft/Weather` に確定した。
+- **公開前の確定事項**: アプリ ID(現在は仮の `com.weatherapp.soramoyou`)、署名鍵(Android は環境変数・シークレットで渡す仕組みと release ワークフローを用意済み。iOS は Mac で証明書とプロビジョニング)、iOS の App Group の登録(ウィジェットを同梱する場合)、プライバシーポリシー(草案は docs/Store/PrivacyPolicy.md。公開者名・連絡先・施行日の記入と確認が必要)。User-Agent の連絡先は公開リポジトリ `github.com/AloneCraft/Weather` に確定した。
 - **Functions の配置**(任意): Azure のサブスクリプションが必要。Azure 側の .NET 10 ランタイム対応は配置時に**要確認**。公開時はレート制限(API Management 等)を前提にする。
 - **Web 版**: 後で検討(SolutionStructure.md)。
 - **要確認のまま残る仕様**: 気象庁の時系列予報の天気区分と風速階級、警報の電文種別と状態文字列、氾濫注意報のコード、アメダスの品質フラグと elems、NWS の qualityControl と雲量区分、MET の altitude、VI / AS / MP の NWS 対応。実 API の契約テスト(週 1 回)で変化を検知する。

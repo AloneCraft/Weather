@@ -39,6 +39,22 @@
   </ItemGroup>
 
   <!--
+    Android のリリース署名(ストア提出用)。鍵はリポジトリに置かず環境変数で渡す。未設定ならデバッグ鍵で署名される
+      WEATHER_ANDROID_KEYSTORE        キーストアのパス
+      WEATHER_ANDROID_KEY_ALIAS       鍵の別名
+      WEATHER_ANDROID_STORE_PASSWORD  キーストアのパスワード(env: で参照し、ビルドログに出さない)
+      WEATHER_ANDROID_KEY_PASSWORD    鍵のパスワード
+    iOS の署名は Mac で CodesignKey / CodesignProvision を指定する(README.md)
+  -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(WEATHER_ANDROID_KEYSTORE)' != '' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>$(WEATHER_ANDROID_KEYSTORE)</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>$(WEATHER_ANDROID_KEY_ALIAS)</AndroidSigningKeyAlias>
+    <AndroidSigningStorePass>env:WEATHER_ANDROID_STORE_PASSWORD</AndroidSigningStorePass>
+    <AndroidSigningKeyPass>env:WEATHER_ANDROID_KEY_PASSWORD</AndroidSigningKeyPass>
+  </PropertyGroup>
+
+  <!--
     iOS のウィジェット(WidgetKit 拡張。Swift)は任意で同梱する: -p:IncludeWidgetExtension=true
     事前に Mac で src/Weather.Widget.iOS をビルドしておく(README.md)。App Group を有効にしたプロビジョニングが必要なため既定では含めない
   -->

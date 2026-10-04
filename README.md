@@ -51,6 +51,7 @@ dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:IncludeWidgetE
 ```
 
 - Functions(任意)をローカルで動かすには Azure Functions Core Tools が必要。`src/Weather.Functions/local.settings.example.json` を `local.settings.json` に複製してから `func start` を実行する。アプリを中継に切り替えるには、MauiProgram で `AddWeatherProviders` の後に `AddRemoteWeatherService(new Uri("https://<関数アプリ>/api/"),userAgent)` を呼ぶ。
+- リリース用の Android AAB は GitHub Actions の release ワークフロー(手動実行)で作る。署名鍵はリポジトリに置かず、シークレット(ANDROID_KEYSTORE_BASE64 / ANDROID_KEY_ALIAS / ANDROID_STORE_PASSWORD / ANDROID_KEY_PASSWORD)か環境変数(WEATHER_ANDROID_*。Weather.App.csproj)で渡す。未設定ならデバッグ鍵で署名される。
 - Android エミュレーターでの確認手順は [docs/Design/TestStrategy.md](docs/Design/TestStrategy.md)「エミュレーターでの確認手順」。
 - 実 API の契約テストは通常の実行では動かない。週 1 回(CI の schedule)または手動で実行する。
 
@@ -74,6 +75,7 @@ WEATHER_UPDATE_GOLDEN=1 dotnet test --project tests/Weather.Rendering.Tests
 
 - アプリ ID(`ApplicationId`。現在は仮の `com.weatherapp.soramoyou`)と署名。変える場合は iOS の App Group・BGTask の識別子・ウィジェット拡張の Bundle ID も合わせる
 - 公開時に各 API の利用規約を再確認する(WeatherProviders.md「利用規約・法令」)
+- ストア用のプライバシーポリシー: 草案は [docs/Store/PrivacyPolicy.md](docs/Store/PrivacyPolicy.md)。公開者名・連絡先・施行日を記入して確認する
 
 ## ライセンス表示
 

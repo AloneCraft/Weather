@@ -1,0 +1,42 @@
+# リリース用のビルド(手動実行)。Android の AAB を作り、成果物として保存する。
+# 署名用のシークレット(ANDROID_KEYSTORE_BASE64 / ANDROID_KEY_ALIAS / ANDROID_STORE_PASSWORD / ANDROID_KEY_PASSWORD)が
+# 設定されていればストア提出用の鍵で署名し、なければデバッグ鍵で署名する(動作確認用)。
+# iOS のリリースビルドは証明書とプロビジョニングが必要なため、Mac で行う(README.md)。
+name: release
+on:
+  workflow_dispatch:
+
+jobs:
+  android:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      # CI と同じワークロード セットに固定する(TestStrategy.md「CI」)
+      - run: dotnet workload install maui-android --version 10.0.400
+      - name: 署名鍵の復元(シークレットがある場合のみ)
+        shell: pwsh
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if ($env:KEYSTORE_BASE64) {
+            $path = Join-Path $env:RUNNER_TEMP 'release.keystore'
+            [IO.File]::WriteAllBytes($path, [Convert]::FromBase64String($env:KEYSTORE_BASE64))
+            "WEATHER_ANDROID_KEYSTORE=$path" >> $env:GITHUB_ENV
+            Write-Output "ストア提出用の鍵で署名します"
+          } else {
+            Write-Output "::warning::署名用のシークレットがないため、デバッグ鍵で署名します(ストアには提出できません)"
+          }
+      - name: AAB の作成
+        env:
+          WEATHER_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          WEATHER_ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          WEATHER_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: dotnet publish src/Weather.App/Weather.App.csproj -f net10.0-android -c Release -warnaserror
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: src/Weather.App/bin/Release/net10.0-android/publish/*.aab
+          if-no-files-found: error
