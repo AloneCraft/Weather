@@ -44,10 +44,10 @@ Weather/
 | プロジェクト | 責務 | 参照 | Functions 移行時 |
 |---|---|---|---|
 | Core | ドメインモデル(ForecastPoint 等)、抽象(IWeatherProvider、ILocationResolver、キャッシュストア)、値型(GeoPoint 等) | なし | 再利用 |
-| Providers | 気象庁・NWS・MET Norway の Adapter、HTTP 共通処理(User-Agent、条件付き GET、Expires 解釈)、Provider ルーター、JSON の読み取り(JsonDocument) | Core | 再利用(サーバー側で実行) |
+| Providers | 気象庁・NWS・MET Norway の Adapter、HTTP 共通処理(User-Agent、条件付き GET、Expires 解釈、Range 要求)、Provider ルーター、JSON の読み取り(JsonDocument)。地図のデータ(GFS・GRIB2 の復号・気象庁の地図タイル・MapDataService) | Core | 再利用(サーバー側で実行) |
 | Geo | オフライン地点検索・逆ジオコーディング・国判定・タイムゾーン解決 | Core | 再利用(国判定)。クライアントの地点検索でも継続使用 |
 | Scene | 予報データ → SceneState の変換(純粋ロジック) | Core | 不要 |
-| Rendering | SceneState → SkiaSharp 描画、グラフ、世界地図。MAUI 非依存 | Scene, Geo | 不要(Web 版で再利用可能) |
+| Rendering | SceneState → SkiaSharp 描画、グラフ、地図(Web メルカトル・格子・タイル・粒子)。MAUI 非依存 | Scene, Geo | 不要(Web 版で再利用可能) |
 | Infrastructure | 端末側永続化(キャッシュストア・履歴ストアの実装) | Core | Blob / Table 等に置き換え |
 | Presentation | ViewModel、画面状態、ナビゲーション・ダイアログ・位置情報・Dispatcher の薄い抽象 | Core, Scene | 不要 |
 | App | MAUI ホスト、XAML View、DI 合成ルート、プラットフォーム実装(位置情報・保存パス・接続状態・通知・ウィジェット・背景更新)、描画ホスト(Android は SKGLView、iOS は SKMetalView の自作ハンドラー) | すべて(Remote を除く) | `AddRemoteWeatherService` で RemoteWeatherService に差し替え |
@@ -60,7 +60,7 @@ Weather/
 依存方向:
 
 - Providers / Geo / Scene / Infrastructure → Core
-- Rendering → Scene, Geo(世界地図で国境・区域データを描くため)
+- Rendering → Scene, Geo(地図で国境・区域・地名・日本周辺域のマスクを使うため)
 - Presentation → Core, Scene
 - App → すべて(Remote を除く)
 - Remote → Core(アーキテクチャテストで検査)

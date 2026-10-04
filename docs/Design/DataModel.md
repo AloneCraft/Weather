@@ -39,6 +39,11 @@ API は予告なく変わり得るため、前提が崩れた場合はこの節�
 | `Observation` / `Measurement` / `ObservationStation` / `ObservationSeries` | record / class | 観測値(値ごとに品質を持つ) |
 | `Alert` / `AlertSet` | sealed record / class | 警報・注意報 |
 | `GeoPoint` / `ResolvedLocation` | 値型 / record | 座標と解決済み地点(国コード、IANA タイムゾーン、気象庁区域の判定結果)。定義は CacheAndRouting.md |
+| `GridGeometry` / `GridField` / `WindField` | 値型 / class / record | 地図の格子(正則な緯度経度格子。行 0 が北端、欠損・日本周辺は NaN、経度方向に一周する格子は循環して補間)。値の種類は `FieldQuantity`(風の U・V・風速、気温 ℃、降水強度 mm/h、雲量 %、海面気圧 hPa) |
+| `Legend` / `LegendClass` / `MapLegends` | class / record / static | 地図の凡例(区分 [下限, 上限) と ARGB の色。気象庁の凡例の色をそのまま持つ)。値 → 区分、画素の色 → 区分 |
+| `JmaTileLayer` | sealed record | 気象庁の地図タイルの 1 層(プロダクト・要素・初期時刻・有効時刻・ズーム・凡例・出典。タイルの URL を作る) |
+| `WindArrowSet` / `PointValueSet` | sealed record | 日本周辺の観測・予報の点(アメダスの風・気温、海上分布予報の風向)。補間しない |
+| `MapFrame` / `MapAvailability` | sealed record | 地図の 1 コマ(層・時刻・GFS の格子・気象庁のタイル・点・日本周辺の状態・凡例・出典・取れなかった部分)と各データ源の有効時刻 |
 
 コンテナ(`Forecast` / `ObservationSeries` / `AlertSet`)は class にする。record の値の等価性はリストを参照比較するため、意味を誤解させる。
 
@@ -257,15 +262,19 @@ Infrastructure・Geo・Providers が Core にのみ依存して実装できる�
 | `ILocationResolver` / `IPlaceSearch` | Geo |
 | `IHttpCacheStore` | Infrastructure(ファイル)/ Providers(メモリ) |
 | `IFavoritesStore` / `IObservationHistoryStore` / `IObservationHistoryService` | Infrastructure(SQLite) |
+| `IMapDataService`(地図の時刻の一覧・コマ・気象庁のタイル) | Providers の `MapDataService` |
+| `IJapanArea`(日本周辺域の判定。地点の解決と同じ規則) | Geo の `JapanArea` |
+| `IAppActivity`(アプリの使用中か。MET の取得制限) | App の `AppLifecycle`(サーバー・テストは常に使用中) |
 
 ## 不変条件
 
 1. すべてのデータ項目が `Source` を持つ(コンストラクタ引数であり、渡し忘れはコンパイルエラー)→ 方針 7
 2. `ForecastPoint`: `Start < End`。確率・湿度は 0〜100、風向は 0 以上 360 未満
 3. `TimeSeries` は Start 昇順かつ区間が重ならない。`Daily` は日付昇順かつ重複なし
-4. 国コード JP の `Forecast` は気象庁データのみで構成され、`Aggregated` を含まない → 方針 5 を実行時例外で強制
+4. 国コード JP の `Forecast` は気象庁データのみで構成され、`Aggregated`・`Interpolated` を含まない → 方針 5 を実行時例外で強制
 5. 降水種別 `None` ⇔ 強度 `None`。`Transition` が null ⇔ `Secondary` が null(変換表テストで網羅検証)
 6. モデルは不正値を受け付けない。API の異常値は Adapter が `null` にして診断ログへ記録する(WeatherProviders.md)
+7. `GridField`: 値の数 = 格子の点数、有効時刻 ≧ 初期時刻。GFS の格子は日本周辺の格子点が NaN(方針 5。Providers で設定し、描画・吹き出しでも重ねて防ぐ)
 
 ## 変換例(全体の変換表は WeatherProviders.md の付録)
 

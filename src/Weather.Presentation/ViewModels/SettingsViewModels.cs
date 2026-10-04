@@ -114,6 +114,7 @@ public sealed partial class AboutViewModel:ObservableObject{
         new("気象庁 / Japan Meteorological Agency",Strings.AboutJmaUsage,Strings.AboutJmaLicense,"https://www.jma.go.jp/jma/kishou/info/coment.html"),
         new("National Weather Service",Strings.AboutNwsUsage,Strings.AboutNwsLicense,"https://www.weather.gov/disclaimer"),
         new("MET Norway",Strings.AboutMetUsage,"CC BY 4.0 / NLOD 2.0","https://api.met.no/doc/License"),
+        new("NOAA GFS",Strings.AboutGfsUsage,Strings.AboutPublicDomain,"https://registry.opendata.aws/noaa-gfs-bdp-pds/"),
         new("GeoNames",Strings.AboutGeoNamesUsage,"CC BY 4.0","https://www.geonames.org/"),
         new("Natural Earth",Strings.AboutNaturalEarthUsage,Strings.AboutPublicDomain,"https://www.naturalearthdata.com/"),
     ];

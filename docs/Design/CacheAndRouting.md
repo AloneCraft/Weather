@@ -141,13 +141,14 @@ public sealed class WeatherProviderRouter(IEnumerable<IForecastProvider> forecas
 
 ### エントリ
 
-キー = メソッド+正規化 URL(丸め済み座標)。保存する値: ステータス、本文、Content-Type、ETag、Last-Modified(**受信した文字列のまま**)、Date、Age、max-age、Expires、受信時刻、最終利用時刻。
+キー = メソッド+正規化 URL(丸め済み座標)。範囲要求(GFS の 1 要素)は範囲もキーに含め、206 の応答も保存する。保存する値: ステータス、本文、Content-Type、ETag、Last-Modified(**受信した文字列のまま**)、Date、Age、max-age、Expires、受信時刻、最終利用時刻。
 
 ### 鮮度(RFC 9111 を簡略化)
 
 - 鮮度寿命 = `max-age`(私的キャッシュのため `s-maxage` は無視)、なければ `Expires − Date`、どちらもなければ 0。
 - 現在の経過時間 = `Age` ヘッダー + (現在 − 受信時刻)。
 - 例: NWS points は max-age=86400 なので 1 日、MET は Expires まで、気象庁は 60 秒(時系列予報は 300 秒)。
+- 内容が変わらない URL は最低の鮮度を長くする(`HttpCachePolicy`): GFS のファイル(実行回ごとに不変)は 7 日、気象庁の地図タイル・海上分布予報の GeoJSON(初期時刻・有効時刻ごとの URL)とアメダスの全地点のファイル(観測時刻ごとの URL)は 1 日。時刻の一覧(targetTimes・latest_time.txt)はサーバーの鮮度(60 秒)に従う。
 
 ### 処理
 
@@ -160,12 +161,12 @@ public sealed class WeatherProviderRouter(IEnumerable<IForecastProvider> forecas
 
 - 更新のきっかけ: アプリが前面に来たとき、地点の切り替え、引っ張って更新、表示中の自動更新(10 分ごと)。
 - MET は Expires 前の再取得をキャッシュ層が止めるため、自動更新を増やしても規約違反にならない。
-- **バックグラウンド取得はしない**(MET 規約。気象庁・NWS も MVP では行わない)。
+- バックグラウンド取得は気象庁・NWS の地点だけ(ウィジェット・警報の通知。Phase 3)。**MET はバックグラウンドで取得しない**(規約)。地図のデータはアプリの使用中だけ取得する。
 - 定義データ(area.json、forecast_area.json、amedastable.json)は、アプリ同梱の版を初期値とし、7 日に 1 回だけ再検証する。
 
 ### 容量管理
 
-上限 50 MB。超えたら最終利用時刻の古い順に削除する。14 日使われていないエントリは起動時に削除する。iOS は容量逼迫時に CacheDirectory を消すことがあるが、許容する。
+上限 200 MB(地図の GFS は 1 要素 160〜290 KB、1 時刻の風で約 570 KB。2026-10-04 に 50 MB から変更)。超えたら最終利用時刻の古い順に削除する。14 日使われていないエントリは起動時に削除する。iOS は容量逼迫時に CacheDirectory を消すことがあるが、許容する。
 
 ### HTTP エラーの変換
 
@@ -209,6 +210,7 @@ public sealed class WeatherProviderRouter(IEnumerable<IForecastProvider> forecas
 4. 鮮度内のエントリがあるとき、ネットワークへ出ない
 5. 古いキャッシュを表示するときは必ず `IsStale` を立て、UI に取得時刻を示す
 6. バックグラウンドで MET を取得しない
+7. 地図: 日本周辺域(地点の解決と同じ判定。`IJapanArea` = 気象庁の区域の内側または日本周辺域マスク)の GFS の格子点は NaN にして返す。地点の解決と地図で日本周辺の範囲を食い違わせない(テストで両者の一致を確認する)
 
 ## 要確認事項
 

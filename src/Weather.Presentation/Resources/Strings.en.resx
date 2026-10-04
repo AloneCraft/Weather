@@ -191,4 +191,5 @@
   <data name="SearchPlaceholderMap" xml:space="preserve"><value>Search places</value></data>
   <data name="Back" xml:space="preserve"><value>Back</value></data>
   <data name="Observed" xml:space="preserve"><value>observed</value></data>
+  <data name="AboutGfsUsage" xml:space="preserve"><value>Map wind, precipitation, temperature, clouds and pressure outside the area around Japan (NOAA numerical model output, colored by the app)</value></data>
 </root>

@@ -16,6 +16,7 @@
 | 2. 履歴と地図 | 観測履歴、世界地図、描画の拡充 | History.md と地図の機能が受け入れ基準を満たす |
 | 3. 仕上げ | 英語化、アクセシビリティ、性能、ウィジェット等 | リリース品質 |
 | 4. 発展(任意) | Functions 移行、Web 版の検討 | 個別に判断 |
+| 5. 地図トップ | トップを Windy 型の地図に作り替える(2026-10-04 のユーザーの要望) | 下記の試作が結論を出し、地図・吹き出し・予報シート・詳細がエミュレーターで動く |
 
 ## Phase 0: 基盤と試作
 
@@ -72,6 +73,19 @@
 - Azure Functions への移行: Providers / Geo / キャッシュをサーバー側で動かし、クライアントは RemoteWeatherService に切り替える。移行時に isolated worker の .NET 対応版を確認する。
 - Web 版(Blazor): Functions を前提に検討する(SolutionStructure.md)。
 
+## Phase 5: 地図トップ(2026-10-04)
+
+ユーザーの要望: トップを文字中心の天気アプリではなく、Windy(windy.com)のような地図アプリにする。決定事項は Overview.md(方針 3 の追加・方針 5 の地図への適用)、Screens.md、Rendering.md、WeatherProviders.md「地図のデータ」。
+
+| マイルストーン | 内容 |
+|---|---|
+| M1 試作 | P1 GRIB2 の復号、P2 気象庁のタイル、P3 性能、P4 位置合わせ(結果は Rendering.md) |
+| M2 データ層 | Core の型、Grib2Decoder、GfsProvider、MapDataService、Range 対応の HTTP キャッシュ、JapanArea |
+| M3 描画 | MapCamera(Web メルカトル)、基図、格子・タイル・等圧線・粒子・矢印 |
+| M4 Presentation | MapViewModel、時間軸、吹き出し、予報シート、検索からの移動 |
+| M5 App | 地図の画面・予報シート・詳細、描画ホストの一般化、旧トップと地図で選ぶ画面の削除 |
+| M6 仕上げ | 設計書・README |
+
 ## 実装の状況(2026-10-04)
 
 リポジトリ: https://github.com/AloneCraft/Weather(公開)。CI(GitHub Actions)で Windows のテスト、Android のビルド、macOS での iOS のビルド(ウィジェット拡張を含む)を PR・push ごとに実行する。
@@ -83,6 +97,7 @@
 | Phase 2 履歴と地図 | 完了。観測履歴(同期・間引き・保持期間・グラフ)、世界地図での地点選択 | 単体テスト(SQLite)・エミュレーターで観測履歴(アメダス東京)を確認 |
 | Phase 3 仕上げ | 完了(iOS の実機確認を除く)。英語 UI、読み上げ用の要約、警報の通知、ウィジェット(Android の AppWidget・iOS の WidgetKit 拡張)、背景更新(WorkManager・BGTaskScheduler)、MET の背景取得の二重防止 | 単体テスト。Android エミュレーターで、ウィジェット・画面なしでの背景起動・警報の通知(小笠原村の波浪警報)を確認。iOS は CI でビルドと拡張の同梱を確認 |
 | Phase 4 発展 | Functions への移行を実装(中継 API・RemoteWeatherService)。Azure への配置はしていない。Web 版は未着手(後で検討) | 単体テスト・記録データでの結合テスト・Functions のビルド |
+| Phase 5 地図トップ | 完了(iOS の実機確認を除く)。GFS 0.5° と気象庁の地図タイル・アメダス・海上分布予報、風の粒子・降水・気温・雲と気圧、時間軸と再生、吹き出し・予報シート・空のシーンの詳細 | 単体テスト(GRIB2・地図のデータ・描画の不変条件・ゴールデン画像・VM)、実 API の契約テスト(地図)、Android エミュレーターで各層・タップ・シート・詳細・再生を確認、風の層で約 58.5 fps(エミュレーター) |
 
 試作 S1〜S5 の結果:
 
@@ -105,7 +120,8 @@
 ### 残作業と理由
 
 - **iOS の実機確認**(SKMetalView の描画性能、BGTaskScheduler、通知、ウィジェット、SQLite のリリースビルド): iPhone と Mac(署名)が必要。
-- **Android の中位機種の実機での性能確認**: エミュレーターは GPU 性能が実機と異なる。
+- **Android の中位機種の実機での性能確認**: エミュレーターは GPU 性能が実機と異なる(地図の風の層・空のシーン)。
+- **地図の規約の確認**(公開前): 気象庁の地図タイルをアプリから取得する条件、GFS を日本以外で表示することの気象業務法上の扱い(日本周辺では表示しない)。
 - **公開前の確定事項**: 署名鍵(Android は環境変数・シークレットで渡す仕組みと release ワークフローを用意済み。iOS は Mac で証明書とプロビジョニング)、iOS の App Group の登録(ウィジェットを同梱する場合)。アプリ ID は `io.github.alonecraft.soramoyou`(iOS の App Group は `group.io.github.alonecraft.soramoyou`)、プライバシーポリシーは docs/Store/PrivacyPolicy.md(公開者 AloneCraft、連絡先は GitHub Issues、2026-10-04 施行)、User-Agent の連絡先は公開リポジトリ `github.com/AloneCraft/Weather` に確定した。
 - **Functions の配置**(任意): Azure のサブスクリプションが必要。Azure 側の .NET 10 ランタイム対応は配置時に**要確認**。公開時はレート制限(API Management 等)を前提にする。
 - **Web 版**: 後で検討(SolutionStructure.md)。

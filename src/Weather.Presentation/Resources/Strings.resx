@@ -191,4 +191,5 @@
   <data name="SearchPlaceholderMap" xml:space="preserve"><value>地点を検索</value></data>
   <data name="Back" xml:space="preserve"><value>戻る</value></data>
   <data name="Observed" xml:space="preserve"><value>観測</value></data>
+  <data name="AboutGfsUsage" xml:space="preserve"><value>地図の風・降水・気温・雲・気圧(日本周辺以外。米国海洋大気庁の数値予報モデルの計算結果をアプリで色分けして表示)</value></data>
 </root>

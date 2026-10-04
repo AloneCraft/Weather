@@ -6,7 +6,7 @@
 |---|---|---|
 | SkiaSharp の版 | 4.x(2026-10-04 時点の安定版 4.153.1)を Central Package Management で一元固定 | 最新の安定版。グラフ・地図も自前描画にしたため、3.x 依存のライブラリと混在しない |
 | グラフ | `Weather.Rendering.Charts` で自前描画 | LiveCharts2 2.0.5 は SkiaSharp.Views.Maui.Controls 3.119 に依存し、4.x(古い API を削除済み)と混ぜると衝突のおそれ。シーンと見た目を統一できる |
-| 世界地図 | `Weather.Rendering.Map` で Natural Earth のオフラインベクターを自前描画 | オフラインで動く。OSM 公式タイルは容量が限られ大量利用はブロック対象。MAUI Maps は Android で Google Maps の API キーが必要 |
+| 地図(トップ画面) | `Weather.Rendering.Map` で自前描画。Web メルカトル、背景は Natural Earth のオフラインベクター、上に GFS の格子・気象庁のタイル・風の粒子(2026-10-04 にトップを地図へ変更) | 気象庁の XYZ タイルと重ねるため Web メルカトル。オフラインで動く背景。OSM 公式タイルは大量利用はブロック対象。MAUI Maps は Android で Google Maps の API キーが必要 |
 | iOS の描画ホスト | SkiaSharp.Views.iOS の `SKMetalView` を包む自作 MAUI ハンドラー | MAUI 標準の `SKGLView` は iOS で GLKView(OpenGL ES、Apple が非推奨)を使う。4.153.1 の iOS 用 SkiaSharp.Views には `SKMetalView`(MTKView)がある |
 | Android の描画ホスト | `SKGLView`(OpenGL ES) | MAUI 用ハンドラーが 4.153.1 に含まれる |
 
@@ -22,7 +22,8 @@
 Weather.Rendering/
 ├─ Scene/      SceneRenderer, ISceneLayer, 各レイヤー, Particles/, Shaders/(.sksl を埋め込みリソースに)
 ├─ Charts/     TemperatureChart, PrecipitationChart, WindChart, ObservationChart
-├─ Map/        WorldMapRenderer(投影・パン/ズーム・マーカー・ヒットテスト)
+├─ Map/        MapRenderer(重ね順)、MapCamera(Web メルカトル)、BaseMapLayer、ScalarFieldLayer・JapanOverlay・IsobarLayer、
+│              TileLayer、WindParticleLayer、ArrowLayer、MapResources(凡例 → パレット・日本周辺のマスク)、Shaders/
 └─ Common/     Palette, QualityTier, FontProvider, FrameStats
 ```
 
@@ -53,10 +54,11 @@ public sealed class SceneRenderer:IDisposable{
 | 環境 | ホスト | ループ | 代替 |
 |---|---|---|---|
 | Android | `SKGLView` | 60 fps は `HasRenderLoop=true`(4.153.1 で存在を確認)、省電力の 30 fps は Dispatcher のタイマーで `InvalidateSurface` | `SKCanvasView`(CPU) |
-| iOS | 自作ハンドラー `SceneMetalViewHandler` → `SKMetalView` | MTKView の `PreferredFramesPerSecond` | `SKGLView` → `SKCanvasView` |
+| iOS | 自作ハンドラー `MetalCanvasViewHandler` → `SKMetalView` | MTKView の `PreferredFramesPerSecond`。止めている間は `EnableSetNeedsDisplay` + `SetNeedsDisplay` で 1 回だけ描く | `SKGLView` → `SKCanvasView` |
 | SceneLab(WPF) | `WriteableBitmap` のバックバッファに SKSurface で直接描画(CPU)。SkiaSharp.Views.WPF 4.153.1 は .NET Framework 向けのみ(NU1701)のため使わない | CompositionTarget.Rendering | — |
 
-- iOS の自作ハンドラーは最初のスパイク(試作)で検証する(**要確認**: 連続描画、ProMotion 120 Hz での扱い、背景移行時の停止)。
+- 両 OS とも `AnimatedCanvas`(App)にまとめ、描画の中身は `IFrameRenderer`(空のシーンは SceneHost、地図は MapHost)で差し替える。`IsRunning` の間は連続描画、止めている間は `Invalidate()` で 1 回描く。
+- iOS の自作ハンドラーは CI(macOS)でビルドを確認済み。実機での連続描画・ProMotion 120 Hz・背景移行時の停止は**要確認**。
 - ページが見えない、アプリが背景にある(`Window.Stopped`)、「視差効果を減らす」が有効、のいずれかでループを止める(または低頻度にする)。
 - SceneLab は CPU 描画のため、見た目の調整用であり性能測定には使わない。
 
@@ -160,12 +162,63 @@ half4 main(float2 coord){
 - 時間軸は地点のタイムゾーンで描く。タップ・ドラッグ位置から時刻を返すヒットテストを持ち、シーンの時間軸操作と連動する。
 - 色はシーンと共通の Palette を使う。
 
-## 世界地図(Weather.Rendering.Map)
+## 地図(Weather.Rendering.Map)
 
-- Geo の countries.bin(Natural Earth 国境)と jp-areas.bin(気象庁の区域)を描く。地図データを二重に持たない。
-- 正距円筒図法で、ピンチによるズームとパンに対応する。ズームに応じて GeoNames の主要都市名を表示する(人口のしきい値をズームで変える)。
-- タップ位置 → GeoPoint → `ILocationResolver` で地点を解決する。お気に入りをマーカーで表示する。
-- 道路など詳細な情報は持たない。細かい地点は検索で選ぶ(天気の地点選択には十分)。
+トップ画面の Windy 型の地図。データは `IMapDataService`(Providers の MapDataService)が層と時刻ごとに `MapFrame` で渡す(WeatherProviders.md「地図のデータ」)。
+
+### 投影とカメラ
+
+- Web メルカトル(世界の座標は経度 −180〜180° が x 0〜1、北が y 0)。気象庁の XYZ タイルとそのまま重なる。ズーム 1.5〜11。
+- `MapCamera` は UI のスレッドで操作し、描画は `Snapshot()` の不変の `MapView` を使う(Android の SKGLView は描画が別スレッド)。
+- 画素の細かさ(PixelRatio)をカメラに持たせ、線の太さ・文字・粒子の速さ・タイルのズームの選び方を端末の密度に合わせる。
+
+### 重ね順(奥から手前)
+
+| # | 層 | 内容 |
+|---|---|---|
+| 1 | 背景の地図(陸) | Natural Earth の国(ズームで 3 段階に簡略化)。海の色で塗りつぶした上に陸を塗る |
+| 2 | 格子の色 | GFS の風速・降水強度・気温・雲量。SkSL(`field.sksl`)で画素ごとに緯度経度 → 格子座標を求め、線形補間してパレットで着色 |
+| 3 | 気象庁のタイル | 配色を変えずにそのまま描く(画素は補間しない)。`SaveLayer` の中で描き、日本周辺のマスクで `DstIn` して日本周辺だけに残す |
+| 4 | 予報期間外の斜線 | 気象庁の予報期間を過ぎた日本周辺(GFS で埋めないことを示す) |
+| 5 | 等圧線 | 海面気圧のマーチングスクエア(4 hPa ごと、20 hPa ごとに太線、暗い縁取り)。格子が変わったときだけ線分を作り、世界の座標のパスにしておく |
+| 6 | 風の粒子 | 画面座標の粒子を GFS の U・V で動かし、画面外のサーフェスに軌跡を描いて毎フレーム薄める |
+| 7 | 日本周辺の点 | アメダスの風の矢印(風速で色分け)と気温(ズーム 6 以上)、海上分布予報の風向(8 方位)。日本周辺の外は描かない |
+| 8 | 海岸線・境界・地名 | 国境(白)、ズーム 7 以上で気象庁の市町村境界、GeoNames の主要都市名(縁取り付き、重なりを間引く) |
+| 9 | ピン・選択地点 | お気に入り・現在地(公式予報の気温)、タップした地点 |
+
+### 格子のテクスチャとパレット
+
+- 格子は RgbaF16 の画像(r = 0〜1 に正規化した値、a = 有効)。欠損・日本周辺の NaN は透明。乗算済みのまま線形補間し、r / a を値、a を被覆率として使う(境界がなめらかになる)。
+- 正規化(`FieldEncoding`): 気温 −45〜50 ℃、風速 0〜40 m/s、雲量 0〜100 %、降水は対数(0〜150 mm/h。弱い雨の区分を見分けるため)。
+- パレット(256 色)は凡例(`MapLegends`)から作る。降水・気温は気象庁の凡例と同じ区分・色(継ぎ目をそろえる)、風速・雲量は連続的な配色。GFS の 1 mm/h 未満の雨は半透明(暗い地図の上で白い面が広がりすぎないため)。
+- 経度方向に一周する格子は `Repeat` で標本化し、日付変更線をまたいでも補間がつながる。
+
+### 日本周辺(方針 5)
+
+- マスクは Geo の 0.05° のビットマスク(地点の解決と同じ範囲)を画像にしたもの。格子レイヤーのシェーダー、気象庁のタイルの切り抜き、粒子の消去、矢印の間引きで共通に使う。
+- GFS の格子は Providers で日本周辺を NaN にしてあり、描画でもマスクで透明にする(二重)。吹き出しは Presentation が日本周辺かを判定して GFS の値を出さない(三重)。
+
+### 風の粒子
+
+- 数は品質段階と画面の広さで決める(1 メガピクセルあたり 4,000 / 8,000 / 13,000、300〜6,000)。寿命 40〜110 フレームで配り直す。
+- 速さは風速 1 m/s あたり 3.2 論理画素/秒。カメラ・風の格子が変われば軌跡を消して配り直す。
+- メモリ確保: 粒子と線分のバッファは数が変わったときだけ作る。`DrawPoints` は配列全体を描くため、使わない枠は画面外の長さ 0 の線にする。
+- 「視差効果を減らす」が有効なら粒子を止め、画面の格子ごとの静止した矢印にする。
+- 連続描画は粒子があるときだけ。それ以外の層はカメラ・コマ・タイルの読み込みのたびに 1 回描く。
+
+### 気象庁のタイル
+
+- 表示のズーム + log2(PixelRatio) に近い、画像が実在するズーム(雨雲・今後の雨・天気分布予報は偶数ズーム 4〜10)を読む。読めていないタイルは、読み込み済みの低いズームのタイルの該当部分を拡大して代わりに描く。
+- 読み込みは非同期(HTTP キャッシュを通す)で、メモリには最大 192 枚。層が変わったら読み込み中の要求を取り消す。
+
+### 試作の結果(2026-10-04)
+
+| # | 試作 | 結果 |
+|---|---|---|
+| P1 | GRIB2 の復号 | データ表現テンプレート 5.3(複合圧縮 + 空間差分)を外部ライブラリなしで復号。0.5° と 1° の同じ格子点の値が圧縮精度の範囲で一致(海面気圧 0.8 Pa、気温 0.07 K、風 0.006 m/s)。0.5° の 1 要素の復号は約 2 ms(PC)。降水強度は 1° の方が別の内挿のため局所的に違う |
+| P2 | 気象庁のタイル | URL の形・ズーム・凡例の色を jmatile の設定(table/*.properties.xml と凡例の SVG)から確認(WeatherProviders.md)。海上分布予報の風速タイルは 25 kt 未満も淡い色で海域全体を塗るため使わない |
+| P3 | 性能 | Android エミュレーター(Pixel 7 相当・Android 16、ホストの GPU)で、風の層(格子 + 粒子 + 基図)が 10 秒間に 585 フレーム(約 58.5 fps、遅延 2.7 %)。中位機種の実機は未確認 |
+| P4 | 位置合わせ | 日本の陸地だけを塗った合成タイル(ズーム 4)が内陸・沖合・朝鮮半島で正しい位置に出ることをテストで確認 |
 
 ## 文字の書体
 
@@ -176,4 +229,5 @@ SkiaSharp 4 では書体の指定が必須。グラフ・地図のラベルは `
 - 全レイヤー × 全品質段階で、オフスクリーンのラスター描画が例外なく完了し、出力に NaN 由来の破綻がない(スモークテスト)
 - 代表的なシーン(快晴昼・夕焼け・曇天・雷雨夜・大雪・濃霧)のゴールデン画像を、許容誤差付きで比較する
 - シェーダーのコンパイル失敗時に代替描画へ切り替わる
-- 定常状態の 1 フレームあたりのマネージド割り当てが 4 KB 未満(粒子のバッファは使い回す。シェーダーやグラデーションのラッパーなど小さな割り当ては許容)
+- 定常状態の 1 フレームあたりのマネージド割り当てが 4 KB 未満(粒子のバッファは使い回す。シェーダーやグラデーションのラッパーなど小さな割り当ては許容)。地図は 16 KB 未満(地名の文字列の計測など)
+- 地図: 日本周辺に GFS の色が出ない・粒子が入らない・等圧線を引かない。気象庁のタイルが Web メルカトルの正しい位置に出て、日本周辺の外は描かない。代表の地図(気温 + 等圧線 + 予報期間外の斜線、風)のゴールデン画像

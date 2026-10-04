@@ -51,7 +51,10 @@ public class WeatherProviderRouter{
 | 背景更新・通知・ウィジェット(Phase 3) | Presentation.Tests | MET の地点は背景で一切取得しない、警報以上だけ通知し同じ警報を再通知しない、解除後の再発表は通知する、文面に機関の名称・見出し・出典表記、ウィジェットの JSON(camelCase・往復)、通知の許可が得られないときは無効に戻す | PR ごと |
 | 中継(Phase 4) | Remote.Tests / Providers.Tests | 電文の往復で全項目が戻る、日本域に気象庁以外を含む電文はクライアントで拒否、サーバーでの Provider の失敗が同じ種類の例外になる、座標の丸め。Providers.Tests では記録データの 3 機関の実データが中継を経ても直接取得と一致する | PR ごと |
 | 履歴(Phase 2) | Infrastructure.Tests | 一時ファイルの SQLite で、同期の冪等性、間引き、保持期間の削除、マイグレーション | PR ごと |
-| 実 API の契約 | Providers.LiveTests(`[Fact(Explicit=true)]`。`-- --explicit only` で実行) | 実 API を叩き、DTO として読めること、コード表に未知のコードがないこと、エンドポイントが生きていること。失敗したら新しい記録データを取り、差分を調査する | 手動・定期(週 1 回、PR では実行しない) |
+| 地図のデータ(Phase 5) | Providers.Tests / Core.Tests / Geo.Tests | GRIB2 の復号(記録データの 1° の 6 要素: 北極・南極の行が一定、物理的な範囲、地理的な妥当性、合成した単純圧縮とビットマップ)、GFS の実行回の判定・Range 取得・単位換算・日本周辺の NaN、層と時刻ごとの気象庁プロダクトの選択(雨雲 → 今後の雨 → 天気分布予報、予報期間外、アメダス・海上分布予報)、GFS が取れないときの部分表示、格子の補間(循環・NaN)、凡例の区分と色の照合、`JapanArea` と地点の解決の一致 | PR ごと |
+| 地図の描画(Phase 5) | Rendering.Tests | 日本周辺に GFS の色を描かない、気象庁のタイルの位置(日本の陸地だけ赤の合成タイル)と日本周辺の外を描かないこと、粒子が日本周辺に入らない、等圧線のマーチングスクエア、カメラ(投影の往復・焦点を保つズーム・経度の循環)、1 フレームの割り当て 16 KB 未満、代表の地図 2 枚のゴールデン画像 | PR ごと |
+| 地図の画面(Phase 5) | Presentation.Tests | 時間軸の刻み(5 分 → 1 時間 → 3 時間)と現在時刻、層の切り替え、日本周辺の吹き出しに GFS の値を出さない(タイルの区分・予報期間外の注記)、予報シート・お気に入りへの追加・ピン、検索からの移動、再生と背景での停止、「いま」の気温(次の 3 時間以内の値) | PR ごと |
+| 実 API の契約 | Providers.LiveTests(`[Fact(Explicit=true)]`。`-- --explicit only` で実行) | 実 API を叩き、DTO として読めること、コード表に未知のコードがないこと、エンドポイントが生きていること。地図: GFS の最新の実行回(0.5°、日本周辺が NaN)、気象庁の各 targetTimes とタイル、アメダスの全地点。失敗したら新しい記録データを取り、差分を調査する | 手動・定期(週 1 回、PR では実行しない) |
 | 実機 | 手動チェックリスト | Android エミュレーター・実機、iPhone 実機: 描画のフレームレート、背景移行時の停止、権限、オフライン、ダークモード、ウィジェット、警報の通知(下記「エミュレーターでの確認手順」) | リリース前 |
 
 Geo.Tests・Infrastructure.Tests・Providers.LiveTests は SolutionStructure.md のテストプロジェクト一覧に含めている。
@@ -104,8 +107,10 @@ Geo.Tests・Infrastructure.Tests・Providers.LiveTests は SolutionStructure.md 
 | MAUI 非依存 | SolutionStructure | アーキテクチャテスト |
 | 降水確率で降水を作らない | SceneState | シーン変換テスト |
 | 稲光の点滅 3 回 / 秒以下 | Rendering | 稲光レイヤーの決定的シミュレーションのテスト |
+| 地図の日本周辺に GFS を出さない | Overview 方針 5 / Rendering / CacheAndRouting | GFS の格子の NaN(Providers.Tests)、描画の画素・粒子・等圧線(Rendering.Tests)、吹き出し(Presentation.Tests)、`JapanArea` と地点の解決の一致(Geo.Tests) |
+| 地図の出典を常に表示 | Overview 方針 7 / Screens | 出典の帯が表示中のデータ源と一致する(Presentation.Tests) |
 
 ## テストを増やしすぎない
 
 - コード表は、表そのものを 1 件ずつ検証するのではなく、網羅性(全コードが変換される)と不変条件(Precipitation と Intensity の整合など)を検証する。
-- ゴールデン画像は代表 6 シーンに限る。見た目の調整のたびに更新が必要になるため、更新手順(画像を再生成し差分を目視で確認)を README に書く。
+- ゴールデン画像は代表 6 シーンと代表の地図 2 枚に限る。見た目の調整のたびに更新が必要になるため、更新手順(画像を再生成し差分を目視で確認)を README に書く。

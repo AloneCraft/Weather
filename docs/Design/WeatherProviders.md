@@ -8,6 +8,7 @@
 | MET のエンドポイント | Locationforecast 2.0 **complete** | 霧・雷確率・降水確率・6 時間最高/最低気温・突風が得られ、シーンと日別の精度が上がる(サイズは compact の約 2.5 倍) |
 | 部分的な失敗 | 主プロダクトが取れれば部分結果を返し、欠けた補助プロダクトを `Forecast.Issues` に記録 | 補助プロダクトの一時障害で予報全体が見られなくなるのを避ける |
 | User-Agent の連絡先 | GitHub リポジトリ URL(`github.com/AloneCraft/Weather`) | MET の規約例にもある形式。個人の連絡先を出さない。リポジトリが公開されていることが前提 |
+| 地図の格子(2026-10-04) | 日本周辺以外は NOAA GFS 0.5°(AWS Open Data)、日本周辺は気象庁の地図タイル(jmatile)とアメダス | 地図トップに面のデータが必要。GFS はパブリックドメインでキー不要、Range 要求で 1 要素だけ取れる。日本周辺は方針 5 により気象庁だけ |
 
 ## 利用規約・法令(2026-10-04 確認)
 
@@ -16,6 +17,8 @@
 | 気象庁 | ホームページのコンテンツは「公共データ利用規約(第 1.0 版)」に準拠。出典記載例「出典:気象庁ホームページ(当該ページの URL)」。編集・加工した場合はその旨を別途記載し、加工した情報を国が作成したかのような態様で公表しない。気象業務法第 17 条(予報業務の許可)・第 23 条(警報の制限)への注意喚起あり |
 | MET Norway | User-Agent による識別が必須(ブラウザ JS は Origin ヘッダーで可)。座標は小数 4 桁まで(5 桁以上は 403)。Expires まで再取得しない、If-Modified-Since を使う(値は直前の Last-Modified と同一)。モバイルアプリは使用中でないときにデータを取得してはいけない。全インストール合計で 20 req/s を超える場合は特別な合意が必要。CC BY 4.0(クレジット・ライセンスへのリンク・改変の有無の表示)および NLOD 2.0 |
 | NWS | User-Agent が必須(連絡先を含めることを推奨)。将来 API キーに置き換える予定と明記。レート制限値は非公開(超過時はエラー、通常数秒で解除) |
+| NOAA GFS(AWS Open Data) | 米国政府の著作物でパブリックドメイン。AWS Open Data の登録(noaa-gfs-bdp-pds)でキー不要・無料で公開。出典の表示は義務ではないが、方針 7 により「NOAA GFS」と初期時刻を表示する。数値予報モデルの計算結果をそのまま色分けして表示し、アプリ独自の予報は作らない(日本周辺では表示しない。気象業務法の扱いは公開前に再確認、**要確認**) |
+| 気象庁の地図タイル | 気象庁ホームページのコンテンツとして公共データ利用規約の範囲で扱う(出典「出典:気象庁ホームページ」)。jmatile は画面用のデータで、URL・ズーム・凡例は予告なく変わり得る。アプリからの機械的な取得の条件(アクセス頻度の制限など)は**要確認**。HTTP キャッシュで同じタイルを取り直さない |
 
 bosai 系 JSON は公開仕様ではなく、気象庁サイトの画面用データである。URL・構造・コード表は予告なく変わり得る。
 
@@ -218,6 +221,51 @@ Weather.Providers/
 - 降水確率は 6 時間ごとの最大値(厳密な合成ではない)。
 - UI に「MET Norway のデータをもとにアプリで集計」と表示する(CC BY 4.0 の改変表示)。
 
+## 地図のデータ(MapDataService)
+
+地図の 1 コマ(`MapFrame`)を層と時刻ごとに組み立てる。日本周辺(`IJapanArea`。地点の解決と同じ範囲)は気象庁、それ以外は GFS。
+
+| 層 | 日本周辺(気象庁) | 日本周辺以外(GFS) |
+|---|---|---|
+| 風 | 現在時刻(アメダスの最新観測から 30 分以内): アメダスの風向・風速の矢印。それ以降: 海上分布予報の風向(海域の 8 方位の矢印。前後 3 時間)。陸上の風の予報はないため空白 | 地上 10 m の U・V(粒子)と風速(色) |
+| 雨・雪 | 1 時間先まで: 雨雲の動き(前後 3 分)。15 時間先まで: 今後の雨(前後 30 分)。その後: 天気分布予報の 3 時間降水量(前後 90 分) | 地上の降水強度(瞬間値、mm/h) |
+| 気温 | 天気分布予報の気温(前後 90 分)。現在時刻はアメダスの気温も重ねる | 地上 2 m の気温 |
+| 雲・気圧 | 天気分布予報の天気(前後 90 分) | 全雲量と海面気圧(等圧線) |
+
+- 気象庁の予報期間を過ぎた時刻は `JapanCoverage.OutOfRange`(斜線)、該当するプロダクトがない時刻は `NotAvailable`。どちらも GFS で埋めない。
+- 取得できなかった部分は `MapFrame.Issues` に入れ、取れた部分は表示する。
+- 時刻の一覧(`MapAvailability`)は 2 分間使い回す。復号した GFS の格子は 16 個まで覚えておく(時間軸を行き来しても取り直さない)。
+
+### GFS(Providers/Gfs・Grib)
+
+| 項目 | 内容 |
+|---|---|
+| URL | `https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{yyyyMMdd}/{HH}/atmos/gfs.t{HH}z.pgrb2.0p50.f{FFF}` と `.idx` |
+| 実行回 | 00/06/12/18Z。最後の予報時間(120 時間)の `.idx` があれば揃っているとみなし、なければ一つ前(最大 4 回前まで)。判定は 10 分間使い回す |
+| 有効時刻 | 3 時間ごと、3〜120 時間(0 時間は降水強度がないため除く) |
+| 取得 | `.idx` の行(番号:開始位置:d=初期時刻:要素:高度:予報時間)から要素の範囲を求め、Range 要求で 1 要素だけ取る(0.5° で 160〜290 KB) |
+| 要素 | UGRD・VGRD(10 m above ground)、TMP(2 m above ground)、PRATE(surface、瞬間値。平均値は 6 時間ごとに区間が変わるため使わない)、TCDC(entire atmosphere、瞬間値)、PRMSL(mean sea level) |
+| 単位 | K → ℃、kg/m²/s → mm/h(× 3600)、Pa → hPa。`Processing = Interpolated | UnitConverted` |
+| 復号 | GRIB2 の格子テンプレート 3.0、データ表現テンプレート 5.0・5.2・5.3(GFS は 5.3)、ビットマップ。行 0 が北端になるよう並べ直す |
+| 日本周辺 | 格子点ごとに `IJapanArea` で判定して NaN にする(格子の形ごとに一度だけ判定) |
+| 出典 | AgencyName「NOAA」、ProductName「GFS 0.5°」、IssuedAt は初期時刻。表示は「NOAA GFS 0.5° 09:00 初期値」 |
+
+### 気象庁の地図タイル(Providers/Jma/JmaMaps)
+
+2026-10-04 に jmatile の設定(`bosai/{nowc,wdist,umimesh}/table/*.properties__*.xml`)と凡例の SVG から確認した。
+
+| プロダクト | 時刻の一覧 | タイルの URL | ズーム |
+|---|---|---|---|
+| 雨雲の動き(nowc) | `jmatile/data/nowc/targetTimes_N1.json`(解析、過去 3 時間・5 分ごと)と `_N2`(予測、1 時間先まで) | `jmatile/data/nowc/{basetime}/none/{validtime}/surf/hrpns/{z}/{x}/{y}.png` | 偶数 4〜10 |
+| 今後の雨(rasrf) | `jmatile/data/rasrf/targetTimes.json`(有効時刻ごとに最新の初期時刻を使う) | `.../rasrf/{basetime}/none/{validtime}/surf/rasrf/{z}/{x}/{y}.png` | 偶数 4〜10 |
+| 天気分布予報(wdist) | `jmatile/data/wdist/targetTimes.json`(最新の初期時刻の一式。3 時間ごと翌日まで。時刻ごとに要素が違う) | `.../wdist/{basetime}/none/{validtime}/surf/{temp,wm,r3}/{z}/{x}/{y}.png` | 偶数 4〜10 |
+| 海上分布予報(umimesh) | `jmatile/data/umimesh/targetTimes.json`(6 時間ごと 24 時間先まで) | 風向: `.../umimesh/{basetime}/none/{validtime}/surf/wd/data.geojson`(gzip のまま返る。0.5° の点、windDir は 8 方位) | — |
+| アメダス(全地点) | `amedas/data/latest_time.txt` | `amedas/data/map/{yyyyMMddHHmm}00.json`(日本時間。値と品質フラグ。フラグ 0 だけを使う) | — |
+
+- 時刻は UTC の `yyyyMMddHHmmss`。存在しないタイルも 200 で透明な画像(334 バイト)が返る。
+- 凡例の色(`MapLegends`): 降水強度 1/5/10/20/30/50/80 mm/h(F2F2FF・A0D2FF・218CFF・0041FF・FFF500・FF9900・FF2800・B40068)、3 時間降水量 1/5/10/15/20 mm、気温 −25〜40 ℃ の 5 ℃ ごと 15 区分(temp_point のスタイルと同じ)、天気(晴れ FFAA00・くもり AAAAAA・雨 0041FF・雨または雪 A0D2FF・雪 F2F2FF)。タイルの画素と凡例画像で数段階違う色がある(例: 250,245,0)ため、吹き出しでは近い色を許容して区分を引く。
+- 海上分布予報の風速タイル(ws)は 25 kt 未満も淡い色で海域全体を塗り、地図が読めなくなるため使わない。
+
 ## 出典の値
 
 | Provider | AgencyName | ProductName | PublishingOffice | IssuedAt | License | SourceUrl |
@@ -225,12 +273,15 @@ Weather.Providers/
 | 気象庁 | 気象庁 | 府県天気予報 / 府県週間天気予報 / 時系列予報 / 気象警報・注意報 / アメダス | JSON の publishingOffice | reportDatetime | 公共データ利用規約(第 1.0 版)。表示「出典:気象庁ホームページ」 | 対応する気象庁ページの URL |
 | NWS | National Weather Service | Forecast / Hourly Forecast / Gridpoint / Alerts / Observations | 予報官署(gridId)・senderName | updateTime / sent / timestamp | 米国政府のオープンデータ(表示文言は**要確認**) | weather.gov |
 | MET | MET Norway | Locationforecast 2.0 | — | meta.updated_at | CC BY 4.0 / NLOD 2.0(改変時はその旨を表示) | https://api.met.no/ |
+| GFS | NOAA | GFS 0.5° | — | 実行回の初期時刻 | Public domain (U.S. Government / NOAA) | https://registry.opendata.aws/noaa-gfs-bdp-pds/ |
+| 気象庁(地図) | 気象庁 | 降水ナウキャスト / 今後の雨(降水短時間予報)/ 天気分布予報(気温・天気・降水量)/ 海上分布予報(風)/ アメダス | — | basetime(アメダスは観測時刻) | 公共データ利用規約(第 1.0 版) | 対応する気象庁の地図ページ |
 
 ## 要確認事項
 
 - 気象庁: 時系列予報の天気区分と風速階級、週間予報の区域対応、警報の電文種別(dataTypeCode)と状態文字列、氾濫注意報のコード、アメダスの品質フラグと elems
 - NWS: qualityControl コードの意味、雲量区分、ライセンス表示文言、User-Agent から API キーへの移行時期
 - MET: altitude パラメータの扱い
+- 地図: 気象庁の地図タイルをアプリから取得する条件(アクセス頻度)、GFS を日本以外で表示することの気象業務法上の扱い(公開前に再確認)、jmatile の URL・凡例の変更(週 1 回の実 API の契約テストで検知)
 
 ## 付録 A: 気象庁 天気コード → CompositeCondition
 
