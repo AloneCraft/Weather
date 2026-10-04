@@ -51,6 +51,12 @@ public readonly record struct GridGeometry{
 
     /// <summary>緯度経度 → 格子座標(小数)。範囲外は false(経度が一周する格子では経度は常に範囲内)。</summary>
     public bool TryGetPosition(double latitude,double longitude,out double column,out double row){
+        if(!double.IsFinite(latitude)||!double.IsFinite(longitude)){
+            //NaN は比較がすべて偽になり範囲内として扱われてしまうので、ここで範囲外にする
+            column=double.NaN;
+            row=double.NaN;
+            return false;
+        }
         row=(this.NorthLatitude-latitude)/this.LatitudeStep;
         var x=(longitude-this.WestLongitude)/this.LongitudeStep;
         if(this.WrapsLongitude){

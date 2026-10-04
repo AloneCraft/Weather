@@ -87,6 +87,16 @@ public class GridField{
             Assert.Equal(40f,f.SampleNearest(0.2,350));
         }
         {
+            //緯度経度が NaN・無限大なら NaN(北西端の値を返さない)。Sample と同じ
+            var f=Field([0,10,20,30,40,50,60,70],4,2);
+            Assert.True(float.IsNaN(f.SampleNearest(double.NaN,double.NaN)));
+            Assert.True(float.IsNaN(f.SampleNearest(0.5,double.NaN)));
+            Assert.True(float.IsNaN(f.SampleNearest(double.NaN,90)));
+            Assert.True(float.IsNaN(f.SampleNearest(0.5,double.PositiveInfinity)));
+            Assert.True(float.IsNaN(f.Sample(double.NaN,double.NaN)));
+            Assert.True(float.IsNaN(f.Sample(0.5,double.NegativeInfinity)));
+        }
+        {
             //最も近い点が欠けていれば NaN(隣の点の値で埋めない)
             var f=Field([0,float.NaN,20,30,40,50,60,70],4,2);
             Assert.True(float.IsNaN(f.SampleNearest(0.9,80)));
