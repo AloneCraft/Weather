@@ -88,7 +88,7 @@
 
 | # | 結果 |
 |---|---|
-| S1 iOS SKMetalView | ハンドラーを実装し、CI(macOS)でシミュレーター向けにビルドできることを確認。実機での描画・フレームレートは未確認(Mac / iPhone が必要) |
+| S1 iOS SKMetalView | ハンドラーを実装し、CI(macOS・Xcode 26.6)でシミュレーター向けにビルドできることを確認(警告 0)。実機での描画・フレームレートは未確認(Mac / iPhone が必要) |
 | S2 Android SKGLView | エミュレーター(Android 16)で連続描画・画面遷移・背景移行を確認。中位機種の実機での 60 fps は未確認 |
 | S3 GeoDataBuilder | 合計約 4.3 MB(目標 15 MB 以下)。解決・検索はテストとエミュレーター(ローマ字・かな検索)で確認 |
 | S4 Microsoft.Data.Sqlite | Windows のテスト、Android エミュレーターで Debug と Release(トリミングあり。警告 0)の両方で動作を確認(お気に入りの保存・観測履歴・世界地図)。iOS リリースビルド(AOT)での動作は未確認 |
