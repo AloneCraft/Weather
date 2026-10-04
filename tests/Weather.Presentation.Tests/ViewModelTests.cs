@@ -33,6 +33,46 @@ internal sealed class Harness{
 }
 
 public class PlaceWeatherViewModel{
+    [Fact,Trait("Category","Unit")]public async Task RefreshAsync_Race(){
+        //同じ地点の更新が重なり、先に始めた更新が後で終わっても、最後に始めた更新の結果を残す(古い予報・失敗で上書きしない)
+        var h=new Harness();
+        var older=new ForecastResult(Availability.Available,Sample.JmaForecast());
+        var newer=new ForecastResult(Availability.Available,Sample.JmaForecast());
+        var first=new TaskCompletionSource<ForecastResult>();
+        var second=new TaskCompletionSource<ForecastResult>();
+        h.Weather.ForecastFactory=n=>n==1?first.Task:second.Task;
+        var vm=h.Place();
+        var ct=TestContext.Current.CancellationToken;
+        var t1=vm.RefreshAsync(ct);
+        var t2=vm.RefreshAsync(ct);
+        second.SetResult(newer);
+        await t2;
+        Assert.Same(newer,vm.Data.Forecast);
+        {
+            //古い更新が成功して終わっても、新しい結果を上書きしない
+            first.SetResult(older);
+            await t1;
+            Assert.Same(newer,vm.Data.Forecast);
+            Assert.Equal(PlaceState.Ready,vm.State);
+        }
+        {
+            //古い更新が失敗して終わっても、新しい結果の状態を Error / Stale にしない
+            var h2=new Harness();
+            var fail=new TaskCompletionSource<ForecastResult>();
+            var ok=new TaskCompletionSource<ForecastResult>();
+            h2.Weather.ForecastFactory=n=>n==1?fail.Task:ok.Task;
+            var vm2=h2.Place();
+            var a=vm2.RefreshAsync(ct);
+            var b=vm2.RefreshAsync(ct);
+            ok.SetResult(newer);
+            await b;
+            fail.SetException(new WeatherProviderException(ProviderId.Jma,ProviderFailure.Network,"offline"));
+            await a;
+            Assert.Equal(PlaceState.Ready,vm2.State);
+            Assert.Same(newer,vm2.Data.Forecast);
+        }
+    }
+
     [Fact,Trait("Category","Unit")]public async Task RefreshAsync(){
         {
             //日本域は気象庁の天気文を優先し、出典は「気象庁 hh:mm 発表」
