@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 99,
-  "updated_at": "2026-10-04T16:27:19Z",
+  "revision": 103,
+  "updated_at": "2026-10-04T16:35:07Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 76,
+      "run_minutes": 84,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1684,6 +1684,63 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0030",
+      "title": "地図: 日本マスクのシェーダーが使えないと、気象庁のタイルが日本周辺の外にも(全世界に)描かれる",
+      "source_ids": [
+        "M-3"
+      ],
+      "severity": "低〜中(発生は稀)",
+      "fix_priority": 11,
+      "symptom": "JapanOverlay.ClipToJapan は japanmask シェーダーが null のとき何もせず戻るため、SaveLayer の気象庁タイルが DstIn でクリップされず日本周辺の外にも描かれる。方針 5(気象庁以外のデータ=日本周辺の外に気象庁の降水タイルを出すことはしない)・設計書「日本周辺の外は描かない」に反する。失敗時に閉じる側へ倒れていない(コード読み)",
+      "expected": "クリップできないときは気象庁のタイル層ごと描かない",
+      "cause": {
+        "confirmed": "MapRenderer がクリップの可否を確認せずタイルを描く(コード読み)",
+        "hypotheses": [
+          "実機で SkSL がコンパイルできない端末がある(未確認)"
+        ],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:27:54Z",
+          "reason": "優先: 設計の不変条件(日本周辺の外に気象庁のデータを出さない)が、シェーダー失敗時に破れる。ForceFailure で決定的に再現できる。局所的に直せる",
+          "code_before": {
+            "commit": "ad0013ef935b066b759ad7726129280e6e3a33ec",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: ClipToJapan が null で何もしない",
+          "hypothesis": "クリップに使うシェーダーがないとき、気象庁のタイル層を描かなければ日本周辺の外に出ない",
+          "planned_change": "src/Weather.Rendering/Map/MapLayers.cs(CanClip)と MapRenderer.cs + tests/Weather.Rendering.Tests/MapTests.cs(コレクションで直列化)",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Rendering(ゴールデン以外)PASS、通常時は日本周辺の描画が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:35:07Z",
+          "diff_sha256": "9d64fbfb3daf12a02796fe53be279c6ec0870938ca93d202882b27313b542020",
+          "commit": "4624c8203a06ddea7742379766551a7ea5f3607c"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Rendering.Tests/MapRenderer.Render_TilesWithoutMask"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:27:54Z",
+      "verified": {
+        "commit": "4624c8203a06ddea7742379766551a7ea5f3607c",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 84,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1871,8 +1928,8 @@
     },
     {
       "id": "M-3",
-      "status": "UNREPRODUCED",
-      "note": "japanmask シェーダー失敗時に気象庁タイルが全世界に出る"
+      "status": "PROMOTED_TO_BUG",
+      "note": "japanmask シェーダー失敗時に気象庁タイルが全世界に出る → BUG-0030"
     },
     {
       "id": "M-5",
