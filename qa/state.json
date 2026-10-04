@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 49,
-  "updated_at": "2026-10-04T15:50:50Z",
+  "revision": 52,
+  "updated_at": "2026-10-04T15:53:13Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 39,
+      "run_minutes": 42,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -476,7 +476,7 @@
     },
     {
       "id": "BUG-0007",
-      "title": "GridField.SampleNearest(NaN,NaN) が this[0,0] を返す / 非循環格子の外周半セルが NaN",
+      "title": "GridField.SampleNearest(NaN,NaN) が this[0,0] を返す(NaN 入力のみ。修正済み)",
       "source_ids": [
         "G-6"
       ],
@@ -490,18 +490,45 @@
         "unknown": []
       },
       "reproduced": true,
-      "state": "READY",
+      "state": "VERIFIED",
       "depends_on": [],
       "affects": [],
-      "attempts": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:51:02Z",
+          "reason": "NaN の緯度経度で SampleNearest が北西端の実値を返す(Sample は NaN)。再現済み。外周の半セルは仕様判断のため対象外",
+          "code_before": {
+            "commit": "8d4ef4291bae2fc9e28afb2103f7b40e7e0a5d70",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "SampleNearest(NaN,NaN)=0(格子 [0,0] の値)。Sample(NaN,NaN)=NaN",
+          "hypothesis": "TryGetPosition が非有限の緯度経度を false にすれば、Sample/SampleNearest とも NaN になる",
+          "planned_change": "src/Weather.Core/Fields/GridField.cs の TryGetPosition のみ + tests/Weather.Core.Tests/FieldTests.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Core/Providers/Presentation/Rendering(既知のゴールデン差のみ) テスト",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:53:13Z",
+          "diff_sha256": "0c10339a84e7c61d1582c751917dd264672a2c0b1cfc80afe724cfcaaf4385db",
+          "commit": "14c1ec520e87dd8e702a4a9d782898d76880ade3"
+        }
+      ],
       "rejected_hypotheses": [],
       "related_tests": [
-        "Weather.Core.Tests/FieldTests"
+        "Weather.Core.Tests/FieldTests",
+        "Weather.Core.Tests/GridField.SampleNearest"
       ],
       "retry_when": null,
       "evidence": [],
-      "human_needed": "外周半セルは仕様の判断",
-      "found_at": "2026-10-04T15:30:42Z"
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "14c1ec520e87dd8e702a4a9d782898d76880ade3",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 42,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     },
     {
       "id": "BUG-0003",
@@ -934,14 +961,40 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0017",
+      "title": "非循環格子の外周半セルが NaN(SampleNearest の「格子点を中心とする 1 区画」の記述と不一致)",
+      "source_ids": [
+        "G-6b"
+      ],
+      "severity": "低",
+      "fix_priority": 12,
+      "symptom": "GridGeometry(10,10,40,130,1,1) の SampleNearest(35,129.7) が NaN(列 0 の区画内のはず)。影響: 気象庁の海上分布予報の風など非循環格子の外周 0.5 格子分",
+      "expected": "SampleNearest の注記どおり外周の半セルも端の格子点の値(仕様の判断)",
+      "cause": {
+        "confirmed": "SampleNearest が補間用の TryGetPosition(x<0 や x>Columns-1 を範囲外)をそのまま使う",
+        "hypotheses": [
+          "外周を NaN にするのが意図(区画外=データなし)の可能性"
+        ],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "NEEDS_HUMAN",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Core.Tests/GridField.SampleNearest"
+      ],
+      "retry_when": "ユーザーが外周の扱い(区画として値を返す / NaN のまま)を決める",
+      "evidence": [],
+      "human_needed": "外周の半セルの扱い",
+      "found_at": "2026-10-04T15:53:13Z"
     }
   ],
   "queue": [
-    {
-      "id": "BUG-0007",
-      "priority": 8,
-      "reason": "GridField.SampleNearest(NaN,NaN) が this[0,0] を返す / 非循環格子の外周半セルが NaN"
-    },
     {
       "id": "BUG-0003",
       "priority": 9,
