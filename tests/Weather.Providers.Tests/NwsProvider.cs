@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json.Nodes;
 using Weather.Core;
 using Target=Weather.Providers.Nws.NwsProvider;
 
@@ -35,6 +37,33 @@ public class NwsProvider{
             //座標は小数 2 桁以下で送る
             Assert.Contains(host.Handler.Requests,static r=>r.RequestUri!.AbsoluteUri=="https://api.weather.gov/points/38.89,-77.04");
         }
+    }
+
+    [Fact,Trait("Category","Unit")]public async Task GetForecastAsync_Overnight(){
+        //深夜〜早朝の取得: 先頭が Overnight(同じ日の 02:00〜06:00)でも、その日の昼と夜(Sunday Night)を日別に残す
+        var root=JsonNode.Parse(File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath("nws/forecast.json")))!;
+        var periods=(JsonArray)root["properties"]!["periods"]!;
+        var overnight=periods[0]!.DeepClone();
+        overnight["name"]="Overnight";
+        overnight["startTime"]="2026-10-04T02:00:00-04:00";
+        overnight["endTime"]="2026-10-04T06:00:00-04:00";
+        overnight["temperature"]=14;
+        periods[0]=overnight;
+        var bytes=Encoding.UTF8.GetBytes(root.ToJsonString());
+        using var host=TestHost.Create(Fixtures.MapNws);
+        host.Handler.Override=r=>{
+            if(r.RequestUri!.AbsoluteUri=="https://api.weather.gov/gridpoints/LWX/96,71/forecast?units=si"){
+                return FixtureHttpMessageHandler.Respond(r,bytes);
+            }
+            return null;
+        };
+        var forecast=await host.Get<Target>().GetForecastAsync(Locations.Washington,TestContext.Current.CancellationToken);
+        var sunday=forecast.Daily.Single(static d=>d.Date==new DateOnly(2026,10,4));
+        Assert.Equal(["Overnight","Sunday","Sunday Night"],sunday.Parts.Select(static p=>p.Label));
+        Assert.True(sunday.Parts.Zip(sunday.Parts.Skip(1)).All(static pair=>pair.First.End<=pair.Second.Start));
+        Assert.Equal(19,sunday.TempMaxC);
+        Assert.Equal(16,sunday.TempMinC);
+        Assert.Equal("Rain Showers Likely",sunday.WeatherText);
     }
 
     [Fact,Trait("Category","Unit")]public async Task GetAlertsAsync(){
