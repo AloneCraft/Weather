@@ -252,3 +252,31 @@ public class ArchitectureRules{
         Assert.DoesNotContain(names,static n=>n.StartsWith("Microsoft.Maui",StringComparison.Ordinal));
     }
 }
+
+public class SettingsViewModel{
+    [Fact,Trait("Category","Unit")]public async Task UseImperial(){
+        {
+            //画面を開いただけでは何も保存しない(既定値は端末の地域に追従し続ける)
+            var store=new FakeSettingsStore();
+            var history=new FakeHistory();
+            var settings=new Presentation.AppSettings(store);
+            var vm=new Presentation.ViewModels.SettingsViewModel(settings,history,new FakeDialogs(),new FakeNavigator(),new FakeBackgroundPlatform(),new FakeBackgroundPlatform());
+            await Task.Yield();
+            Assert.Null(store.Get("units"));
+            Assert.Null(store.Get("historyRetentionDays"));
+            Assert.Null(store.Get("quality"));
+            Assert.Empty(history.Retentions);
+            Assert.Equal(settings.Units==UnitSystem.Imperial,vm.UseImperial);
+        }
+        {
+            //利用者が切り替えたら保存する(既定値と逆の値)
+            var store=new FakeSettingsStore();
+            var settings=new Presentation.AppSettings(store);
+            var vm=new Presentation.ViewModels.SettingsViewModel(settings,new FakeHistory(),new FakeDialogs(),new FakeNavigator(),new FakeBackgroundPlatform(),new FakeBackgroundPlatform());
+            var chosen=!vm.UseImperial;
+            vm.UseImperial=chosen;
+            Assert.NotNull(store.Get("units"));
+            Assert.Equal(chosen,settings.Units==UnitSystem.Imperial);
+        }
+    }
+}
