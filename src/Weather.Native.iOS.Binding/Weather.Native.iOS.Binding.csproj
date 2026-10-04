@@ -12,10 +12,14 @@
     <IsAotCompatible>false</IsAotCompatible>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
-  <ItemGroup>
+  <!-- Windows では iOS の参照アセンブリが解決できず、エディターの解析がエラーだらけになるため、Mac 以外では何もコンパイルしない -->
+  <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('OSX'))">
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
     <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
     <NativeReference Include="../Weather.Native.iOS/build/WeatherNative.xcframework">
       <Kind>Framework</Kind>
       <SmartLink>false</SmartLink>
