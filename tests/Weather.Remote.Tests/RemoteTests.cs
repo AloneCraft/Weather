@@ -146,6 +146,13 @@ internal sealed class InProcessHandler(Server.WeatherApi api):HttpMessageHandler
     }
 }
 
+/// <summary>決まった JSON を 200 で返す(サーバーの誤った応答の再現用)。</summary>
+internal sealed class FixedJsonHandler(string json):HttpMessageHandler{
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken cancellationToken){
+        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent(json,Encoding.UTF8,"application/json")});
+    }
+}
+
 internal sealed class RemoteHarness{
     public FakeWeatherService Server{get;}=new();
     public InProcessHandler Handler{get;}
@@ -286,6 +293,26 @@ public class RemoteWeatherService{
             var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await h.Client.GetForecastAsync(Sample.Tokyo,ct));
             Assert.Equal(ProviderFailure.ServerError,ex.Failure);
             Assert.Equal(ProviderId.Jma,ex.Provider);
+        }
+        {
+            //方針 5: 日本域の予報に MET の出典を含む応答はクライアントで拒否し、WeatherProviderException(InvalidResponse)にする
+            var dto=Contracts.ContractMapper.ToDto(new ForecastResult(Availability.Available,Sample.JmaForecast()));
+            var met=Contracts.ContractMapper.ToDto(Sample.Source(ProviderId.MetNorway));
+            var broken=dto with{Forecast=dto.Forecast! with{Sources=[met,..dto.Forecast.Sources.Skip(1)]}};
+            var client=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(RemoteJson.Serialize(broken))){BaseAddress=new Uri("https://example.test/api/")});
+            var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await client.GetForecastAsync(Sample.Tokyo,ct));
+            Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
+        }
+        {
+            //範囲外の座標を含む地点の解決・観測所の応答も InvalidResponse
+            var station=new StationDto("44132",ProviderId.Jma,"東京",new GeoPointDto(95,139.75),25);
+            var client=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(RemoteJson.Serialize(new StationsResponse([station])))){BaseAddress=new Uri("https://example.test/api/")});
+            var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await client.FindStationsAsync(Sample.Tokyo,3,ct));
+            Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
+            var bad=new ResolveResponse(Contracts.ContractMapper.ToDto(Sample.Tokyo) with{Point=new GeoPointDto(95,139.75)},Availability.Available,true,[]);
+            var resolver=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(RemoteJson.Serialize(bad))){BaseAddress=new Uri("https://example.test/api/")});
+            var ex2=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await resolver.ResolveAsync(new GeoPoint(35.69,139.75),ct));
+            Assert.Equal(ProviderFailure.InvalidResponse,ex2.Failure);
         }
         {
             //サーバーに届かないときは Network / Timeout
