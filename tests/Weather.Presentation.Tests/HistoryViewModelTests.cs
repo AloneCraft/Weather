@@ -8,14 +8,20 @@ namespace Weather.Presentation.Tests;
 /// <summary>期間ごとに観測と日別の要約を返す(同期で完了する)。</summary>
 internal sealed class StubHistory:IObservationHistoryService{
     public Func<DateTimeOffset,DateTimeOffset,IReadOnlyList<Observation>> Observations{get;set;}=static (_,_)=>[];
+
+    /// <summary>設定すると、観測の取得はこの完了を待つ(完了順の制御用)。</summary>
+    public Func<DateTimeOffset,DateTimeOffset,Task>? Gate{get;set;}
     public List<DailyObservationSummary> Summaries{get;}=[];
 
     public ValueTask<HistorySyncResult> SyncAsync(ObservationStation station,CancellationToken cancellationToken){
         return ValueTask.FromResult(new HistorySyncResult(0,null,false));
     }
 
-    public ValueTask<IReadOnlyList<Observation>> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken){
-        return ValueTask.FromResult(this.Observations(from,to));
+    public async ValueTask<IReadOnlyList<Observation>> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken){
+        if(this.Gate is not null){
+            await this.Gate(from,to);
+        }
+        return this.Observations(from,to);
     }
 
     public ValueTask<IReadOnlyList<DailyObservationSummary>> GetDailySummariesAsync(ObservationStation station,DateOnly from,DateOnly to,CancellationToken cancellationToken){
@@ -39,6 +45,44 @@ public class HistoryViewModel{
     private static Presentation.ViewModels.HistoryViewModel Create(StubHistory history){
         var settings=new Presentation.AppSettings(new FakeSettingsStore()){Units=UnitSystem.Metric};
         return new Presentation.ViewModels.HistoryViewModel(new WeatherSession(),new FakeWeatherService(),history,new FakeFavorites(),settings,new FakeTimeProvider(Sample.Now));
+    }
+
+    [Fact,Trait("Category","Unit")]public async Task LoadAsync_Race(){
+        //範囲を素早く切り替えて、先に始めた読み込みが後で終わっても、最後に選んだ範囲の内容が残る
+        var history=new StubHistory();
+        history.Observations=static (from,to)=>{
+            //期間の長さで中身を区別する(週は 1 件・年は 2 件)
+            if(to-from>TimeSpan.FromDays(100)){
+                return [new Observation(Sample.Now.AddDays(-200)){TemperatureC=new Measurement(1)},new Observation(Sample.Now.AddDays(-100)){TemperatureC=new Measurement(2)}];
+            }
+            return [new Observation(Sample.Now.AddDays(-3)){TemperatureC=new Measurement(30)}];
+        };
+        var week=new TaskCompletionSource();
+        var year=new TaskCompletionSource();
+        var armed=false;
+        history.Gate=(from,to)=>{
+            if(!armed){
+                return Task.CompletedTask;
+            }
+            if(to-from>TimeSpan.FromDays(100)){
+                return year.Task;
+            }
+            return week.Task;
+        };
+        var vm=Create(history);
+        vm.Station=Jma;
+        await vm.LoadAsync();
+        armed=true;
+        vm.Range=HistoryRange.Week;
+        vm.Range=HistoryRange.Year;
+        //年が先に終わり、週が後に終わる
+        year.SetResult();
+        await Task.Delay(100,TestContext.Current.CancellationToken);
+        week.SetResult();
+        await Task.Delay(100,TestContext.Current.CancellationToken);
+        Assert.Equal(HistoryRange.Year,vm.Range);
+        Assert.Equal(2,vm.Chart.Count);
+        Assert.Equal(2,vm.Rows.Count);
     }
 
     [Fact,Trait("Category","Unit")]public async Task LoadAsync(){

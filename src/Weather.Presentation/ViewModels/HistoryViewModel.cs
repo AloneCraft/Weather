@@ -17,6 +17,7 @@ public sealed record ObservationRow(string Time,string Temperature,string Precip
 /// </summary>
 public sealed partial class HistoryViewModel(WeatherSession session,IWeatherService weather,IObservationHistoryService history,IFavoritesStore favorites,AppSettings settings,TimeProvider time):ObservableObject,INavigationAware{
     private PlaceData? data;
+    private int loadVersion;
 
     public ObservableCollection<ObservationStation> Stations{get;}=[];
     public ObservableCollection<ObservationRow> Rows{get;}=[];
@@ -103,7 +104,12 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
         var units=settings.Units;
         var now=time.GetUtcNow();
         var from=now-Span(this.Range);
+        //範囲を素早く切り替えると読み込みが重なる。後から始めた読み込みだけを反映する(先に始めた読み込みが後で終わっても、最後に選んだ範囲を残す)
+        var version=Interlocked.Increment(ref this.loadVersion);
         var observations=await history.GetObservationsAsync(station,from,now,CancellationToken.None);
+        if(version!=Volatile.Read(ref this.loadVersion)){
+            return;
+        }
         var points=new List<ChartPoint>(observations.Count);
         for(var i=0;i<observations.Count;i++){
             var o=observations[i];
@@ -137,6 +143,9 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
         }
         var localToday=DateOnly.FromDateTime(TimeText.Local(now,this.Zone).DateTime);
         var summaries=await history.GetDailySummariesAsync(station,localToday,localToday,CancellationToken.None);
+        if(version!=Volatile.Read(ref this.loadVersion)){
+            return;
+        }
         if(summaries.LastOrDefault(s=>s.LocalDate==localToday) is {} today){
             var text=string.Format(System.Globalization.CultureInfo.CurrentCulture,Strings.TodaySummaryFormat,Units.Temperature(today.MaxTempC,units),Units.Temperature(today.MinTempC,units));
             if(today.IsDerived){
