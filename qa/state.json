@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 71,
-  "updated_at": "2026-10-04T16:16:38Z",
+  "revision": 75,
+  "updated_at": "2026-10-04T16:18:13Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 65,
+      "run_minutes": 67,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1285,6 +1285,61 @@
         "commit": "ecaf859aaa6300734fae74fa1ccf61b75b1406ce",
         "environment": "Linux x64 / .NET 10.0.401 / Debug",
         "method": 65,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0023",
+      "title": "気温の表示: -0.5〜0℃(華氏でも同様)の値が「-0°」と表示される",
+      "source_ids": [
+        "Units-negative-zero"
+      ],
+      "severity": "低(表示)",
+      "fix_priority": 11,
+      "symptom": "Units.Temperature(-0.3) が \"-0°\"(.NET Core 3.0 以降、書式 \"0\" は負の値を丸めて 0 になっても符号を残す)",
+      "expected": "\"0°\"(丸めて 0 になる値に負号を付けない)",
+      "cause": {
+        "confirmed": "string.Create(...$\"{x:0}°\") が負のゼロを \"-0\" と書式化する(静的調査の仮説。実行で確認する)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:17:44Z",
+          "reason": "冬の 0℃ 付近で頻繁に目に入る表示。決定的に再現できる。独立して直せる",
+          "code_before": {
+            "commit": "56c0a9185e5030b0e707692fe4b2b3c77ec8ce77",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "静的調査の仮説(未実行)",
+          "hypothesis": "丸めた値が 0 のときは正のゼロにして書式化すれば \"0°\" になる",
+          "planned_change": "src/Weather.Presentation/Formatting.cs の Units.Temperature のみ + tests/Weather.Presentation.Tests/ViewModelTests.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト PASS、他の値の表示が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:18:13Z",
+          "diff_sha256": "cf42827ce5a05de49c46f42c63e7fb2f4420c838fe45b6465b92dddfb7777cb8",
+          "commit": "676e79a133c593a0aeaa38b8d019a9e0407927f7"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/Units.Temperature"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:17:44Z",
+      "verified": {
+        "commit": "676e79a133c593a0aeaa38b8d019a9e0407927f7",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 67,
         "visual_check_required": false,
         "full_regression": "未実施"
       }
