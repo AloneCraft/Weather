@@ -73,6 +73,8 @@ Geo.Tests・Infrastructure.Tests・Providers.LiveTests は SolutionStructure.md 
 | live(定期・手動) | ubuntu-latest | Live テスト |
 
 - `-p:TargetFrameworks=…` で対象を絞らない(参照先のライブラリにも伝わり net10.0 が消える)。macOS では復元のため android のワークロードも入れる。
+- ワークロードは開発機と同じワークロード セット 10.0.400(iOS 26.5.10301 / Android 36.1.69)に `--version` で固定する。固定しないと最新のセット(10.0.401.1 = iOS 27.0)が入り、ランナーにない Xcode 27 を要求して失敗する(2026-10-04 に発生)。上げるときは開発機と CI を同時に上げる。
+- macOS のジョブは `shell: bash`(-eo pipefail)にする。既定の `bash -e` では `dotnet build | tee` の失敗が成功に見える(2026-10-04 に発生)。
 
 ## エミュレーターでの確認手順(Android)
 

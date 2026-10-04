@@ -38,7 +38,8 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
-      - run: dotnet workload install maui-android
+      # ワークロードは開発機と同じワークロード セット(iOS 26.5.10301 / Android 36.1.69)に固定する(下の build-ios を参照)
+      - run: dotnet workload install maui-android --version 10.0.400
       - run: dotnet build src/Weather.App/Weather.App.csproj -f net10.0-android -warnaserror
 
   build-ios:
@@ -60,7 +61,9 @@ jobs:
           xcodebuild -version
       # 復元は App の全 TFM(android / ios)を評価するため android のワークロードも入れる
       # (-p:TargetFrameworks で絞ると参照先のライブラリにも伝わり net10.0 が消えるので使わない)
-      - run: dotnet workload install maui-ios maui-android
+      # 版を固定しないと最新のワークロード セット(10.0.401.1 = iOS 27.0)が入り、ランナーにない Xcode 27 を要求して失敗する。
+      # 開発機と同じ 10.0.400(iOS 26.5.10301。Xcode 26.x)に固定し、上げるときは開発機と CI を同時に上げる
+      - run: dotnet workload install maui-ios maui-android --version 10.0.400
       # 失敗時はエラー行を注釈(::error::)にも出す(ログの閲覧にはサインインが必要だが、注釈は公開 API で読める)
       - name: アプリ(シミュレーター向け・署名なし)
         run: |
