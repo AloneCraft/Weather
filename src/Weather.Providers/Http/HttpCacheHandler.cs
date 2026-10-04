@@ -54,6 +54,11 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
         var now=time.GetUtcNow();
         var entry=await this.TryGetAsync(key,cancellationToken).ConfigureAwait(false);
         if(entry is not null&&HttpFreshness.IsFresh(entry,now,rule.MinimumFreshness)){
+            if(HttpCacheAccess.NeedsUpdate(entry,now)){
+                //最終利用時刻を更新する(容量・未使用期限の削除は最終利用時刻の古い順。1 時間に 1 回まで)
+                entry=entry with{LastAccessedAt=now};
+                await this.TrySetAsync(entry,cancellationToken).ConfigureAwait(false);
+            }
             return CreateResponse(request,entry,"hit");
         }
         if(entry is not null){

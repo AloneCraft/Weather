@@ -16,6 +16,16 @@ public sealed record HttpCacheEntry{
     public DateTimeOffset LastAccessedAt{get;init;}
 }
 
+/// <summary>最終利用時刻(LastAccessedAt)の更新規則。読み取りのたびに書き込まないよう、更新は 1 時間に 1 回まで。</summary>
+public static class HttpCacheAccess{
+    public static readonly TimeSpan UpdateInterval=TimeSpan.FromHours(1);
+
+    public static bool NeedsUpdate(HttpCacheEntry entry,DateTimeOffset now){
+        ArgumentNullException.ThrowIfNull(entry);
+        return now-entry.LastAccessedAt>UpdateInterval;
+    }
+}
+
 public interface IHttpCacheStore{
     ValueTask<HttpCacheEntry?> GetAsync(string key,CancellationToken cancellationToken);
     ValueTask SetAsync(HttpCacheEntry entry,CancellationToken cancellationToken);

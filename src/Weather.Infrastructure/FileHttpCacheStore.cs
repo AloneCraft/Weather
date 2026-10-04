@@ -38,7 +38,6 @@ internal sealed partial class InfrastructureJsonContext:JsonSerializerContext;
 /// 本文とメタデータを別ファイルに保存する。JSON は source generator(AOT / トリミング安全)。
 /// </summary>
 public sealed class FileHttpCacheStore:IHttpCacheStore{
-    private static readonly TimeSpan AccessUpdateInterval=TimeSpan.FromHours(1);
     private readonly string directory;
 
     public FileHttpCacheStore(InfrastructureOptions options){
@@ -120,10 +119,9 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
         }
     }
 
-    /// <summary>最終利用時刻の更新は 1 時間に 1 回まで(読み取りのたびに書き込まないため)。</summary>
+    /// <summary>最終利用時刻の更新は 1 時間に 1 回まで(読み取りのたびに書き込まないため)。規則は HttpCacheAccess。</summary>
     public static bool NeedsAccessUpdate(HttpCacheEntry entry,DateTimeOffset now){
-        ArgumentNullException.ThrowIfNull(entry);
-        return now-entry.LastAccessedAt>AccessUpdateInterval;
+        return HttpCacheAccess.NeedsUpdate(entry,now);
     }
 
     private (string Body,string Meta) Paths(string key){

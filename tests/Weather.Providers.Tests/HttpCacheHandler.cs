@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using Weather.Core;
 using Target=Weather.Providers.Nws.NwsProvider;
 
@@ -17,6 +18,31 @@ public class HttpCacheHandler{
             var second=await client.GetAsync(new Uri(PointsUrl),TestContext.Current.CancellationToken);
             Assert.Equal(1,host.Handler.CountRequests(PointsUrl));
             Assert.Equal("hit",string.Join("",second.Headers.GetValues(Http.CacheHeaders.State)));
+        }
+        {
+            //ヒットしたら最終利用時刻を更新する(1 時間に 1 回まで)。容量・未使用期限の削除を使用実態に合わせる
+            using var host=TestHost.Create();
+            host.Handler.Override=static _=>{
+                var response=new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent("{\"v\":1}")};
+                response.Headers.TryAddWithoutValidation("Cache-Control","max-age=2592000");
+                return response;
+            };
+            var client=host.Get<IHttpClientFactory>().CreateClient(Target.HttpClientName);
+            var store=host.Get<IHttpCacheStore>();
+            var key=Http.HttpCacheHandler.CreateKey(new Uri(PointsUrl));
+            await client.GetAsync(new Uri(PointsUrl),TestContext.Current.CancellationToken);
+            Assert.Equal(TestHost.Now,(await store.GetAsync(key,TestContext.Current.CancellationToken))!.LastAccessedAt);
+            host.Time.Advance(TimeSpan.FromMinutes(30));
+            await client.GetAsync(new Uri(PointsUrl),TestContext.Current.CancellationToken);
+            Assert.Equal(TestHost.Now,(await store.GetAsync(key,TestContext.Current.CancellationToken))!.LastAccessedAt);
+            host.Time.Advance(TimeSpan.FromDays(13));
+            await client.GetAsync(new Uri(PointsUrl),TestContext.Current.CancellationToken);
+            Assert.Equal(TestHost.Now.AddMinutes(30).AddDays(13),(await store.GetAsync(key,TestContext.Current.CancellationToken))!.LastAccessedAt);
+            Assert.Equal(1,host.Handler.CountRequests(PointsUrl));
+            //13 日目に使ったエントリは、15 日目の「14 日使われていないものの削除」で消えない
+            host.Time.Advance(TimeSpan.FromDays(2));
+            await store.TrimAsync(long.MaxValue,TimeSpan.FromDays(14),host.Time.GetUtcNow(),TestContext.Current.CancellationToken);
+            Assert.NotNull(await store.GetAsync(key,TestContext.Current.CancellationToken));
         }
         {
             //期限切れは条件付き GET。If-Modified-Since は受信した Last-Modified と完全一致、304 で本文を再利用
