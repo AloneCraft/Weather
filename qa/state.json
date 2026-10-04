@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "workflow": "QA_WORKFLOW.md",
-  "updated_at": "2026-10-04T14:52:12Z",
+  "updated_at": "2026-10-04T14:57:23Z",
   "mode": "FOCUSED",
   "budget_defaults": {
     "run_window_minutes": 240,
@@ -56,7 +56,7 @@
       "G:\\ai\\skills\\ai_rules.md(AGENTS.md が指す正本。このコンテナには存在しない)"
     ],
     "test_means": {
-      "dotnet_test": "不可(dotnet 未インストール)。ネットワーク許可があれば導入できる可能性はあるが未確認・未実施",
+      "dotnet_test": "不可。.NET SDK の配布元 builds.dotnet.microsoft.com がネットワークポリシーで拒否(CONNECT 403)。apt の dotnet-sdk-10.0 は 10.0.112 で global.json の要求(10.0.401 以降)に届かない",
       "emulator_or_device": "不可",
       "github_ci": "ci.yml は push(main, feature/**)・pull_request・手動実行で動く。現在のブランチ claude/** は push だけでは動かない。実行・PR 作成はユーザーの許可が必要",
       "manual_checklist": "docs/Design/TestStrategy.md「エミュレーターでの確認手順」"
@@ -66,7 +66,23 @@
       "status": "NOT_RUN",
       "reason": "dotnet が無いため、ビルド・テストの Smoke を実行できない"
     },
-    "render_api": "対象外(このコンテナでは描画を実行しない)"
+    "render_api": "対象外(このコンテナでは描画を実行しない)",
+    "sdk_install_attempt": {
+      "at": "2026-10-04T14:57:23Z",
+      "choice": "Q-002 A",
+      "result": "失敗",
+      "blocked_hosts": [
+        "builds.dotnet.microsoft.com",
+        "dot.net(301 のあと builds.dotnet.microsoft.com へ)"
+      ],
+      "reachable": [
+        "api.nuget.org",
+        "archive.ubuntu.com"
+      ],
+      "apt_candidate": "10.0.112",
+      "required": "10.0.401 以降",
+      "unblock": "環境設定の Network access で builds.dotnet.microsoft.com(と dot.net)を許可する。または Q-002 の B(GitHub Actions)。global.json の書き換えは製品設定の変更なので行わない"
+    }
   },
   "scope": {
     "release_scope": null,
