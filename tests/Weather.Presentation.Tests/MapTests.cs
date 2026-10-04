@@ -68,7 +68,7 @@ internal sealed class MapHarness{
         var h=this.H;
         Presentation.ViewModels.PlaceWeatherViewModel Place(PlaceData d)=>new(d,h.Weather,h.Session,h.Settings,h.Navigator,h.Lifecycle,h.Time);
         var places=new Presentation.ViewModels.MainViewModel(this.Favorites,new FakeLocationService(LocationStatus.Denied,null),h.Lifecycle,h.Navigator,h.Time,Place,h.Widget());
-        return new Presentation.ViewModels.MapViewModel(this.Maps,h.Weather,new FakeJapanArea(),new FakeSampler(pixel),places,new FavoritesService(this.Favorites,h.Weather),this.Focus,h.Settings,h.Lifecycle,h.Navigator,new FakeLocationService(LocationStatus.Denied,null),Place,h.Session,h.Time);
+        return new Presentation.ViewModels.MapViewModel(this.Maps,h.Weather,new FakeJapanArea(),new FakeSampler(pixel),places,new Presentation.ViewModels.FavoritesService(this.Favorites,h.Weather),this.Focus,h.Settings,h.Lifecycle,h.Navigator,new FakeLocationService(LocationStatus.Denied,null),Place,h.Session,h.Time);
     }
 }
 
