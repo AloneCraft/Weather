@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 27,
-  "updated_at": "2026-10-04T15:41:53Z",
+  "revision": 32,
+  "updated_at": "2026-10-04T15:43:27Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 30,
+      "run_minutes": 32,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -589,6 +589,61 @@
       "evidence": [],
       "human_needed": null,
       "found_at": "2026-10-04T15:30:42Z"
+    },
+    {
+      "id": "BUG-0011",
+      "title": "Remote: サーバー応答のモデル検証例外が WeatherProviderException(InvalidResponse)にならず漏れる",
+      "source_ids": [
+        "I-1"
+      ],
+      "severity": "高(Remote 使用時)",
+      "fix_priority": 2,
+      "symptom": "サーバーの応答が不変条件に反する(日本域に MET の出典・範囲外座標・Location が null など)と、ContractMapper.ToModel の InvalidOperationException/ArgumentException がそのまま呼び出し側へ漏れる",
+      "expected": "WeatherProviderException(InvalidResponse)(CacheAndRouting.md「HTTP エラーの変換」、TestStrategy.md「日本域に気象庁以外を含む電文はクライアントで拒否」)",
+      "cause": {
+        "confirmed": "RemoteWeatherService.GetAsync の検証例外の catch は Deserialize だけを囲み、ToModel は try の外(コード読み)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:42:40Z",
+          "reason": "優先: Remote 経路でサーバーの誤りがクライアントで検出されても例外の種類が WeatherProviderException にならず、呼び出し側の catch をすり抜けてクラッシュし得る",
+          "code_before": {
+            "commit": "dd7f5bff9d5a789cf9fda3eb2fa0244bb213d44d",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: GetAsync の catch は Deserialize だけを囲み ToModel は try の外",
+          "hypothesis": "ToModel を GetAsync の try の中で実行すれば検証例外が InvalidResponse になる",
+          "planned_change": "src/Weather.Remote/RemoteWeatherService.cs の GetAsync に変換関数を渡す + tests/Weather.Remote.Tests/RemoteTests.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Remote/Providers/Presentation テスト PASS、Functions ビルド",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:43:27Z",
+          "diff_sha256": "a2cacdb4ac1d6a4c3ce4005f158f2f4921e37674bdf8d3c3bbb337f7a745ae52",
+          "commit": "47c58582f0e4682b1d70b8402a8e12864fc2d988"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Remote.Tests/RemoteWeatherService.GetForecastAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:42:40Z",
+      "verified": {
+        "commit": "47c58582f0e4682b1d70b8402a8e12864fc2d988",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 32,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -687,8 +742,8 @@
     },
     {
       "id": "I-1",
-      "status": "UNREPRODUCED",
-      "note": "Remote: ContractMapper.ToModel の検証例外が WeatherProviderException に変換されず漏れる(RemoteWeatherService.cs の catch が try の外)。高(Remote 使用時)"
+      "status": "PROMOTED_TO_BUG",
+      "note": "Remote: ContractMapper.ToModel の検証例外が WeatherProviderException に変換されず漏れる(RemoteWeatherService.cs の catch が try の外)。高(Remote 使用時) → BUG-0011"
     },
     {
       "id": "P-2",
