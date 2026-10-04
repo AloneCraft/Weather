@@ -324,6 +324,31 @@ public class RemoteWeatherService{
         }
     }
 
+    [Fact,Trait("Category","Unit")]public async Task InvalidResponses(){
+        //サーバーの応答の JSON の 1 か所を壊す(固定シード)。どう壊れていても WeatherProviderException(InvalidResponse)以外の例外を漏らさない
+        var ct=TestContext.Current.CancellationToken;
+        var ops=new List<(string Name,string Json,Func<Remote.RemoteWeatherService,Task> Call)>{
+            ("forecast",RemoteJson.Serialize(Contracts.ContractMapper.ToDto(new ForecastResult(Availability.Available,Sample.JmaForecast()))),async c=>await c.GetForecastAsync(Sample.Tokyo,ct)),
+            ("alerts",RemoteJson.Serialize(Contracts.ContractMapper.ToDto(new AlertResult(Availability.Available,Sample.JmaAlerts()))),async c=>await c.GetAlertsAsync(Sample.Tokyo,ct)),
+            ("resolve",RemoteJson.Serialize(new ResolveResponse(Contracts.ContractMapper.ToDto(Sample.Tokyo),Availability.Available,true,[new RetentionDto(ProviderId.Jma,10)])),async c=>await c.ResolveAsync(new GeoPoint(35.69,139.75),ct)),
+            ("stations",RemoteJson.Serialize(new StationsResponse([new StationDto("44132",ProviderId.Jma,"東京",new GeoPointDto(35.69,139.75),25)])),async c=>await c.FindStationsAsync(Sample.Tokyo,3,ct)),
+            ("observations",RemoteJson.Serialize(Contracts.ContractMapper.ToDto(Sample.Observations())),async c=>await c.GetObservationsAsync(Sample.Station,Sample.Now.AddDays(-1),Sample.Now,ct)),
+        };
+        foreach(var (name,json,call) in ops){
+            for(var i=0;i<200;i++){
+                var mutated=JsonMutator.Mutate(json,new Random(HashCode.Combine(name,i)));
+                var client=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(mutated)){BaseAddress=new Uri("https://example.test/api/")});
+                try{
+                    await call(client);
+                }catch(WeatherProviderException ex){
+                    Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
+                }catch(Exception ex){
+                    Assert.Fail($"{name} #{i}: {ex.GetType().Name} が漏れた: {ex.Message}\n{mutated}");
+                }
+            }
+        }
+    }
+
     [Fact,Trait("Category","Unit")]public async Task GetObservationsAsync(){
         //観測所は要求元のものを使い、観測値はそのまま戻る
         var h=new RemoteHarness();

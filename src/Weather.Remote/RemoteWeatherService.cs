@@ -22,10 +22,10 @@ public sealed class RemoteWeatherService(HttpClient http):IWeatherService{
     private readonly ConcurrentDictionary<ProviderId,TimeSpan> retention=new();
 
     public async ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
-        var (response,location)=await this.GetAsync<ResolveResponse,(ResolveResponse Response,ResolvedLocation Location)>(WeatherApi.ResolveRoute,PointQuery(point),null,static r=>(r,ContractMapper.ToModel(r.Location)),cancellationToken).ConfigureAwait(false);
+        var (response,location,retentions)=await this.GetAsync<ResolveResponse,(ResolveResponse Response,ResolvedLocation Location,List<(ProviderId Provider,TimeSpan Retention)> Retentions)>(WeatherApi.ResolveRoute,PointQuery(point),null,static r=>(r,ContractMapper.ToModel(r.Location),[..r.Retention.Select(static i=>(i.Provider,TimeSpan.FromDays(i.Days)))]),cancellationToken).ConfigureAwait(false);
         this.resolved[location.Point.RoundForRequest()]=response;
-        foreach(var item in response.Retention){
-            this.retention[item.Provider]=TimeSpan.FromDays(item.Days);
+        foreach(var (provider,retention) in retentions){
+            this.retention[provider]=retention;
         }
         return location;
     }
@@ -96,8 +96,8 @@ public sealed class RemoteWeatherService(HttpClient http):IWeatherService{
                 return map(RemoteJson.Deserialize<T>(json));
             }catch(Exception ex) when(ex is JsonException or NotSupportedException){
                 throw new WeatherProviderException(label,ProviderFailure.InvalidResponse,$"サーバーの応答を読み取れません: {route}",ex);
-            }catch(Exception ex) when(ex is ArgumentException or InvalidOperationException){
-                //モデルの検証(範囲・昇順・日本域は気象庁のみ)に反する応答
+            }catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or OverflowException or NullReferenceException){
+                //モデルの検証(範囲・昇順・日本域は気象庁のみ)・数値の範囲・配列の null 要素(型の注釈では検出できない)に反する応答
                 throw new WeatherProviderException(label,ProviderFailure.InvalidResponse,$"サーバーの応答が不変条件に反しています: {route}",ex);
             }
         }
