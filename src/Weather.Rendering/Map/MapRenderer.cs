@@ -29,7 +29,7 @@ public sealed class MapRenderer:IDisposable{
     private readonly TileLayer tiles=new();
     private readonly IsobarLayer isobars=new();
     private readonly WindParticleLayer particles;
-    private readonly ArrowLayer arrows=new();
+    private readonly ArrowLayer arrows;
     private readonly SKPaint layerPaint=new();
     private readonly SKPaint pinFill=new(){IsAntialias=true,Color=new SKColor(0x14,0x1c,0x2a,0xe6)};
     private readonly SKPaint pinText=new(){IsAntialias=true,Color=SKColors.White};
@@ -49,6 +49,7 @@ public sealed class MapRenderer:IDisposable{
         this.field=new ScalarFieldLayer(mask);
         this.overlay=new JapanOverlay(mask);
         this.particles=new WindParticleLayer(mask);
+        this.arrows=new ArrowLayer(mask);
         this.tiles.TileLoaded+=()=>this.RedrawRequested?.Invoke();
     }
 
@@ -121,7 +122,7 @@ public sealed class MapRenderer:IDisposable{
             if(frame.Arrows is {} arrowSet){
                 this.arrows.DrawArrows(canvas,view,size,arrowSet);
             }
-            if(frame.Points is {} points){
+            if(frame.Points is {} points&&(frame.Tiles.Count==0||view.Zoom>=6)){
                 this.arrows.DrawPoints(canvas,view,size,points,MapLegends.Temperature);
             }
         }
@@ -168,7 +169,7 @@ public sealed class MapRenderer:IDisposable{
             }
         }
         var set=new WindArrowSet(this.staticArrows,ArrowKind.Forecast,wind.U.ValidTime,wind.U.Source);
-        this.arrows.DrawArrows(canvas,view,size,set);
+        this.arrows.DrawArrows(canvas,view,size,set,japanOnly:false);
     }
 
     private void DrawPins(SKCanvas canvas,MapView view,SKSize size){

@@ -13,7 +13,7 @@ public partial class AppShell:Shell{
         Routing.RegisterRoute(Routes.Sources,typeof(SourcesPage));
         Routing.RegisterRoute(Routes.History,typeof(HistoryPage));
         Routing.RegisterRoute(Routes.Search,typeof(SearchPage));
-        Routing.RegisterRoute(Routes.Map,typeof(MapPage));
+        Routing.RegisterRoute(Routes.PlaceDetail,typeof(PlaceDetailPage));
         Routing.RegisterRoute(Routes.Places,typeof(PlacesPage));
         Routing.RegisterRoute(Routes.Settings,typeof(SettingsPage));
         Routing.RegisterRoute(Routes.About,typeof(AboutPage));

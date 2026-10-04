@@ -24,7 +24,7 @@ public static class MauiProgram{
             })
             .ConfigureMauiHandlers(static handlers=>{
 #if IOS
-                handlers.AddHandler<Controls.SceneMetalView,Controls.SceneMetalViewHandler>();
+                handlers.AddHandler<Controls.MetalCanvasView,Controls.MetalCanvasViewHandler>();
 #endif
             });
 
@@ -63,7 +63,9 @@ public static class MauiProgram{
         services.AddSingleton<IMotionPreferences,MotionPreferences>();
 
         services.AddSingleton<AppShell>();
-        services.AddSingleton<MainPage>();
+        services.AddSingleton<MapPage>();
+        services.AddTransient<PlaceDetailPage>();
+        services.AddSingleton<IMapPixelSampler,MapPixelSampler>();
         services.AddTransient<HourlyPage>();
         services.AddTransient<DailyPage>();
         services.AddTransient<AlertsPage>();
@@ -71,7 +73,6 @@ public static class MauiProgram{
         services.AddTransient<SourcesPage>();
         services.AddTransient<HistoryPage>();
         services.AddTransient<SearchPage>();
-        services.AddTransient<MapPage>();
         services.AddTransient<PlacesPage>();
         services.AddTransient<SettingsPage>();
         services.AddTransient<AboutPage>();

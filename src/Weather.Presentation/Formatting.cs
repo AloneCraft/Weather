@@ -209,10 +209,19 @@ public static class AttributionText{
     public static string Short(SourceAttribution source,TimeZoneInfo zone){
         ArgumentNullException.ThrowIfNull(source);
         var text=source.AgencyName;
+        if(source.Provider==ProviderId.Gfs){
+            //地図の格子は数値予報モデルの計算結果であることを示す(例:「NOAA GFS 0.5° 09:00 初期値」)
+            text+=" "+source.ProductName;
+        }
         if(source.IssuedAt is {} issued){
             var verb=Strings.Updated;
             if(source.Provider==ProviderId.Jma){
                 verb=Strings.Issued;
+            }else if(source.Provider==ProviderId.Gfs){
+                verb=Strings.Initialized;
+            }
+            if(source.Provider==ProviderId.Jma&&source.ProductName.StartsWith("アメダス",StringComparison.Ordinal)){
+                verb=Strings.Observed;
             }
             text+=" "+TimeText.Clock(issued,zone)+" "+verb;
         }
@@ -233,6 +242,8 @@ public static class AttributionText{
                 return "出典:気象庁ホームページ";
             case ProviderId.MetNorway:
                 return "Data from MET Norway (CC BY 4.0)";
+            case ProviderId.Gfs:
+                return "Source: NOAA GFS (public domain)";
             default:
                 return "Source: National Weather Service";
         }

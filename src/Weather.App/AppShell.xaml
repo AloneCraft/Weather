@@ -7,5 +7,5 @@
        Shell.BackgroundColor="#1D2B5A"
        Shell.ForegroundColor="White"
        Shell.TitleColor="White">
-    <ShellContent Route="main" ContentTemplate="{DataTemplate views:MainPage}" />
+    <ShellContent Route="main" ContentTemplate="{DataTemplate views:MapPage}" />
 </Shell>

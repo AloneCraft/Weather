@@ -67,6 +67,56 @@ public sealed class LiveContractTests:IDisposable{
         Assert.NotEmpty(series.Items);
     }
 
+    private IMapDataService Maps=>this.services.GetRequiredService<IMapDataService>();
+
+    /// <summary>地図: GFS の最新の実行回と各 targetTimes、アメダスの時刻がそろう。</summary>
+    [Fact(Explicit=true),Trait("Category","Live")]
+    public async Task GetAvailabilityAsync(){
+        var a=await this.Maps.GetAvailabilityAsync(TestContext.Current.CancellationToken);
+        Assert.NotNull(a.GfsReferenceTime);
+        Assert.Equal(40,a.Gfs.Count);
+        Assert.NotEmpty(a.Nowcast);
+        Assert.NotEmpty(a.RainForecast);
+        Assert.NotEmpty(a.Distribution);
+        Assert.NotEmpty(a.Marine);
+        Assert.NotNull(a.AmedasTime);
+    }
+
+    /// <summary>地図の各層: GFS の格子(0.5°、日本周辺は NaN)と気象庁のデータ。現在時刻の風・気温はアメダス。</summary>
+    [Theory(Explicit=true),Trait("Category","Live")]
+    [InlineData(FieldLayer.Wind)]
+    [InlineData(FieldLayer.Precipitation)]
+    [InlineData(FieldLayer.Temperature)]
+    [InlineData(FieldLayer.Clouds)]
+    public async Task GetFrameAsync(FieldLayer layer){
+        var ct=TestContext.Current.CancellationToken;
+        var a=await this.Maps.GetAvailabilityAsync(ct);
+        var at=a.AmedasTime!.Value;
+        var frame=await this.Maps.GetFrameAsync(layer,at,ct);
+        Assert.Empty(frame.Issues);
+        Assert.NotNull(frame.Scalar);
+        Assert.Equal(new GridGeometry(720,361,90,0,0.5,0.5),frame.Scalar.Geometry);
+        Assert.True(float.IsNaN(frame.Scalar.Sample(35.69,139.75)));
+        Assert.False(float.IsNaN(frame.Scalar.Sample(48.85,2.35)));
+        //雲(天気分布予報の天気)は次の 3 時間ごとの時刻からで、現在時刻には該当がないことがある
+        if(layer!=FieldLayer.Clouds){
+            Assert.Equal(JapanCoverage.Available,frame.Japan);
+        }
+        if(layer==FieldLayer.Wind){
+            Assert.Equal(ArrowKind.Observation,frame.Arrows!.Kind);
+            Assert.True(frame.Arrows.Arrows.Count>500);
+        }
+        if(layer==FieldLayer.Temperature){
+            Assert.True(frame.Points!.Points.Count>500);
+        }
+        foreach(var tile in frame.Tiles){
+            var z=tile.TileZoomFor(6);
+            var n=1<<z;
+            var png=await this.Maps.GetTileAsync(tile,z,(int)(0.888*n),(int)(0.4*n),ct);
+            Assert.NotNull(png);
+        }
+    }
+
     public void Dispose(){
         this.services.Dispose();
     }

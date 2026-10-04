@@ -29,6 +29,9 @@ public static class PresentationServiceCollectionExtensions{
             sp.GetRequiredService<IAppLifecycle>(),
             sp.GetRequiredService<TimeProvider>()));
         services.TryAddSingleton<MainViewModel>();
+        services.TryAddSingleton<MapFocusService>();
+        services.TryAddSingleton<IMapPixelSampler,NullMapPixelSampler>();
+        services.TryAddSingleton<MapViewModel>();
         services.TryAddTransient<HourlyViewModel>();
         services.TryAddTransient<DailyDetailViewModel>();
         services.TryAddTransient<AlertsViewModel>();
@@ -36,7 +39,6 @@ public static class PresentationServiceCollectionExtensions{
         services.TryAddTransient<SourcesViewModel>();
         services.TryAddTransient<SearchViewModel>();
         services.TryAddTransient<PlacesViewModel>();
-        services.TryAddTransient<MapPickerViewModel>();
         services.TryAddTransient<SettingsViewModel>();
         services.TryAddTransient<AboutViewModel>();
         services.TryAddTransient<HistoryViewModel>();

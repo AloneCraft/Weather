@@ -17,6 +17,8 @@
             <local:InvertBoolConverter x:Key="Invert" />
             <local:HasDataStateConverter x:Key="HasData" />
             <local:HistoryRangeToIndexConverter x:Key="RangeIndex" />
+            <local:IntToDoubleConverter x:Key="IntToDouble" />
+            <local:ArgbToColorConverter x:Key="ArgbColor" />
 
             <Style x:Key="Card" TargetType="Border">
                 <Setter Property="StrokeThickness" Value="0" />
@@ -33,6 +35,32 @@
             <Style x:Key="Caption" TargetType="Label">
                 <Setter Property="FontSize" Value="11" />
                 <Setter Property="Opacity" Value="0.8" />
+            </Style>
+            <!-- 地図の上に重ねる部品(Screens.md「地図」) -->
+            <Style x:Key="MapPanel" TargetType="Border">
+                <Setter Property="StrokeThickness" Value="0" />
+                <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+                <Setter Property="BackgroundColor" Value="#E6141C2A" />
+                <Setter Property="Padding" Value="12,10" />
+            </Style>
+            <Style x:Key="MapButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="#E6141C2A" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="CornerRadius" Value="20" />
+                <Setter Property="WidthRequest" Value="40" />
+                <Setter Property="HeightRequest" Value="40" />
+                <Setter Property="MinimumHeightRequest" Value="40" />
+            </Style>
+            <Style x:Key="LayerButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="#E6141C2A" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Padding" Value="8,0" />
+                <Setter Property="CornerRadius" Value="18" />
+                <Setter Property="HeightRequest" Value="36" />
+                <Setter Property="MinimumHeightRequest" Value="36" />
             </Style>
             <Style x:Key="ToolButton" TargetType="Button">
                 <Setter Property="BackgroundColor" Value="#33000000" />

@@ -12,7 +12,8 @@ namespace Weather.Providers.Maps;
 /// - 降水: 雨雲の動き(解析・1 時間先まで)→ 今後の雨(15 時間先まで)→ 天気分布予報の 3 時間降水量
 /// - 気温: 天気分布予報。現在時刻はアメダスの観測も重ねる
 /// - 雲・気圧: 天気分布予報の天気
-/// - 風: 現在時刻はアメダスの観測(矢印)、それ以降は海上分布予報(海域の矢印と強風の風速)
+/// - 風: 現在時刻はアメダスの観測(矢印)、それ以降は海上分布予報(海域の風向の矢印)。
+///   海上分布予報の風速のタイルは海域全体を薄い色で塗り地図が読めなくなるため使わない(強風は警報・注意報で伝わる)
 /// 気象庁の予報期間を過ぎた日本周辺は OutOfRange にし、GFS で埋めない。
 /// </summary>
 internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions definitions,IHttpClientFactory httpClientFactory,TimeProvider time,ILogger<MapDataService> logger):IMapDataService{
@@ -21,7 +22,8 @@ internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions defi
     public static readonly TimeSpan RainForecastTolerance=TimeSpan.FromMinutes(30);
     public static readonly TimeSpan DistributionTolerance=TimeSpan.FromMinutes(90);
     public static readonly TimeSpan MarineTolerance=TimeSpan.FromHours(3);
-    public static readonly TimeSpan AmedasTolerance=TimeSpan.FromMinutes(10);
+    /// <summary>アメダスは 10 分ごとの観測が数分遅れて出るため、時間軸の「現在」と最大 20 分ほどずれる。</summary>
+    public static readonly TimeSpan AmedasTolerance=TimeSpan.FromMinutes(30);
     private static readonly TimeSpan SnapshotLifetime=TimeSpan.FromMinutes(2);
     private const int FieldCacheSize=16;
 
@@ -300,8 +302,9 @@ internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions defi
                 }
                 if(JmaMaps.Nearest(t.Marine,at,MarineTolerance) is {} m){
                     var arrows=await this.TryMarineWindAsync(m,s,issues,cancellationToken).ConfigureAwait(false);
-                    var speed=Tile(JmaTileProduct.MarineForecast,"ws",m,MapLegends.MarineWindKnots,"海上分布予報(風)",JmaMaps.MarinePage,s);
-                    return new JapanPart(JapanCoverage.Available,[speed],arrows,null);
+                    if(arrows is not null){
+                        return new JapanPart(JapanCoverage.Available,[],arrows,null);
+                    }
                 }
                 return new JapanPart(Missing(at,t.Marine),[],null,null);
             }

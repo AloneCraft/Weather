@@ -11,11 +11,11 @@ public static class Routes{
     public const string Alert="alert";
     public const string History="history";
     public const string Search="search";
-    public const string Map="map";
     public const string Places="places";
     public const string Settings="settings";
     public const string About="about";
     public const string Sources="sources";
+    public const string PlaceDetail="placedetail";
 }
 
 /// <summary>画面遷移。VM は Shell を直接触らない。</summary>

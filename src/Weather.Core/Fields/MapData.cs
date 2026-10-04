@@ -70,9 +70,9 @@ public sealed class Legend{
 /// GFS の降水・気温も同じ区分と色で描き、日本周辺(気象庁)との継ぎ目をそろえる。
 /// </summary>
 public static class MapLegends{
-    /// <summary>降水強度(雨雲の動き・今後の雨。mm/h)。GFS は 0.1 mm/h 未満を描かない。</summary>
+    /// <summary>降水強度(雨雲の動き・今後の雨。mm/h)。GFS は 0.1 mm/h 未満を描かず、1 mm/h 未満は半透明にする。</summary>
     public static Legend RainRate{get;}=new("mm/h",[
-        new(0.1,1,0xFFF2F2FF,"0.1"),
+        new(0.1,1,0x99F2F2FF,"0.1"),
         new(1,5,0xFFA0D2FF,"1"),
         new(5,10,0xFF218CFF,"5"),
         new(10,20,0xFF0041FF,"10"),
@@ -117,18 +117,6 @@ public static class MapLegends{
         new(null,null,0xFF0041FF,"rain"),
         new(null,null,0xFFA0D2FF,"rainOrSnow"),
         new(null,null,0xFFF2F2FF,"snow"),
-    ]);
-
-    /// <summary>海上の風速(海上分布予報。ノット)。</summary>
-    public static Legend MarineWindKnots{get;}=new("kt",[
-        new(null,25,0xFFD9D9FF,"below25"),
-        new(25,30,0xFFA0D2FF,"25"),
-        new(30,35,0xFFFAF500,"30"),
-        new(35,40,0xFFFFC800,"35"),
-        new(40,45,0xFFFFAA00,"40"),
-        new(45,50,0xFFFF7800,"45"),
-        new(50,65,0xFFFF2800,"50"),
-        new(65,null,0xFFC800FF,"65"),
     ]);
 
     /// <summary>風速(GFS。m/s)。気象庁に対応する面の凡例がないため、連続的な配色にする。</summary>

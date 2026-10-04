@@ -183,6 +183,7 @@ internal sealed class IsobarLayer:IDisposable{
     public const double Interval=4;
     private readonly SKPaint thin=new(){IsAntialias=true,Style=SKPaintStyle.Stroke,Color=SKColors.White.WithAlpha(120),StrokeCap=SKStrokeCap.Round};
     private readonly SKPaint thick=new(){IsAntialias=true,Style=SKPaintStyle.Stroke,Color=SKColors.White.WithAlpha(190),StrokeCap=SKStrokeCap.Round};
+    private readonly SKPaint halo=new(){IsAntialias=true,Style=SKPaintStyle.Stroke,Color=new SKColor(0x10,0x1a,0x2b,150),StrokeCap=SKStrokeCap.Round};
     private GridField? field;
     private SKPath? thinPath;
     private SKPath? thickPath;
@@ -225,6 +226,10 @@ internal sealed class IsobarLayer:IDisposable{
             }
             canvas.Save();
             canvas.Concat(view.WorldToScreen(size,wrap));
+            this.halo.StrokeWidth=3.2f*view.PixelRatio/s;
+            canvas.DrawPath(this.thinPath,this.halo);
+            this.halo.StrokeWidth=4.0f*view.PixelRatio/s;
+            canvas.DrawPath(this.thickPath,this.halo);
             canvas.DrawPath(this.thinPath,this.thin);
             canvas.DrawPath(this.thickPath,this.thick);
             canvas.Restore();
@@ -368,5 +373,6 @@ internal sealed class IsobarLayer:IDisposable{
         this.thickPath?.Dispose();
         this.thin.Dispose();
         this.thick.Dispose();
+        this.halo.Dispose();
     }
 }

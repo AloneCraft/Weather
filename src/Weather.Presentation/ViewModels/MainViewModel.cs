@@ -8,7 +8,7 @@ using Weather.Presentation.Resources;
 namespace Weather.Presentation.ViewModels;
 
 /// <summary>
-/// お気に入り地点の一覧と現在のページ(Screens.md「メイン」)。
+/// お気に入り地点(と現在地)の一覧と予報。地図のピン・予報シート・ウィジェットが使う(Screens.md「地図」)。
 /// 表示中は 10 分ごとに自動更新し、背景では止める。シーンは 1 分ごとに現在時刻で更新する。
 /// </summary>
 public sealed partial class MainViewModel:ObservableObject,IDisposable{
@@ -177,11 +177,6 @@ public sealed partial class MainViewModel:ObservableObject,IDisposable{
     [RelayCommand]
     private Task OpenSettingsAsync(){
         return this.navigator.GoToAsync(Routes.Settings);
-    }
-
-    [RelayCommand]
-    private Task OpenMapAsync(){
-        return this.navigator.GoToAsync(Routes.Map);
     }
 
     private void OnResumed(object? sender,EventArgs e){

@@ -208,39 +208,6 @@ public class TimeSeriesChart{
     }
 }
 
-public class WorldMapRenderer{
-    [Fact,Trait("Category","Unit")]public void Draw(){
-        using var map=new Map.WorldMapRenderer(GeoDatabase.LoadEmbedded());
-        var size=new SKSize(400,300);
-        {
-            //画面座標と地理座標の往復
-            map.Viewport.CenterLatitude=35;
-            map.Viewport.CenterLongitude=139;
-            map.Viewport.Zoom=4;
-            var p=map.Viewport.ToScreen(34.69,135.5,size);
-            var g=map.Viewport.ToGeo(p,size);
-            Assert.Equal(34.69,g.Latitude,3);
-            Assert.Equal(135.5,g.Longitude,3);
-        }
-        {
-            //焦点を保ったズーム
-            var focus=new SKPoint(300,100);
-            var before=map.Viewport.ToGeo(focus,size);
-            map.Viewport.ZoomBy(2,focus,size);
-            var after=map.Viewport.ToGeo(focus,size);
-            Assert.Equal(before.Latitude,after.Latitude,2);
-            Assert.Equal(before.Longitude,after.Longitude,2);
-        }
-        {
-            //描画のスモーク(区域を表示するズーム)
-            map.Viewport.Zoom=5;
-            using var bitmap=new SKBitmap(400,300);
-            using var canvas=new SKCanvas(bitmap);
-            map.Draw(canvas,size,[new MapMarker(new GeoPoint(35.69,139.75),"東京",true)]);
-        }
-    }
-}
-
 public class ArchitectureRules{
     [Fact,Trait("Category","Unit")]public void NoMauiReference(){
         var names=typeof(Rendering.Scene.SceneRenderer).Assembly.GetReferencedAssemblies().Select(static a=>a.Name??"");

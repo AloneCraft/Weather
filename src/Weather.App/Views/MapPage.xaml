@@ -1,26 +1,176 @@
 <?xml version="1.0" encoding="utf-8" ?>
+<!-- トップ画面: 地図(Screens.md「地図」)。全面の地図の上に、検索・レイヤー・時間軸・凡例・出典・吹き出し・予報シートを重ねる -->
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:res="clr-namespace:Weather.Presentation.Resources;assembly=Weather.Presentation"
              xmlns:vm="clr-namespace:Weather.Presentation.ViewModels;assembly=Weather.Presentation"
+             xmlns:core="clr-namespace:Weather.Core;assembly=Weather.Core"
              xmlns:controls="clr-namespace:Weather.App.Controls"
              x:Class="Weather.App.Views.MapPage"
-             x:DataType="vm:MapPickerViewModel"
-             Title="{x:Static res:Strings.MapTitle}">
-    <Grid RowDefinitions="*,Auto">
-        <controls:MapView x:Name="Map" Grid.Row="0" />
-        <VerticalStackLayout Grid.Row="0" HorizontalOptions="End" VerticalOptions="Start" Margin="12" Spacing="8">
-            <Button Text="+" Clicked="OnZoomIn" WidthRequest="44" SemanticProperties.Description="{x:Static res:Strings.ZoomIn}" />
-            <Button Text="−" Clicked="OnZoomOut" WidthRequest="44" SemanticProperties.Description="{x:Static res:Strings.ZoomOut}" />
+             x:DataType="vm:MapViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#101A2B">
+    <Grid>
+        <controls:WeatherMapView x:Name="Map" MapFrame="{Binding Frame}" Pins="{Binding Pins}" SelectedPoint="{Binding SelectedPoint}" />
+
+        <!-- 上: 検索・現在地・地点・設定 -->
+        <Grid VerticalOptions="Start" Padding="12,40,12,0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+            <Border Style="{StaticResource MapPanel}" Padding="14,0" HeightRequest="40" StrokeShape="RoundRectangle 20" SemanticProperties.Description="{x:Static res:Strings.SearchDescription}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenSearchCommand}" />
+                </Border.GestureRecognizers>
+                <Label Text="{x:Static res:Strings.SearchPlaceholderMap}" TextColor="#B0BEC5" FontSize="14" VerticalOptions="Center" />
+            </Border>
+            <Button Grid.Column="1" Text="◎" Style="{StaticResource MapButton}" Command="{Binding LocateCommand}" SemanticProperties.Description="{x:Static res:Strings.CurrentLocation}" />
+            <Button Grid.Column="2" Text="★" Style="{StaticResource MapButton}" Command="{Binding OpenPlacesCommand}" SemanticProperties.Description="{x:Static res:Strings.PlacesDescription}" />
+            <Button Grid.Column="3" Text="⚙" Style="{StaticResource MapButton}" Command="{Binding OpenSettingsCommand}" SemanticProperties.Description="{x:Static res:Strings.Settings}" />
+        </Grid>
+
+        <!-- 右: レイヤー -->
+        <VerticalStackLayout HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,10,60" Spacing="8">
+            <Button Text="{x:Static res:Strings.LayerWind}" Style="{StaticResource LayerButton}" Command="{Binding SelectLayerCommand}" CommandParameter="{x:Static core:FieldLayer.Wind}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding Layer}" Value="{x:Static core:FieldLayer.Wind}">
+                        <Setter Property="BackgroundColor" Value="#2E6CCC" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+            <Button Text="{x:Static res:Strings.LayerPrecipitation}" Style="{StaticResource LayerButton}" Command="{Binding SelectLayerCommand}" CommandParameter="{x:Static core:FieldLayer.Precipitation}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding Layer}" Value="{x:Static core:FieldLayer.Precipitation}">
+                        <Setter Property="BackgroundColor" Value="#2E6CCC" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+            <Button Text="{x:Static res:Strings.LayerTemperature}" Style="{StaticResource LayerButton}" Command="{Binding SelectLayerCommand}" CommandParameter="{x:Static core:FieldLayer.Temperature}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding Layer}" Value="{x:Static core:FieldLayer.Temperature}">
+                        <Setter Property="BackgroundColor" Value="#2E6CCC" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+            <Button Text="{x:Static res:Strings.LayerClouds}" Style="{StaticResource LayerButton}" Command="{Binding SelectLayerCommand}" CommandParameter="{x:Static core:FieldLayer.Clouds}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding Layer}" Value="{x:Static core:FieldLayer.Clouds}">
+                        <Setter Property="BackgroundColor" Value="#2E6CCC" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+            <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}" Color="White" HeightRequest="20" />
         </VerticalStackLayout>
-        <Border Grid.Row="1" Padding="12" StrokeThickness="0" BackgroundColor="#1D2B5A" IsVisible="{Binding SelectedName, Converter={StaticResource HasValue}}">
-            <Grid ColumnDefinitions="*,Auto">
-                <VerticalStackLayout>
-                    <Label Text="{Binding SelectedName}" TextColor="White" FontSize="16" FontAttributes="Bold" />
-                    <Label Text="{Binding SelectedDetail}" TextColor="#CFD8DC" FontSize="12" />
-                </VerticalStackLayout>
-                <Button Grid.Column="1" Text="{x:Static res:Strings.Add}" Command="{Binding AddCommand}" IsEnabled="{Binding CanAdd}" />
+
+        <!-- 吹き出し: タップした地点の値 -->
+        <Border Style="{StaticResource MapPanel}" IsVisible="{Binding IsProbeVisible}" VerticalOptions="Start" Margin="12,92,12,0">
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="2">
+                <Label Text="{Binding ProbeTitle}" TextColor="White" FontSize="14" FontAttributes="Bold" LineBreakMode="TailTruncation" />
+                <Button Grid.Column="1" Text="✕" Style="{StaticResource MapButton}" WidthRequest="32" HeightRequest="32" MinimumHeightRequest="32" Command="{Binding CloseProbeCommand}" />
+                <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding ProbeValue}" TextColor="White" FontSize="22" FontAttributes="Bold" />
+                <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding ProbeSource}" Style="{StaticResource Caption}" TextColor="#B0BEC5" />
+                <Button Grid.Row="3" Grid.ColumnSpan="2" Text="{x:Static res:Strings.OpenForecast}" Command="{Binding OpenForecastCommand}" Margin="0,6,0,0" BackgroundColor="#2E6CCC" TextColor="White" CornerRadius="16" HeightRequest="36" />
             </Grid>
+        </Border>
+
+        <!-- 下: 日本周辺の注記・凡例・時間軸・出典 -->
+        <VerticalStackLayout VerticalOptions="End" Padding="10,0,10,14" Spacing="6" IsVisible="{Binding IsSheetOpen, Converter={StaticResource Invert}}">
+            <Border Style="{StaticResource MapPanel}" Padding="10,6">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding LegendTitle}" TextColor="White" FontSize="11" />
+                    <FlexLayout BindableLayout.ItemsSource="{Binding LegendEntries}" Direction="Row" Wrap="NoWrap">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LegendEntry">
+                                <VerticalStackLayout FlexLayout.Grow="1" FlexLayout.Basis="0" Spacing="1">
+                                    <BoxView HeightRequest="8" Color="{Binding Color, Converter={StaticResource ArgbColor}}" />
+                                    <Label Text="{Binding Label}" TextColor="White" FontSize="8" HorizontalOptions="Center" LineBreakMode="NoWrap" />
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                    <FlexLayout BindableLayout.ItemsSource="{Binding JapanLegendEntries}" Direction="Row" Wrap="NoWrap">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LegendEntry">
+                                <VerticalStackLayout FlexLayout.Grow="1" FlexLayout.Basis="0" Spacing="1">
+                                    <BoxView HeightRequest="8" Color="{Binding Color, Converter={StaticResource ArgbColor}}" />
+                                    <Label Text="{Binding Label}" TextColor="White" FontSize="8" HorizontalOptions="Center" LineBreakMode="NoWrap" />
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                    <Label Text="{Binding LegendNote}" IsVisible="{Binding LegendNote, Converter={StaticResource HasValue}}" TextColor="#B0BEC5" FontSize="10" />
+                    <Label Text="{Binding JapanNote}" IsVisible="{Binding JapanNote, Converter={StaticResource HasValue}}" TextColor="#FFD54F" FontSize="10" />
+                    <Label Text="{Binding IssuesText}" IsVisible="{Binding IssuesText, Converter={StaticResource HasValue}}" TextColor="#FF8A65" FontSize="10" />
+                </VerticalStackLayout>
+            </Border>
+            <Border Style="{StaticResource MapPanel}" Padding="8,6">
+                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                    <Button Grid.RowSpan="2" Text="▶" Style="{StaticResource MapButton}" Command="{Binding TogglePlayCommand}" SemanticProperties.Description="{x:Static res:Strings.Play}">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsPlaying}" Value="True">
+                                <Setter Property="Text" Value="❚❚" />
+                                <Setter Property="SemanticProperties.Description" Value="{x:Static res:Strings.Pause}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                    <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                        <Label Text="{Binding TimeText}" TextColor="White" FontSize="14" FontAttributes="Bold" />
+                        <Label Text="{Binding RelativeText}" TextColor="#90CAF9" FontSize="13" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="{Binding MaxStep}" Value="{Binding StepIndex, Converter={StaticResource IntToDouble}}" MinimumTrackColor="#2E6CCC" ThumbColor="White" />
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource MapPanel}" Padding="10,4" HorizontalOptions="Start">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnAttributionTapped" />
+                </Border.GestureRecognizers>
+                <Label Text="{Binding AttributionText}" TextColor="#CFD8DC" FontSize="10" LineBreakMode="WordWrap" />
+            </Border>
+        </VerticalStackLayout>
+
+        <!-- 予報シート(公式予報)。上へスワイプで詳細(空のシーン) -->
+        <Border Style="{StaticResource MapPanel}" IsVisible="{Binding IsSheetOpen}" VerticalOptions="End" Margin="0" Padding="16,10,16,22" StrokeShape="RoundRectangle 20,20,0,0">
+            <Border.GestureRecognizers>
+                <SwipeGestureRecognizer Direction="Up" Command="{Binding OpenDetailCommand}" />
+                <SwipeGestureRecognizer Direction="Down" Command="{Binding CloseSheetCommand}" />
+            </Border.GestureRecognizers>
+            <VerticalStackLayout Spacing="6" BindingContext="{Binding SheetPlace, x:DataType=vm:MapViewModel}" x:DataType="vm:PlaceWeatherViewModel">
+                <BoxView WidthRequest="40" HeightRequest="4" CornerRadius="2" Color="#55FFFFFF" HorizontalOptions="Center" />
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <Label Text="{Binding CurrentIcon}" FontSize="40" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" SemanticProperties.Description="{Binding AccessibleSummary}">
+                        <Label Text="{Binding Name}" TextColor="White" FontSize="18" FontAttributes="Bold" LineBreakMode="TailTruncation" />
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="{Binding CurrentTemperature}" TextColor="White" FontSize="30" FontAttributes="Bold" />
+                            <Label Text="{Binding CurrentText}" TextColor="White" FontSize="13" VerticalOptions="Center" LineBreakMode="TailTruncation" MaximumWidthRequest="220" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Grid>
+                <Label Text="{Binding AreaNote}" IsVisible="{Binding AreaNote, Converter={StaticResource HasValue}}" Style="{StaticResource Caption}" TextColor="#B0BEC5" />
+                <Label Text="{Binding StatusMessage}" IsVisible="{Binding StatusMessage, Converter={StaticResource HasValue}}" FontSize="12" TextColor="#FFD54F" />
+                <Border Style="{StaticResource Card}" Margin="0" Padding="10,6" BackgroundColor="{Binding HighestAlertTier, Converter={StaticResource TierColor}}" IsVisible="{Binding HasActiveAlerts}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenAlertsCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding AlertSummary}" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                </Border>
+                <CollectionView ItemsSource="{Binding Hours}" HeightRequest="84" ItemsLayout="HorizontalList" HorizontalScrollBarVisibility="Never">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:HourItem">
+                            <VerticalStackLayout WidthRequest="52" Spacing="1">
+                                <Label Text="{Binding TimeText}" FontSize="11" HorizontalOptions="Center" TextColor="White" />
+                                <Label Text="{Binding Icon}" FontSize="20" HorizontalOptions="Center" />
+                                <Label Text="{Binding Temperature}" FontSize="14" FontAttributes="Bold" HorizontalOptions="Center" TextColor="White" />
+                                <Label Text="{Binding Probability}" FontSize="10" HorizontalOptions="Center" TextColor="#90CAF9" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                <Label Text="{Binding AttributionShort}" Style="{StaticResource Caption}" TextColor="#CFD8DC" />
+                <Label Text="{Binding AttributionCredit}" Style="{StaticResource Caption}" TextColor="#CFD8DC" />
+                <HorizontalStackLayout Spacing="8" Margin="0,4,0,0">
+                    <Button Text="{x:Static res:Strings.OpenDetail}" BackgroundColor="#2E6CCC" TextColor="White" CornerRadius="16" HeightRequest="36" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MapViewModel}}, Path=OpenDetailCommand, x:DataType=vm:MapViewModel}" />
+                    <Button Text="{x:Static res:Strings.AddToFavorites}" Style="{StaticResource ToolButton}" HeightRequest="36" IsVisible="{Binding Source={RelativeSource AncestorType={x:Type vm:MapViewModel}}, Path=CanAddFavorite, x:DataType=vm:MapViewModel}" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MapViewModel}}, Path=AddFavoriteCommand, x:DataType=vm:MapViewModel}" />
+                    <Button Text="✕" Style="{StaticResource MapButton}" WidthRequest="36" HeightRequest="36" MinimumHeightRequest="36" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MapViewModel}}, Path=CloseSheetCommand, x:DataType=vm:MapViewModel}" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
         </Border>
     </Grid>
 </ContentPage>

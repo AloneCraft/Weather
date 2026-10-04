@@ -6,9 +6,9 @@ namespace Weather.Rendering.Map;
 
 /// <summary>
 /// 日本周辺の観測・予報の点(アメダスの風の矢印と気温、海上分布予報の風向)。値はそのまま描き、補間しない(方針 5)。
-/// 重なる点は画面の格子で間引く。
+/// 重なる点は画面の格子で間引く。日本周辺の外(海上分布予報は外国の沿岸も含む)は描かない(GFS と重ねない。タイルと同じ扱い)。
 /// </summary>
-internal sealed class ArrowLayer:IDisposable{
+internal sealed class ArrowLayer(JapanMaskTexture mask):IDisposable{
     private readonly SKPaint stroke=new(){IsAntialias=true,Style=SKPaintStyle.Stroke,StrokeCap=SKStrokeCap.Round};
     private readonly SKPaint outline=new(){IsAntialias=true,Style=SKPaintStyle.Stroke,StrokeCap=SKStrokeCap.Round,Color=SKColors.Black.WithAlpha(140)};
     private readonly SKPaint fill=new(){IsAntialias=true};
@@ -17,18 +17,27 @@ internal sealed class ArrowLayer:IDisposable{
     private readonly HashSet<long> occupied=[];
     private SKFont? font;
 
-    public void DrawArrows(SKCanvas canvas,MapView view,SKSize size,WindArrowSet set){
+    public void DrawArrows(SKCanvas canvas,MapView view,SKSize size,WindArrowSet set,bool japanOnly=true){
         var scale=view.PixelRatio;
         var spacing=Math.Max(14,24*scale);
+        if(set.Kind==ArrowKind.Forecast){
+            spacing=Math.Max(20,34*scale);
+        }
         this.occupied.Clear();
-        this.stroke.StrokeWidth=1.8f*scale;
-        this.outline.StrokeWidth=3.4f*scale;
+        this.stroke.StrokeWidth=1.5f*scale;
+        this.outline.StrokeWidth=3.0f*scale;
         foreach(var arrow in set.Arrows){
             var p=view.ToScreen(arrow.Point.Latitude,arrow.Point.Longitude,size);
-            if(p.X<-20||p.Y<-20||p.X>size.Width+20||p.Y>size.Height+20||!this.Reserve(p,spacing)){
+            if(p.X<-20||p.Y<-20||p.X>size.Width+20||p.Y>size.Height+20){
                 continue;
             }
-            var length=16f*scale;
+            if(japanOnly&&!mask.Contains(arrow.Point.Latitude,arrow.Point.Longitude)){
+                continue;
+            }
+            if(!this.Reserve(p,spacing)){
+                continue;
+            }
+            var length=13f*scale;
             var color=SKColors.White;
             if(arrow.SpeedMs is {} speed){
                 length=(float)Math.Clamp(8+speed*1.6,10,30)*scale;

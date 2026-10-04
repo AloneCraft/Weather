@@ -1,50 +1,55 @@
-using CommunityToolkit.Mvvm.Input;
 using Weather.Core;
+using Weather.Presentation;
 using Weather.Presentation.ViewModels;
-using Weather.Rendering.Map;
 
 namespace Weather.App.Views;
 
+/// <summary>トップ画面(地図)。地図の操作は WeatherMapView、表示内容は MapViewModel。</summary>
 public partial class MapPage:ContentPage{
-    private readonly MapPickerViewModel viewModel;
+    private readonly MapViewModel viewModel;
+    private readonly AppSettings settings;
+    private readonly IMotionPreferences motion;
+    private const double FocusZoom=6.5;
+    private bool loaded;
 
-    public MapPage(MapPickerViewModel viewModel){
+    public MapPage(MapViewModel viewModel,AppSettings settings,IMotionPreferences motion){
         this.InitializeComponent();
         this.viewModel=viewModel;
+        this.settings=settings;
+        this.motion=motion;
         this.BindingContext=viewModel;
-        this.Map.TapCommand=new AsyncRelayCommand<GeoPoint>(this.OnTappedAsync);
+        this.Map.PointTapped+=this.OnPointTapped;
+        this.Map.PinTapped+=(_,pin)=>viewModel.SelectPinCommand.Execute(pin);
+        viewModel.FocusRequested+=this.OnFocusRequested;
     }
 
     protected override async void OnAppearing(){
         base.OnAppearing();
-        await this.viewModel.LoadAsync();
-        this.UpdateMarkers();
-        if(this.viewModel.Favorites.Count>0){
-            this.Map.CenterOn(this.viewModel.Favorites[0].Point,4);
+        this.Map.SetActive(true,this.settings,this.motion);
+        if(!this.loaded){
+            this.loaded=true;
+            await this.viewModel.LoadAsync(CancellationToken.None);
         }
+        this.viewModel.UpdatePins();
+        this.viewModel.Start();
     }
 
-    private async Task OnTappedAsync(GeoPoint point){
-        await this.viewModel.SelectAsync(point);
-        this.UpdateMarkers();
+    protected override void OnDisappearing(){
+        //非表示では描画ループを止める(Rendering.md「描画ホスト」)
+        this.Map.SetActive(false,this.settings,this.motion);
+        this.viewModel.Stop();
+        base.OnDisappearing();
     }
 
-    private void UpdateMarkers(){
-        var markers=new List<MapMarker>();
-        foreach(var f in this.viewModel.Favorites){
-            markers.Add(new MapMarker(f.Point,f.DisplayName,false));
-        }
-        if(this.viewModel.Selected is {} selected){
-            markers.Add(new MapMarker(selected,this.viewModel.SelectedName??"",true));
-        }
-        this.Map.Markers=markers;
+    private async void OnPointTapped(object? sender,GeoPoint point){
+        await this.viewModel.TapAsync(point,CancellationToken.None);
     }
 
-    private void OnZoomIn(object? sender,EventArgs e){
-        this.Map.ZoomBy(2);
+    private void OnFocusRequested(object? sender,MapFocusRequest request){
+        this.Map.FocusOn(request.Point,FocusZoom);
     }
 
-    private void OnZoomOut(object? sender,EventArgs e){
-        this.Map.ZoomBy(0.5);
+    private async void OnAttributionTapped(object? sender,TappedEventArgs e){
+        await Shell.Current.GoToAsync(Routes.About);
     }
 }

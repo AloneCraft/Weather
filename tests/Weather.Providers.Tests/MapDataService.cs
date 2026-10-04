@@ -80,13 +80,12 @@ public class MapDataService{
             Assert.Contains(f.Sources,static s=>s.ProductName=="アメダス");
         }
         {
-            //風(予報の時刻): 海上分布予報の風向(8 方位の矢印)と強風の風速
+            //風(予報の時刻): 海上分布予報の風向(8 方位の矢印)。風速のタイルは使わない
             var f=await maps.GetFrameAsync(FieldLayer.Wind,Utc(4,6),ct);
             Assert.Equal(ArrowKind.Forecast,f.Arrows!.Kind);
             Assert.True(f.Arrows.Arrows.Count>1000);
             Assert.All(f.Arrows.Arrows,static a=>Assert.Equal(0,a.FromDirectionDeg%45));
-            var ws=Assert.Single(f.Tiles);
-            Assert.Equal((JmaTileProduct.MarineForecast,"ws",8,false),(ws.Product,ws.Element,ws.MaxZoom,ws.EvenZoomOnly));
+            Assert.Empty(f.Tiles);
         }
         {
             //風(海上分布予報の後): 日本周辺は予報期間外

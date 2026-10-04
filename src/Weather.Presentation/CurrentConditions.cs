@@ -7,6 +7,10 @@ public sealed record CurrentConditions(string Temperature,string Icon,string Tex
     public static CurrentConditions From(Forecast forecast,GeoPoint point,DateTimeOffset now,TimeZoneInfo zone,UnitSystem units){
         ArgumentNullException.ThrowIfNull(forecast);
         var current=forecast.FindPoint(now);
+        if(current?.TemperatureC is null){
+            //気象庁の時系列は 3 時間ごとで次の時刻から始まり、17 時の発表後は今日の最高気温もない。3 時間以内の次の値を使う
+            current=forecast.TimeSeries.FirstOrDefault(p=>p.TemperatureC is not null&&p.End>now&&p.Start-now<=TimeSpan.FromHours(3))??current;
+        }
         var today=forecast.Daily.FirstOrDefault(d=>d.Date==DateOnly.FromDateTime(TimeText.Local(now,zone).DateTime))??forecast.Daily.FirstOrDefault();
         var night=IsNight(point,now);
         var temperature="--";

@@ -157,4 +157,38 @@
   <data name="NotificationPermissionDenied" xml:space="preserve"><value>Notifications are not allowed. Please allow notifications in the device settings.</value></data>
   <data name="WidgetSettingsNote" xml:space="preserve"><value>The widget shows your first favorite location.</value></data>
   <data name="WidgetOpenApp" xml:space="preserve"><value>Open the app to show the weather</value></data>
+  <data name="LayerWind" xml:space="preserve"><value>Wind</value></data>
+  <data name="LayerPrecipitation" xml:space="preserve"><value>Rain &amp; snow</value></data>
+  <data name="LayerTemperature" xml:space="preserve"><value>Temperature</value></data>
+  <data name="LayerClouds" xml:space="preserve"><value>Clouds &amp; pressure</value></data>
+  <data name="WeatherClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="WeatherCloudy" xml:space="preserve"><value>Cloudy</value></data>
+  <data name="WeatherRain" xml:space="preserve"><value>Rain</value></data>
+  <data name="WeatherRainOrSnow" xml:space="preserve"><value>Rain or snow</value></data>
+  <data name="WeatherSnow" xml:space="preserve"><value>Snow</value></data>
+  <data name="LegendBelowFormat" xml:space="preserve"><value>&lt; {0}</value></data>
+  <data name="LegendAboveFormat" xml:space="preserve"><value>≥ {0}</value></data>
+  <data name="LegendPressure" xml:space="preserve"><value>White lines: isobars every 4 hPa</value></data>
+  <data name="JapanNoteOutOfRange" xml:space="preserve"><value>Around Japan: not shown beyond JMA's forecast period</value></data>
+  <data name="JapanNoteNotAvailable" xml:space="preserve"><value>Around Japan: no JMA data for this time</value></data>
+  <data name="JapanNoteObservation" xml:space="preserve"><value>Around Japan: JMA AMeDAS observations</value></data>
+  <data name="JapanNoteMarine" xml:space="preserve"><value>Seas around Japan: JMA marine forecast (wind direction)</value></data>
+  <data name="JapanNoteJma" xml:space="preserve"><value>Around Japan: issued by JMA</value></data>
+  <data name="MapTimeFormat" xml:space="preserve"><value>ddd M/d H:mm</value></data>
+  <data name="TimelineNow" xml:space="preserve"><value>Now</value></data>
+  <data name="RelativeHoursFormat" xml:space="preserve"><value>{0:+0;-0} h</value></data>
+  <data name="ProbeNoData" xml:space="preserve"><value>No data</value></data>
+  <data name="ProbeJapanOnly" xml:space="preserve"><value>Around Japan, only JMA data is shown</value></data>
+  <data name="ProbeNone" xml:space="preserve"><value>None</value></data>
+  <data name="CompassPoints" xml:space="preserve"><value>N,NNE,NE,ENE,E,ESE,SE,SSE,S,SSW,SW,WSW,W,WNW,NW,NNW</value></data>
+  <data name="Initialized" xml:space="preserve"><value>run</value></data>
+  <data name="OpenForecast" xml:space="preserve"><value>Forecast here</value></data>
+  <data name="AddToFavorites" xml:space="preserve"><value>Add to favorites</value></data>
+  <data name="OpenDetail" xml:space="preserve"><value>Details</value></data>
+  <data name="Play" xml:space="preserve"><value>Play</value></data>
+  <data name="Pause" xml:space="preserve"><value>Pause</value></data>
+  <data name="MapLayersTitle" xml:space="preserve"><value>Layers</value></data>
+  <data name="SearchPlaceholderMap" xml:space="preserve"><value>Search places</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Observed" xml:space="preserve"><value>observed</value></data>
 </root>

@@ -35,7 +35,7 @@ internal sealed class TileLayer:IDisposable{
     }
 
     public void Draw(SKCanvas canvas,MapView view,SKSize size,JmaTileLayer layer){
-        var z=layer.TileZoomFor(view.Zoom);
+        var z=layer.TileZoomFor(view.Zoom+Math.Log2(Math.Max(1,view.PixelRatio)));
         var n=1<<z;
         var s=view.WorldSize;
         var (ox,oy)=view.Origin(size);

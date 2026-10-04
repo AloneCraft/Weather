@@ -40,8 +40,8 @@ public sealed class FavoritesService(IFavoritesStore store,IWeatherService weath
     }
 }
 
-/// <summary>地点検索(オフライン)。入力のたびに検索し、選んだ候補をお気に入りに追加する。</summary>
-public sealed partial class SearchViewModel(IPlaceSearch search,FavoritesService favorites,ILocationService location,IWeatherService weather,INavigator navigator,IDialogService dialogs):ObservableObject{
+/// <summary>地点検索(オフライン)。入力のたびに検索し、選んだ候補を地図に出して予報シートを開く(お気に入りへの追加はシートから)。</summary>
+public sealed partial class SearchViewModel(IPlaceSearch search,FavoritesService favorites,ILocationService location,IWeatherService weather,INavigator navigator,IDialogService dialogs,MapFocusService focus):ObservableObject{
     public ObservableCollection<PlaceSuggestion> Results{get;}=[];
     [ObservableProperty]public partial string Query{get;set;}="";
     [ObservableProperty]public partial bool IsBusy{get;set;}
@@ -68,13 +68,8 @@ public sealed partial class SearchViewModel(IPlaceSearch search,FavoritesService
         if(suggestion is null){
             return;
         }
-        this.IsBusy=true;
-        try{
-            await favorites.AddAsync(suggestion.Name,suggestion.Point,CancellationToken.None);
-            await navigator.GoBackAsync();
-        }finally{
-            this.IsBusy=false;
-        }
+        focus.Request(suggestion.Point,suggestion.Name);
+        await navigator.GoBackAsync();
     }
 
     [RelayCommand]
@@ -151,43 +146,5 @@ public sealed partial class PlacesViewModel(IFavoritesStore store,FavoritesServi
         this.Items.Move(index,target);
         await store.ReorderAsync([..this.Items.Select(static i=>i.Id)],CancellationToken.None);
         favorites.NotifyChanged();
-    }
-}
-
-/// <summary>世界地図での地点選択(Phase 2)。タップ位置を解決して確認後に追加する。</summary>
-public sealed partial class MapPickerViewModel(IWeatherService weather,IFavoritesStore store,FavoritesService favorites,INavigator navigator):ObservableObject{
-    public ObservableCollection<FavoritePlace> Favorites{get;}=[];
-    [ObservableProperty]public partial GeoPoint? Selected{get;set;}
-    [ObservableProperty]public partial string? SelectedName{get;set;}
-    [ObservableProperty]public partial string? SelectedDetail{get;set;}
-    [ObservableProperty]public partial bool CanAdd{get;set;}
-
-    [RelayCommand]
-    public async Task LoadAsync(){
-        this.Favorites.Clear();
-        foreach(var f in await store.GetAllAsync(CancellationToken.None)){
-            this.Favorites.Add(f);
-        }
-    }
-
-    public async Task SelectAsync(GeoPoint point){
-        this.Selected=point;
-        var location=await weather.ResolveAsync(point,CancellationToken.None);
-        this.SelectedName=location.DisplayName;
-        var detail=location.AdminName;
-        if(location.JmaArea is {Kind:JmaAreaMatchKind.OutOfCoverage}){
-            detail=Strings.MapOutOfCoverage;
-        }
-        this.SelectedDetail=detail;
-        this.CanAdd=location.JmaArea is not {Kind:JmaAreaMatchKind.OutOfCoverage};
-    }
-
-    [RelayCommand]
-    private async Task AddAsync(){
-        if(this.Selected is not {} point||this.SelectedName is null||!this.CanAdd){
-            return;
-        }
-        await favorites.AddAsync(this.SelectedName,point,CancellationToken.None);
-        await navigator.GoBackAsync();
     }
 }

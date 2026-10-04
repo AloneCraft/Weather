@@ -157,4 +157,38 @@
   <data name="NotificationPermissionDenied" xml:space="preserve"><value>通知が許可されていません。端末の設定で通知を許可してください。</value></data>
   <data name="WidgetSettingsNote" xml:space="preserve"><value>ウィジェットにはお気に入りの先頭の地点を表示します。</value></data>
   <data name="WidgetOpenApp" xml:space="preserve"><value>アプリを開くと表示されます</value></data>
+  <data name="LayerWind" xml:space="preserve"><value>風</value></data>
+  <data name="LayerPrecipitation" xml:space="preserve"><value>雨・雪</value></data>
+  <data name="LayerTemperature" xml:space="preserve"><value>気温</value></data>
+  <data name="LayerClouds" xml:space="preserve"><value>雲・気圧</value></data>
+  <data name="WeatherClear" xml:space="preserve"><value>晴れ</value></data>
+  <data name="WeatherCloudy" xml:space="preserve"><value>くもり</value></data>
+  <data name="WeatherRain" xml:space="preserve"><value>雨</value></data>
+  <data name="WeatherRainOrSnow" xml:space="preserve"><value>雨または雪</value></data>
+  <data name="WeatherSnow" xml:space="preserve"><value>雪</value></data>
+  <data name="LegendBelowFormat" xml:space="preserve"><value>{0} 未満</value></data>
+  <data name="LegendAboveFormat" xml:space="preserve"><value>{0} 以上</value></data>
+  <data name="LegendPressure" xml:space="preserve"><value>白線: 等圧線(4 hPa ごと)</value></data>
+  <data name="JapanNoteOutOfRange" xml:space="preserve"><value>日本周辺: 気象庁の予報期間外のため表示しません</value></data>
+  <data name="JapanNoteNotAvailable" xml:space="preserve"><value>日本周辺: この時刻の気象庁のデータはありません</value></data>
+  <data name="JapanNoteObservation" xml:space="preserve"><value>日本周辺: 気象庁のアメダスの観測値</value></data>
+  <data name="JapanNoteMarine" xml:space="preserve"><value>日本周辺の海上: 気象庁の海上分布予報(風向)</value></data>
+  <data name="JapanNoteJma" xml:space="preserve"><value>日本周辺: 気象庁の発表</value></data>
+  <data name="MapTimeFormat" xml:space="preserve"><value>M/d(ddd) H:mm</value></data>
+  <data name="TimelineNow" xml:space="preserve"><value>現在</value></data>
+  <data name="RelativeHoursFormat" xml:space="preserve"><value>{0:+0;-0} 時間</value></data>
+  <data name="ProbeNoData" xml:space="preserve"><value>データなし</value></data>
+  <data name="ProbeJapanOnly" xml:space="preserve"><value>日本周辺は気象庁の発表だけを表示します</value></data>
+  <data name="ProbeNone" xml:space="preserve"><value>該当なし</value></data>
+  <data name="CompassPoints" xml:space="preserve"><value>北,北北東,北東,東北東,東,東南東,南東,南南東,南,南南西,南西,西南西,西,西北西,北西,北北西</value></data>
+  <data name="Initialized" xml:space="preserve"><value>初期値</value></data>
+  <data name="OpenForecast" xml:space="preserve"><value>この地点の予報</value></data>
+  <data name="AddToFavorites" xml:space="preserve"><value>お気に入りに追加</value></data>
+  <data name="OpenDetail" xml:space="preserve"><value>詳しく見る</value></data>
+  <data name="Play" xml:space="preserve"><value>再生</value></data>
+  <data name="Pause" xml:space="preserve"><value>停止</value></data>
+  <data name="MapLayersTitle" xml:space="preserve"><value>表示</value></data>
+  <data name="SearchPlaceholderMap" xml:space="preserve"><value>地点を検索</value></data>
+  <data name="Back" xml:space="preserve"><value>戻る</value></data>
+  <data name="Observed" xml:space="preserve"><value>観測</value></data>
 </root>
