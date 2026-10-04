@@ -172,6 +172,13 @@ public class ContractMapper{
             Assert.Equal(2,restored.Forecast.Daily[0].Parts.Count);
         }
         {
+            //日本周辺で気象庁の区域から遠い地点(OutOfCoverage)の距離は無限大。直列化で失敗せず、往復で値が保たれる
+            var location=Sample.Tokyo with{JmaArea=new JmaAreaMatch(JmaAreaMatchKind.OutOfCoverage,null,double.PositiveInfinity)};
+            var json=RemoteJson.Serialize(new ResolveResponse(Contracts.ContractMapper.ToDto(location),Availability.NotSupported,false,[]));
+            var restored=Contracts.ContractMapper.ToModel(RemoteJson.Deserialize<ResolveResponse>(json).Location);
+            Assert.Equal(location,restored);
+        }
+        {
             //出典は表に 1 回だけ載せる(8 区間 + 日別で出典は 2 種類)
             var dto=Contracts.ContractMapper.ToDto(Sample.JmaForecast());
             Assert.Equal(2,dto.Sources.Count);

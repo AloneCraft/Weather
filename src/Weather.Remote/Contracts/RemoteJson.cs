@@ -21,6 +21,8 @@ public static class RemoteJson{
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy=JsonKnownNamingPolicy.CamelCase,
     UseStringEnumConverter=true,
+    //OutOfCoverage の距離は無限大(区域が 20 km 以内にない)。JSON の数値には書けないので "Infinity" の文字列で往復する
+    NumberHandling=JsonNumberHandling.AllowNamedFloatingPointLiterals,
     DefaultIgnoreCondition=JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(ResolveResponse))]
 [JsonSerializable(typeof(ForecastResponse))]
