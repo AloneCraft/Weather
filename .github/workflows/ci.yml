@@ -26,6 +26,9 @@ jobs:
           dotnet test --project tests/Weather.Rendering.Tests
           dotnet test --project tests/Weather.Infrastructure.Tests
           dotnet test --project tests/Weather.Presentation.Tests
+          dotnet test --project tests/Weather.Remote.Tests
+      - name: Functions(Phase 4)のビルド
+        run: dotnet build src/Weather.Functions/Weather.Functions.csproj -warnaserror
 
   build-android:
     if: github.event_name != 'schedule'
@@ -76,6 +79,17 @@ jobs:
             grep -iE "error|failed" build-ios-widget.log | sort -u | head -40 | sed 's/^/::error::/'
             exit 1
           }
+      # 成果物の確認(.app とウィジェット拡張の同梱)。結果は注釈に出す
+      - name: 成果物の確認
+        run: |
+          app=$(find src/Weather.App/bin -type d -name "Weather.App.app" | head -1)
+          if [ -z "$app" ]; then echo "::error::Weather.App.app が見つかりません"; exit 1; fi
+          appex="$app/PlugIns/WeatherWidget.appex"
+          if [ ! -d "$appex" ]; then echo "::error::ウィジェット拡張が同梱されていません: $appex"; exit 1; fi
+          echo "::notice::$(du -sh "$app" | cut -f1) $app / widget $(du -sh "$appex" | cut -f1) / $(plutil -extract CFBundleIdentifier raw "$appex/Info.plist")"
+          tail -5 build-ios.log | sed 's/^/::notice::/'
+          tail -3 src/Weather.Widget.iOS/build-widget.log | sed 's/^/::notice::/'
+          tail -5 build-ios-widget.log | sed 's/^/::notice::/'
 
   live:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

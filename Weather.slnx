@@ -19,6 +19,8 @@
     <Project Path="src/Weather.Infrastructure/Weather.Infrastructure.csproj" />
     <Project Path="src/Weather.Presentation/Weather.Presentation.csproj" />
     <Project Path="src/Weather.App/Weather.App.csproj" />
+    <Project Path="src/Weather.Remote/Weather.Remote.csproj" />
+    <Project Path="src/Weather.Functions/Weather.Functions.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/Weather.SceneLab/Weather.SceneLab.csproj" />
@@ -33,5 +35,6 @@
     <Project Path="tests/Weather.Rendering.Tests/Weather.Rendering.Tests.csproj" />
     <Project Path="tests/Weather.Infrastructure.Tests/Weather.Infrastructure.Tests.csproj" />
     <Project Path="tests/Weather.Presentation.Tests/Weather.Presentation.Tests.csproj" />
+    <Project Path="tests/Weather.Remote.Tests/Weather.Remote.Tests.csproj" />
   </Folder>
 </Solution>

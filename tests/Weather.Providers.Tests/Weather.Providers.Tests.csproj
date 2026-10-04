@@ -2,6 +2,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Weather.Providers\Weather.Providers.csproj" />
     <ProjectReference Include="..\..\src\Weather.Geo\Weather.Geo.csproj" />
+    <!-- Phase 4 の中継(Functions)の結合テスト -->
+    <ProjectReference Include="..\..\src\Weather.Remote\Weather.Remote.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />

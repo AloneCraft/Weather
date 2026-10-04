@@ -18,6 +18,9 @@ artifacts/
 src/Weather.Widget.iOS/*.xcodeproj/
 src/Weather.Widget.iOS/build/
 
+## Azure Functions のローカル設定(local.settings.example.json を複製して使う)
+src/Weather.Functions/local.settings.json
+
 ## GeoDataBuilder の作業ディレクトリ(ダウンロードした元データ)
 tools/Weather.GeoDataBuilder/.cache/
 

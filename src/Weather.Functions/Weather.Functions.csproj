@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Phase 4(任意): Azure Functions(isolated worker)での中継 API。既定のアプリは直接取得(方針 2)で、これを使わない。
+    Providers / Geo / キャッシュをサーバー側で動かし、アプリは RemoteWeatherService(Weather.Remote)に切り替える。
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AzureFunctionsVersion>v4</AzureFunctionsVersion>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Weather.Functions</RootNamespace>
+    <!-- Functions のワーカーはトリミング・AOT に対応しないため、共有ライブラリ向けの設定を外す -->
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Weather.Core\Weather.Core.csproj" />
+    <ProjectReference Include="..\Weather.Providers\Weather.Providers.csproj" />
+    <ProjectReference Include="..\Weather.Geo\Weather.Geo.csproj" />
+    <ProjectReference Include="..\Weather.Remote\Weather.Remote.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="host.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="local.settings.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+</Project>
