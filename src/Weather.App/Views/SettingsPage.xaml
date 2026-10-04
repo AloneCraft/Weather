@@ -34,6 +34,15 @@
             </Grid>
             <Label Text="{x:Static res:Strings.AlertNotificationsNote}" FontSize="12" Opacity="0.7" />
             <Label Text="{x:Static res:Strings.WidgetSettingsNote}" FontSize="12" Opacity="0.7" />
+            <!-- 広告(Monetization.md)。BindingContext は AdSettingsViewModel(コードビハインドで設定) -->
+            <VerticalStackLayout x:Name="AdsSection" x:DataType="vm:AdSettingsViewModel" Spacing="8">
+                <Label Text="{x:Static res:Strings.AdsSection}" FontAttributes="Bold" />
+                <Label Text="{x:Static res:Strings.AdFreeActive}" IsVisible="{Binding IsAdFree}" FontSize="12" Opacity="0.7" />
+                <Label Text="{x:Static res:Strings.AdsNote}" IsVisible="{Binding IsAdFree, Converter={StaticResource Invert}}" FontSize="12" Opacity="0.7" />
+                <Button Text="{Binding PurchaseText}" Command="{Binding PurchaseCommand}" IsVisible="{Binding CanPurchase}" />
+                <Button Text="{x:Static res:Strings.RestorePurchases}" Command="{Binding RestoreCommand}" IsVisible="{Binding IsAdFree, Converter={StaticResource Invert}}" />
+                <Button Text="{x:Static res:Strings.AdPrivacyOptions}" Command="{Binding OpenPrivacyOptionsCommand}" IsVisible="{Binding IsPrivacyOptionsRequired}" />
+            </VerticalStackLayout>
             <Button Text="{x:Static res:Strings.DeleteHistory}" Command="{Binding DeleteHistoryCommand}" />
             <Button Text="{x:Static res:Strings.DataAndSources}" Command="{Binding OpenAboutCommand}" />
         </VerticalStackLayout>

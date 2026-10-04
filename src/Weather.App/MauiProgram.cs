@@ -3,6 +3,7 @@ using SkiaSharp.Views.Maui.Controls.Hosting;
 using Weather.App.Services;
 using Weather.Core;
 using Weather.Presentation.Background;
+using Weather.Presentation.Monetization;
 using Weather.App.Views;
 using Weather.Geo;
 using Weather.Infrastructure;
@@ -25,6 +26,11 @@ public static class MauiProgram{
             .ConfigureMauiHandlers(static handlers=>{
 #if IOS
                 handlers.AddHandler<Controls.MetalCanvasView,Controls.MetalCanvasViewHandler>();
+#if WEATHER_NATIVE_IOS
+                handlers.AddHandler<Controls.NativeBanner,Monetization.NativeBannerHandler>();
+#endif
+#elif ANDROID
+                handlers.AddHandler<Controls.NativeBanner,Monetization.NativeBannerHandler>();
 #endif
             });
 
@@ -48,11 +54,19 @@ public static class MauiProgram{
         services.AddSingleton<IAlertNotifier>(static sp=>sp.GetRequiredService<Background.AndroidBackgroundPlatform>());
         services.AddSingleton<IWidgetPublisher>(static sp=>sp.GetRequiredService<Background.AndroidBackgroundPlatform>());
         services.AddSingleton<IBackgroundScheduler>(static sp=>sp.GetRequiredService<Background.AndroidBackgroundPlatform>());
+        //広告・同意・課金(Monetization.md)
+        services.AddSingleton<IAdPlatform,Monetization.AndroidAdPlatform>();
+        services.AddSingleton<IPurchasePlatform,Monetization.AndroidPurchasePlatform>();
 #elif IOS
         services.AddSingleton<Background.IosBackgroundPlatform>();
         services.AddSingleton<IAlertNotifier>(static sp=>sp.GetRequiredService<Background.IosBackgroundPlatform>());
         services.AddSingleton<IWidgetPublisher>(static sp=>sp.GetRequiredService<Background.IosBackgroundPlatform>());
         services.AddSingleton<IBackgroundScheduler>(static sp=>sp.GetRequiredService<Background.IosBackgroundPlatform>());
+#if WEATHER_NATIVE_IOS
+        //広告・課金は Swift のラッパーを含むビルド(Mac で -p:EnableNativeIos=true)だけ。含まないビルドは何もしない実装のまま
+        services.AddSingleton<IAdPlatform,Monetization.IosAdPlatform>();
+        services.AddSingleton<IPurchasePlatform,Monetization.IosPurchasePlatform>();
+#endif
 #endif
         services.AddWeatherPresentation();
 

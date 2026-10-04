@@ -9,104 +9,108 @@
              x:DataType="vm:PlaceWeatherViewModel"
              Shell.NavBarIsVisible="False"
              BackgroundColor="#0B1026">
-    <Grid>
-        <controls:SceneView x:Name="Scene" Scene="{Binding Scene}" />
+    <!-- 最下部の行は広告のバナー(Monetization.md)。地図・出典の帯に重ねない。購入済み・同意なしなら高さ 0 -->
+    <Grid RowDefinitions="*,Auto">
+        <Grid>
+            <controls:SceneView x:Name="Scene" Scene="{Binding Scene}" />
 
-        <Grid RowDefinitions="Auto,*" Padding="12,40,12,0">
-            <HorizontalStackLayout Grid.Row="0" Spacing="8">
-                <Button Text="‹" Style="{StaticResource MapButton}" Clicked="OnBackClicked" SemanticProperties.Description="{x:Static res:Strings.Back}" />
-            </HorizontalStackLayout>
+            <Grid RowDefinitions="Auto,*" Padding="12,40,12,0">
+                <HorizontalStackLayout Grid.Row="0" Spacing="8">
+                    <Button Text="‹" Style="{StaticResource MapButton}" Clicked="OnBackClicked" SemanticProperties.Description="{x:Static res:Strings.Back}" />
+                </HorizontalStackLayout>
 
-            <RefreshView Grid.Row="1" Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}" RefreshColor="White">
-                <ScrollView>
-                    <VerticalStackLayout Spacing="4" Padding="0,8,0,24">
-                        <!-- 現在の天気 -->
-                        <Label Text="{Binding Name}" FontSize="26" FontAttributes="Bold" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
-                        <Label Text="{Binding AreaNote}" IsVisible="{Binding AreaNote, Converter={StaticResource HasValue}}" Style="{StaticResource Caption}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
-                        <HorizontalStackLayout Spacing="12" Margin="0,8,0,0" SemanticProperties.Description="{Binding AccessibleSummary}">
-                            <Label Text="{Binding CurrentIcon}" FontSize="52" VerticalOptions="Center" />
-                            <Label Text="{Binding CurrentTemperature}" FontSize="64" FontAttributes="Bold" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" VerticalOptions="Center" />
-                        </HorizontalStackLayout>
-                        <Label Text="{Binding CurrentText}" FontSize="16" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" LineBreakMode="WordWrap" />
-                        <Label Text="{Binding StatusMessage}" IsVisible="{Binding StatusMessage, Converter={StaticResource HasValue}}" FontSize="13" TextColor="#FFD54F" />
+                <RefreshView Grid.Row="1" Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}" RefreshColor="White">
+                    <ScrollView>
+                        <VerticalStackLayout Spacing="4" Padding="0,8,0,24">
+                            <!-- 現在の天気 -->
+                            <Label Text="{Binding Name}" FontSize="26" FontAttributes="Bold" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
+                            <Label Text="{Binding AreaNote}" IsVisible="{Binding AreaNote, Converter={StaticResource HasValue}}" Style="{StaticResource Caption}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
+                            <HorizontalStackLayout Spacing="12" Margin="0,8,0,0" SemanticProperties.Description="{Binding AccessibleSummary}">
+                                <Label Text="{Binding CurrentIcon}" FontSize="52" VerticalOptions="Center" />
+                                <Label Text="{Binding CurrentTemperature}" FontSize="64" FontAttributes="Bold" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <Label Text="{Binding CurrentText}" FontSize="16" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" LineBreakMode="WordWrap" />
+                            <Label Text="{Binding StatusMessage}" IsVisible="{Binding StatusMessage, Converter={StaticResource HasValue}}" FontSize="13" TextColor="#FFD54F" />
 
-                        <!-- 警報 -->
-                        <Border Style="{StaticResource Card}" BackgroundColor="{Binding HighestAlertTier, Converter={StaticResource TierColor}}" IsVisible="{Binding HasActiveAlerts}">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding OpenAlertsCommand}" />
-                            </Border.GestureRecognizers>
-                            <VerticalStackLayout>
-                                <Label Text="{x:Static res:Strings.ActiveAlerts}" FontSize="12" TextColor="White" />
-                                <Label Text="{Binding AlertSummary}" FontSize="16" FontAttributes="Bold" TextColor="White" />
-                            </VerticalStackLayout>
-                        </Border>
-                        <Label Text="{Binding AlertSummary}" IsVisible="{Binding HasActiveAlerts, Converter={StaticResource Invert}}" Style="{StaticResource Caption}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding OpenAlertsCommand}" />
-                            </Label.GestureRecognizers>
-                        </Label>
+                            <!-- 警報 -->
+                            <Border Style="{StaticResource Card}" BackgroundColor="{Binding HighestAlertTier, Converter={StaticResource TierColor}}" IsVisible="{Binding HasActiveAlerts}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenAlertsCommand}" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout>
+                                    <Label Text="{x:Static res:Strings.ActiveAlerts}" FontSize="12" TextColor="White" />
+                                    <Label Text="{Binding AlertSummary}" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                                </VerticalStackLayout>
+                            </Border>
+                            <Label Text="{Binding AlertSummary}" IsVisible="{Binding HasActiveAlerts, Converter={StaticResource Invert}}" Style="{StaticResource Caption}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenAlertsCommand}" />
+                                </Label.GestureRecognizers>
+                            </Label>
 
-                        <!-- 時間別 -->
-                        <Border Style="{StaticResource Card}" BackgroundColor="{Binding IsDarkBackground, Converter={StaticResource CardColor}}" IsVisible="{Binding State, Converter={StaticResource HasData}}">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding OpenHourlyCommand}" />
-                            </Border.GestureRecognizers>
-                            <VerticalStackLayout>
-                                <Label Text="{x:Static res:Strings.Hourly}" Style="{StaticResource SectionTitle}" TextColor="White" />
-                                <CollectionView ItemsSource="{Binding Hours}" HeightRequest="96" ItemsLayout="HorizontalList" HorizontalScrollBarVisibility="Never">
-                                    <CollectionView.ItemTemplate>
-                                        <DataTemplate x:DataType="vm:HourItem">
-                                            <VerticalStackLayout WidthRequest="56" Spacing="2">
-                                                <Label Text="{Binding TimeText}" FontSize="12" HorizontalOptions="Center" TextColor="White" />
-                                                <Label Text="{Binding Icon}" FontSize="22" HorizontalOptions="Center" />
-                                                <Label Text="{Binding Temperature}" FontSize="15" FontAttributes="Bold" HorizontalOptions="Center" TextColor="White" />
-                                                <Label Text="{Binding Probability}" FontSize="11" HorizontalOptions="Center" TextColor="#90CAF9" />
-                                            </VerticalStackLayout>
+                            <!-- 時間別 -->
+                            <Border Style="{StaticResource Card}" BackgroundColor="{Binding IsDarkBackground, Converter={StaticResource CardColor}}" IsVisible="{Binding State, Converter={StaticResource HasData}}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenHourlyCommand}" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout>
+                                    <Label Text="{x:Static res:Strings.Hourly}" Style="{StaticResource SectionTitle}" TextColor="White" />
+                                    <CollectionView ItemsSource="{Binding Hours}" HeightRequest="96" ItemsLayout="HorizontalList" HorizontalScrollBarVisibility="Never">
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:HourItem">
+                                                <VerticalStackLayout WidthRequest="56" Spacing="2">
+                                                    <Label Text="{Binding TimeText}" FontSize="12" HorizontalOptions="Center" TextColor="White" />
+                                                    <Label Text="{Binding Icon}" FontSize="22" HorizontalOptions="Center" />
+                                                    <Label Text="{Binding Temperature}" FontSize="15" FontAttributes="Bold" HorizontalOptions="Center" TextColor="White" />
+                                                    <Label Text="{Binding Probability}" FontSize="11" HorizontalOptions="Center" TextColor="#90CAF9" />
+                                                </VerticalStackLayout>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+                                    <Label Text="{Binding IssuesText}" IsVisible="{Binding IssuesText, Converter={StaticResource HasValue}}" Style="{StaticResource Caption}" TextColor="#FFD54F" />
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- 日別 -->
+                            <Border Style="{StaticResource Card}" BackgroundColor="{Binding IsDarkBackground, Converter={StaticResource CardColor}}" IsVisible="{Binding State, Converter={StaticResource HasData}}">
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Days}" Spacing="2">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:DayItem">
+                                            <Grid ColumnDefinitions="78,32,*,44,44,40" Padding="0,6" ColumnSpacing="4">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PlaceWeatherViewModel}}, Path=OpenDayCommand, x:DataType=vm:PlaceWeatherViewModel}" CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
+                                                <Label Grid.Column="0" Text="{Binding DateText}" FontSize="13" TextColor="White" VerticalOptions="Center" />
+                                                <Label Grid.Column="1" Text="{Binding Icon}" FontSize="18" VerticalOptions="Center" />
+                                                <Label Grid.Column="2" Text="{Binding Weather}" FontSize="12" TextColor="White" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                                <Label Grid.Column="3" Text="{Binding Max}" FontSize="14" TextColor="#FFAB91" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                                <Label Grid.Column="4" Text="{Binding Min}" FontSize="14" TextColor="#90CAF9" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                                <Label Grid.Column="5" Text="{Binding Probability}" FontSize="11" TextColor="#90CAF9" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                            </Grid>
                                         </DataTemplate>
-                                    </CollectionView.ItemTemplate>
-                                </CollectionView>
-                                <Label Text="{Binding IssuesText}" IsVisible="{Binding IssuesText, Converter={StaticResource HasValue}}" Style="{StaticResource Caption}" TextColor="#FFD54F" />
-                            </VerticalStackLayout>
-                        </Border>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </Border>
 
-                        <!-- 日別 -->
-                        <Border Style="{StaticResource Card}" BackgroundColor="{Binding IsDarkBackground, Converter={StaticResource CardColor}}" IsVisible="{Binding State, Converter={StaticResource HasData}}">
-                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Days}" Spacing="2">
-                                <BindableLayout.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:DayItem">
-                                        <Grid ColumnDefinitions="78,32,*,44,44,40" Padding="0,6" ColumnSpacing="4">
-                                            <Grid.GestureRecognizers>
-                                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PlaceWeatherViewModel}}, Path=OpenDayCommand, x:DataType=vm:PlaceWeatherViewModel}" CommandParameter="{Binding .}" />
-                                            </Grid.GestureRecognizers>
-                                            <Label Grid.Column="0" Text="{Binding DateText}" FontSize="13" TextColor="White" VerticalOptions="Center" />
-                                            <Label Grid.Column="1" Text="{Binding Icon}" FontSize="18" VerticalOptions="Center" />
-                                            <Label Grid.Column="2" Text="{Binding Weather}" FontSize="12" TextColor="White" LineBreakMode="TailTruncation" VerticalOptions="Center" />
-                                            <Label Grid.Column="3" Text="{Binding Max}" FontSize="14" TextColor="#FFAB91" HorizontalTextAlignment="End" VerticalOptions="Center" />
-                                            <Label Grid.Column="4" Text="{Binding Min}" FontSize="14" TextColor="#90CAF9" HorizontalTextAlignment="End" VerticalOptions="Center" />
-                                            <Label Grid.Column="5" Text="{Binding Probability}" FontSize="11" TextColor="#90CAF9" HorizontalTextAlignment="End" VerticalOptions="Center" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </BindableLayout.ItemTemplate>
-                            </VerticalStackLayout>
-                        </Border>
+                            <HorizontalStackLayout Spacing="8" IsVisible="{Binding ObservationsAvailable}">
+                                <Button Text="{x:Static res:Strings.History}" Style="{StaticResource ToolButton}" Command="{Binding OpenHistoryCommand}" />
+                            </HorizontalStackLayout>
 
-                        <HorizontalStackLayout Spacing="8" IsVisible="{Binding ObservationsAvailable}">
-                            <Button Text="{x:Static res:Strings.History}" Style="{StaticResource ToolButton}" Command="{Binding OpenHistoryCommand}" />
-                        </HorizontalStackLayout>
-
-                        <!-- 出典(方針 7) -->
-                        <Border Style="{StaticResource Card}" BackgroundColor="{Binding IsDarkBackground, Converter={StaticResource CardColor}}" IsVisible="{Binding AttributionCredit, Converter={StaticResource HasValue}}">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding OpenSourcesCommand}" />
-                            </Border.GestureRecognizers>
-                            <VerticalStackLayout>
-                                <Label Text="{Binding AttributionShort}" Style="{StaticResource Caption}" TextColor="White" />
-                                <Label Text="{Binding AttributionCredit}" Style="{StaticResource Caption}" TextColor="White" />
-                            </VerticalStackLayout>
-                        </Border>
-                    </VerticalStackLayout>
-                </ScrollView>
-            </RefreshView>
+                            <!-- 出典(方針 7) -->
+                            <Border Style="{StaticResource Card}" BackgroundColor="{Binding IsDarkBackground, Converter={StaticResource CardColor}}" IsVisible="{Binding AttributionCredit, Converter={StaticResource HasValue}}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenSourcesCommand}" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding AttributionShort}" Style="{StaticResource Caption}" TextColor="White" />
+                                    <Label Text="{Binding AttributionCredit}" Style="{StaticResource Caption}" TextColor="White" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
+                    </ScrollView>
+                </RefreshView>
+            </Grid>
         </Grid>
+        <controls:AdBannerView Grid.Row="1" BackgroundColor="#0B1026" />
     </Grid>
 </ContentPage>

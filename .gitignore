@@ -26,3 +26,5 @@ tools/Weather.GeoDataBuilder/.cache/
 
 ## テストの出力
 tests/**/GoldenOutput/
+src/Weather.Native.iOS/*.xcodeproj/
+src/Weather.Native.iOS/build/

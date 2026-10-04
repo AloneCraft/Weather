@@ -22,7 +22,7 @@
 | `src/Weather.Rendering` | SkiaSharp 4 によるシーン・グラフ・世界地図の描画 |
 | `src/Weather.Infrastructure` | ファイルの HTTP キャッシュ、SQLite(お気に入り・観測履歴) |
 | `src/Weather.Presentation` | ViewModel(CommunityToolkit.Mvvm) |
-| `src/Weather.App` | MAUI アプリ(Android は SKGLView、iOS は SKMetalView の自作ハンドラー)。通知・ウィジェット・背景更新の各 OS の実装 |
+| `src/Weather.App` | MAUI アプリ(Android は SKGLView、iOS は SKMetalView の自作ハンドラー)。通知・ウィジェット・背景更新・広告(AdMob)・課金の各 OS の実装 |
 | `src/Weather.Widget.iOS` | iOS のウィジェット(WidgetKit 拡張。Swift / XcodeGen) |
 | `src/Weather.Remote` | Phase 4: 中継の電文・サーバー側の要求処理・RemoteWeatherService(Core のみに依存) |
 | `src/Weather.Functions` | Phase 4: Azure Functions(isolated worker)の中継 API。既定のアプリは使わない(直接取得) |
@@ -54,6 +54,7 @@ dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:IncludeWidgetE
 
 - Functions(任意)をローカルで動かすには Azure Functions Core Tools が必要。`src/Weather.Functions/local.settings.example.json` を `local.settings.json` に複製してから `func start` を実行する。アプリを中継に切り替えるには、MauiProgram で `AddWeatherProviders` の後に `AddRemoteWeatherService(new Uri("https://<関数アプリ>/api/"),userAgent)` を呼ぶ。
 - リリース用の Android AAB は GitHub Actions の release ワークフロー(手動実行)で作る。署名鍵はリポジトリに置かず、シークレット(ANDROID_KEYSTORE_BASE64 / ANDROID_KEY_ALIAS / ANDROID_STORE_PASSWORD / ANDROID_KEY_PASSWORD)か環境変数(WEATHER_ANDROID_*。Weather.App.csproj)で渡す。未設定ならデバッグ鍵で署名される。
+- 広告(AdMob)の ID: Debug は Google のテスト用 ID を使う。Release では本番の ID をシークレット(ADMOB_ANDROID_APP_ID / ADMOB_ANDROID_BANNER_ID)か環境変数(WEATHER_ADMOB_*。Weather.App.csproj)で渡す。未設定なら Release ビルドは失敗する(動作確認だけなら `-p:UseTestAds=true`)。同意フォームの試験は `-p:AdsDebugGeography=EEA`(docs/Design/Monetization.md)。
 - Android エミュレーターでの確認手順は [docs/Design/TestStrategy.md](docs/Design/TestStrategy.md)「エミュレーターでの確認手順」。
 - 実 API の契約テストは通常の実行では動かない。週 1 回(CI の schedule)または手動で実行する。
 

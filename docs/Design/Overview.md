@@ -6,6 +6,7 @@
 - 地点をタップすると予報シート、引き上げると空のシーンを背景にした予報の詳細(時間別・日別)
 - 観測履歴の表示
 - 世界中の地域を選んで表示
+- 無料。地図と地点の詳細の最下部に広告のバナーを出し、買い切りの課金で消せる(2026-10-04 に決定。Monetization.md)
 
 ## 決定済みの方針(変更しない)
 
@@ -42,6 +43,7 @@
 | 8 | [History.md](History.md) 履歴機能 | 合意済み |
 | 9 | [TestStrategy.md](TestStrategy.md) テスト方針 | 合意済み |
 | 10 | [Phases.md](Phases.md) 開発フェーズ分け | 合意済み |
+| 11 | [Monetization.md](Monetization.md) 広告と課金 | 合意済み(iOS は試作中) |
 
 ## 当初の未決事項の決定
 
@@ -52,6 +54,7 @@
 | 端末内の履歴保存の方式 / 保持期間 | SQLite(Microsoft.Data.Sqlite)。日本・米国の観測のみ、既定 1 年 | CacheAndRouting.md / History.md |
 | グラフライブラリの選定 | SkiaSharp 4 で自前描画 | Rendering.md |
 | 世界地図・地点選択画面の実装方法 | Natural Earth のオフラインベクターを SkiaSharp 4 で自前描画(Phase 2)。2026-10-04 にトップの地図(Web メルカトル)へ置き換え | Rendering.md / Screens.md |
+| 収益化(2026-10-04) | AdMob のバナー(地図と地点の詳細の最下部のみ)+買い切りの「広告を消す」。個人化は同意した人だけ(UMP・ATT)。初回リリースに含める | Monetization.md |
 | 地図トップのデータ・表現(2026-10-04) | 日本周辺 = 気象庁の地図タイル・アメダス、それ以外 = NOAA GFS 0.5°。層は風(粒子)・降水・気温・雲と気圧。日本周辺の風は現在時刻のアメダスの矢印と海上分布予報の風向。日本周辺の海上は海上分布予報の風向・風速の階級を区画ごとに(補間せずに)使って粒子を流す(2026-10-04)。背景は自前のベクター地図 | Rendering.md / WeatherProviders.md / Screens.md |
 
 ## 主な追加ガードレール(設計の過程で判明)
@@ -64,4 +67,4 @@
 
 ## 実装の状況
 
-Phase 0〜4 と地図トップへの作り替え(Phase 5)を実装済み。詳細と残作業は [Phases.md](Phases.md) の「実装の状況」を参照。
+Phase 0〜4 と地図トップへの作り替え(Phase 5)を実装済み。広告と課金(Phase 6)は Android を実装中、iOS は試作中。詳細と残作業は [Phases.md](Phases.md) の「実装の状況」を参照。

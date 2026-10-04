@@ -19,8 +19,21 @@
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.1.0" />
-    <!-- Android の背景更新(ウィジェット・警報の通知)。MAUI が使う AndroidX(Core 1.16.0.3・Lifecycle 2.9.2.1)と同じ版に依存する 2.10.3 に固定する(2.10.4 以降は新しい AndroidX を引き込みクラスが重複する) -->
-    <PackageVersion Include="Xamarin.AndroidX.Work.Runtime" Version="2.10.3" />
+    <!-- Android の背景更新(ウィジェット・警報の通知) -->
+    <PackageVersion Include="Xamarin.AndroidX.Work.Runtime" Version="2.11.2.1" />
+    <!-- Phase 6: 広告(AdMob)・同意(UMP)・課金(Play Billing)。試作 A1 で版を決める -->
+    <PackageVersion Include="Xamarin.GooglePlayServices.Ads" Version="125.5.0" />
+    <PackageVersion Include="Xamarin.Google.UserMessagingPlatform" Version="4.0.0.4" />
+    <PackageVersion Include="Xamarin.Android.Google.BillingClient" Version="9.1.0.2" />
+    <!-- 広告 SDK が MAUI 10.0.110 より新しい AndroidX(Lifecycle 2.11 等)を要求するため、MAUI が引き込む古い版を明示的に揃える(試作 A1) -->
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.11.0.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" Version="2.11.0.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.Process" Version="2.11.0.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.Service" Version="2.11.0.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Tracing.Tracing.Ktx" Version="2.0.0" />
+    <PackageVersion Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.9.0" />
+    <PackageVersion Include="Xamarin.AndroidX.AppCompat" Version="1.8.0" />
+    <PackageVersion Include="Xamarin.AndroidX.Collection.Ktx" Version="1.6.0.1" />
 
     <!-- Microsoft.Extensions -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />

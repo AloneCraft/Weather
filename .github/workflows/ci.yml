@@ -73,6 +73,23 @@ jobs:
             grep -iE "error|failed" build-ios.log | sort -u | head -40 | sed 's/^/::error::/'
             exit 1
           }
+      # 広告・同意・課金の Swift ラッパー(Google Mobile Ads・UMP を Swift Package で取得)→ バインディング → アプリ(Monetization.md)
+      - name: 広告・課金の Swift ラッパー(WeatherNative.xcframework)
+        run: |
+          brew install xcodegen
+          bash src/Weather.Native.iOS/build.sh 2>&1 | tee build-native.log || {
+            grep -iE "error|failed" build-native.log | sort -u | head -40 | sed 's/^/::error::/'
+            exit 1
+          }
+      - name: アプリ + 広告・課金(シミュレーター向け・署名なし)
+        run: |
+          dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:EnableCodeSigning=false -p:EnableNativeIos=true 2>&1 | tee build-ios-native.log || {
+            grep -iE "error|failed" build-ios-native.log | sort -u | head -40 | sed 's/^/::error::/'
+            exit 1
+          }
+          app=$(find src/Weather.App/bin -type d -name "Weather.App.app" | head -1)
+          if [ ! -d "$app/Frameworks/WeatherNative.framework" ]; then echo "::error::WeatherNative.framework が同梱されていません"; exit 1; fi
+          echo "::notice::GADApplicationIdentifier=$(plutil -extract GADApplicationIdentifier raw "$app/Info.plist")"
       - name: ウィジェット拡張(Swift / WidgetKit)
         working-directory: src/Weather.Widget.iOS
         run: |

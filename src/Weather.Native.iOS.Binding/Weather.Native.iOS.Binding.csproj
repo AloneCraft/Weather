@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    iOS の広告・同意・課金の Swift ラッパー(src/Weather.Native.iOS)のバインディング(Monetization.md)。
+    WeatherNative.xcframework は Mac で src/Weather.Native.iOS/build.sh を実行して作る(CI の build-ios ジョブ)。
+    Windows ではビルドしない(ソリューションのビルド対象から外し、App は -p:EnableNativeIos=true のときだけ参照する)。
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-ios</TargetFramework>
+    <IsBindingProject>true</IsBindingProject>
+    <RootNamespace>Weather.Native.iOS</RootNamespace>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <IsAotCompatible>false</IsAotCompatible>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <NativeReference Include="../Weather.Native.iOS/build/WeatherNative.xcframework">
+      <Kind>Framework</Kind>
+      <SmartLink>false</SmartLink>
+      <Frameworks>StoreKit AppTrackingTransparency</Frameworks>
+    </NativeReference>
+  </ItemGroup>
+</Project>

@@ -61,7 +61,7 @@
   <data name="AboutGeoNamesUsage" xml:space="preserve"><value>World place names (search)</value></data>
   <data name="AboutNaturalEarthUsage" xml:space="preserve"><value>Country borders (country detection, world map)</value></data>
   <data name="AboutPublicDomain" xml:space="preserve"><value>Public domain</value></data>
-  <data name="Privacy" xml:space="preserve"><value>Your location is used only to get forecasts. It is rounded to 2 decimal places (about 1 km) before being sent to MET Norway / NWS, and is never sent to JMA. Observation history and favorites are stored only on this device.</value></data>
+  <data name="Privacy" xml:space="preserve"><value>Your location is used only to get forecasts. It is rounded to 2 decimal places (about 1 km) before being sent to MET Norway / NWS, and is never sent to JMA. Observation history and favorites are stored only on this device. Your location is never passed to ads (Google AdMob), and personalized ads are shown only with your consent.</value></data>
   <data name="Law" xml:space="preserve"><value>Forecasts and warnings for Japan are shown exactly as issued by JMA. The app never creates its own forecasts or warnings.</value></data>
   <data name="HistoryTitleFormat" xml:space="preserve"><value>{0} — Observations</value></data>
   <data name="HistoryDefaultTitle" xml:space="preserve"><value>Observations</value></data>
@@ -192,6 +192,20 @@
   <data name="Back" xml:space="preserve"><value>Back</value></data>
   <data name="Observed" xml:space="preserve"><value>observed</value></data>
   <data name="AboutGfsUsage" xml:space="preserve"><value>Map wind, precipitation, temperature, clouds and pressure outside the area around Japan (NOAA numerical model output, colored by the app)</value></data>
+  <data name="AdsSection" xml:space="preserve"><value>Ads</value></data>
+  <data name="RemoveAds" xml:space="preserve"><value>Remove ads</value></data>
+  <data name="RemoveAdsWithPrice" xml:space="preserve"><value>Remove ads ({0})</value></data>
+  <data name="RestorePurchases" xml:space="preserve"><value>Restore purchases</value></data>
+  <data name="AdPrivacyOptions" xml:space="preserve"><value>Ad privacy settings</value></data>
+  <data name="AdFreeActive" xml:space="preserve"><value>Ads are removed (purchased)</value></data>
+  <data name="AdsNote" xml:space="preserve"><value>Ads appear only at the bottom of the map and place details, never on the warning screens</value></data>
+  <data name="PurchaseCompleted" xml:space="preserve"><value>Thank you for your purchase. Ads are now removed.</value></data>
+  <data name="PurchasePending" xml:space="preserve"><value>Ads will be removed once the payment is complete.</value></data>
+  <data name="PurchaseFailed" xml:space="preserve"><value>The purchase could not be completed. Please try again later.</value></data>
+  <data name="StoreUnavailable" xml:space="preserve"><value>Could not connect to the store.</value></data>
+  <data name="RestoreCompleted" xml:space="preserve"><value>Your purchase has been restored. Ads are now removed.</value></data>
+  <data name="RestoreNotFound" xml:space="preserve"><value>No purchase was found for this account.</value></data>
+  <data name="AdBannerDescription" xml:space="preserve"><value>Advertisement</value></data>
   <data name="JapanNoteMarineFlow" xml:space="preserve"><value>Seas around Japan: JMA marine forecast (8-point direction and speed class shown as flow per cell)</value></data>
   <data name="JapanNoteObservationMarineFlow" xml:space="preserve"><value>Around Japan: JMA AMeDAS observations on land; JMA marine forecast at sea (shown as flow per cell)</value></data>
 </root>

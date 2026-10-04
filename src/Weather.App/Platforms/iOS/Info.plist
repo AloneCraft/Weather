@@ -28,6 +28,8 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>現在地の天気を表示するために使います。MET Norway / NWS へは約 1 km の精度に丸めて送ります。</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>あなたに合った広告を表示するために使います。許可しなくても、アプリはすべての機能を使えます(広告を消す購入もできます)。</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

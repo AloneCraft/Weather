@@ -50,7 +50,7 @@ Weather/
 | Rendering | SceneState → SkiaSharp 描画、グラフ、地図(Web メルカトル・格子・タイル・粒子)。MAUI 非依存 | Scene, Geo | 不要(Web 版で再利用可能) |
 | Infrastructure | 端末側永続化(キャッシュストア・履歴ストアの実装) | Core | Blob / Table 等に置き換え |
 | Presentation | ViewModel、画面状態、ナビゲーション・ダイアログ・位置情報・Dispatcher の薄い抽象 | Core, Scene | 不要 |
-| App | MAUI ホスト、XAML View、DI 合成ルート、プラットフォーム実装(位置情報・保存パス・接続状態・通知・ウィジェット・背景更新)、描画ホスト(Android は SKGLView、iOS は SKMetalView の自作ハンドラー) | すべて(Remote を除く) | `AddRemoteWeatherService` で RemoteWeatherService に差し替え |
+| App | MAUI ホスト、XAML View、DI 合成ルート、プラットフォーム実装(位置情報・保存パス・接続状態・通知・ウィジェット・背景更新・広告・課金)、描画ホスト(Android は SKGLView、iOS は SKMetalView の自作ハンドラー) | すべて(Remote を除く) | `AddRemoteWeatherService` で RemoteWeatherService に差し替え |
 | Remote | Functions とアプリの間の電文(DTO)と変換、サーバー側の要求処理(WeatherApi。Functions のホストに依存しない)、クライアント(RemoteWeatherService) | Core | Phase 4 で実装済み。既定のアプリでは使わない(方針 2) |
 | Functions | Azure Functions(isolated worker)の HTTP API。resolve / forecast / alerts / stations / observations を WeatherApi に渡すだけ | Core, Providers, Geo, Remote | Phase 4 で実装済み(未配置) |
 | Widget.iOS | iOS のウィジェット(WidgetKit 拡張。Swift。XcodeGen で生成)。App Group の widget.json を表示するだけ | なし(JSON の形のみ Presentation と共有) | 不要 |
