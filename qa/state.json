@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 87,
-  "updated_at": "2026-10-04T16:23:49Z",
+  "revision": 91,
+  "updated_at": "2026-10-04T16:25:09Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 72,
+      "run_minutes": 74,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1517,6 +1517,61 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0027",
+      "title": "お気に入り: 同じ地点(同じ予報セル)を何度でも追加でき、同じ地点の行とピンが重複する",
+      "source_ids": [
+        "I-6"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 12,
+      "symptom": "FavoritesService.AddAsync は毎回新しい ID で保存し、重複を確認しない。同じ検索候補・同じ地図の位置を繰り返し追加すると、お気に入りの行・地図のピン・背景取得の枠(先頭 5 地点)が重複する(コード読み)",
+      "expected": "同じ地点は 2 行目を作らず、既存の地点を返す(設計書に重複を許す記述はない。同一とみなす範囲は予報の座標の丸め 0.01° と同じセル、とした AI の判断)",
+      "cause": {
+        "confirmed": "AddAsync が既存の地点と照合しない(コード読み)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:24:33Z",
+          "reason": "優先: お気に入りの重複は画面に直接見える(行・ピン・背景取得の枠)。決定的に再現でき、局所的に直せる",
+          "code_before": {
+            "commit": "fc3630dab349b84376bc9992877e4dc466a09ca2",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: AddAsync が既存と照合しない",
+          "hypothesis": "同じ丸め座標(予報の要求と同じ小数 2 桁)の既存の地点があれば、保存せず既存を返せば重複しない",
+          "planned_change": "src/Weather.Presentation/ViewModels/PlaceViewModels.cs の FavoritesService.AddAsync のみ + tests/Weather.Presentation.Tests に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト全 PASS、別のセルは追加できる",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:25:09Z",
+          "diff_sha256": "1547048c2d6988b6dc42a40f47cc845f52a9a12d08ca7e006a8fa27240c60d99",
+          "commit": "21c1672d775cf6f44a6108212b0b7bacce715be1"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/FavoritesService.AddAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:24:22Z",
+      "verified": {
+        "commit": "21c1672d775cf6f44a6108212b0b7bacce715be1",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 74,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1602,6 +1657,12 @@
       "at": "2026-10-04T15:49:58Z",
       "decision": "BUG-0008 は下流 3 か所を直さず、発生源の LocationResolver で端末が解決できない ID なら経度から決める Etc/GMT±n に落とす最小修正にした(LocationResolver 自身が海上で使う規則と同じ)。夏時間は失われるが UTC より近似が良い。方針に異論があれば BUG-0008 の差分を見直す",
       "made_by": "AI(要レビュー)"
+    },
+    {
+      "id": "D-0005",
+      "at": "2026-10-04T16:24:22Z",
+      "decision": "BUG-0027: 同一地点の判定を、予報の要求座標と同じ丸め(小数 2 桁)で一致する地点とした。近接する別の地点(約 1 km 未満)は同じ予報セルのため 1 件にまとまる。設計書に規定がないため AI の判断(要レビュー)",
+      "made_by": "AI(要レビュー)"
     }
   ],
   "smoke": {
@@ -1673,8 +1734,8 @@
     },
     {
       "id": "I-6",
-      "status": "UNREPRODUCED",
-      "note": "お気に入りの重複登録(設計に重複禁止の記述なし)"
+      "status": "PROMOTED_TO_BUG",
+      "note": "お気に入りの重複登録(設計に重複禁止の記述なし) → BUG-0027"
     },
     {
       "id": "I-7",
