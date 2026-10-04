@@ -123,6 +123,23 @@
     </AdditionalAppExtensions>
   </ItemGroup>
 
+  <!--
+    iOS の広告・同意・課金(Monetization.md)。Swift のラッパー(src/Weather.Native.iOS)を Mac でビルドしてから -p:EnableNativeIos=true を付ける。
+    付けないビルド(Windows を含む)では広告・課金なしの iOS アプリになる(何もしない実装)
+  -->
+  <PropertyGroup Condition="'$(EnableNativeIos)' == 'true' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <DefineConstants>$(DefineConstants);WEATHER_NATIVE_IOS</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(EnableNativeIos)' == 'true' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <ProjectReference Include="..\Weather.Native.iOS.Binding\Weather.Native.iOS.Binding.csproj" />
+    <PartialAppManifest Include="$(IntermediateOutputPath)AdMob.plist" />
+  </ItemGroup>
+  <!-- Google Mobile Ads が Info.plist に要求する値(アプリ ID は環境変数・テスト用 ID のため、ビルド時に生成する) -->
+  <Target Name="WriteAdMobPlist" BeforeTargets="_CompileAppManifest;CoreCompile" Condition="'$(EnableNativeIos)' == 'true' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <WriteLinesToFile File="$(IntermediateOutputPath)AdMob.plist" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;;&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot; &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;;&lt;plist version=&quot;1.0&quot;&gt;&lt;dict&gt;;&lt;key&gt;GADApplicationIdentifier&lt;/key&gt;&lt;string&gt;$(AdMobAppId)&lt;/string&gt;;&lt;key&gt;SKAdNetworkItems&lt;/key&gt;&lt;array&gt;&lt;dict&gt;&lt;key&gt;SKAdNetworkIdentifier&lt;/key&gt;&lt;string&gt;cstr6suwn9.skadnetwork&lt;/string&gt;&lt;/dict&gt;&lt;/array&gt;;&lt;/dict&gt;&lt;/plist&gt;" />
+  </Target>
+
   <ItemGroup>
     <ProjectReference Include="..\Weather.Core\Weather.Core.csproj" />
     <ProjectReference Include="..\Weather.Providers\Weather.Providers.csproj" />

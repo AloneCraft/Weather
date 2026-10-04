@@ -26,6 +26,9 @@ public static class MauiProgram{
             .ConfigureMauiHandlers(static handlers=>{
 #if IOS
                 handlers.AddHandler<Controls.MetalCanvasView,Controls.MetalCanvasViewHandler>();
+#if WEATHER_NATIVE_IOS
+                handlers.AddHandler<Controls.NativeBanner,Monetization.NativeBannerHandler>();
+#endif
 #elif ANDROID
                 handlers.AddHandler<Controls.NativeBanner,Monetization.NativeBannerHandler>();
 #endif
@@ -59,6 +62,11 @@ public static class MauiProgram{
         services.AddSingleton<IAlertNotifier>(static sp=>sp.GetRequiredService<Background.IosBackgroundPlatform>());
         services.AddSingleton<IWidgetPublisher>(static sp=>sp.GetRequiredService<Background.IosBackgroundPlatform>());
         services.AddSingleton<IBackgroundScheduler>(static sp=>sp.GetRequiredService<Background.IosBackgroundPlatform>());
+#if WEATHER_NATIVE_IOS
+        //広告・課金は Swift のラッパーを含むビルド(Mac で -p:EnableNativeIos=true)だけ。含まないビルドは何もしない実装のまま
+        services.AddSingleton<IAdPlatform,Monetization.IosAdPlatform>();
+        services.AddSingleton<IPurchasePlatform,Monetization.IosPurchasePlatform>();
+#endif
 #endif
         services.AddWeatherPresentation();
 
