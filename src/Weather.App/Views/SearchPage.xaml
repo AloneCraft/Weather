@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Weather.Presentation.Resources;assembly=Weather.Presentation"
+             xmlns:vm="clr-namespace:Weather.Presentation.ViewModels;assembly=Weather.Presentation"
+             xmlns:core="clr-namespace:Weather.Core;assembly=Weather.Core"
+             x:Class="Weather.App.Views.SearchPage"
+             x:DataType="vm:SearchViewModel"
+             Title="{x:Static res:Strings.SearchTitle}">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="12" RowSpacing="8">
+        <SearchBar Grid.Row="0" Text="{Binding Query}" Placeholder="{x:Static res:Strings.SearchPlaceholder}" />
+        <Button Grid.Row="1" Text="{x:Static res:Strings.AddCurrentLocation}" Command="{Binding UseCurrentLocationCommand}" HorizontalOptions="Start" />
+        <Label Grid.Row="2" Text="{Binding Message}" IsVisible="{Binding Message, Converter={StaticResource HasValue}}" />
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Results}" SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="core:PlaceSuggestion">
+                    <VerticalStackLayout Padding="4,10">
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SearchViewModel}}, Path=SelectCommand, x:DataType=vm:SearchViewModel}" CommandParameter="{Binding .}" />
+                        </VerticalStackLayout.GestureRecognizers>
+                        <Label Text="{Binding Name}" FontSize="16" />
+                        <Label Text="{Binding Detail}" FontSize="12" Opacity="0.7" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <ActivityIndicator Grid.Row="3" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
+    </Grid>
+</ContentPage>

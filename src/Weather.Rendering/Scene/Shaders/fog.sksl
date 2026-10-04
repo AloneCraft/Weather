@@ -1,0 +1,23 @@
+// 霧・もや(低周波ノイズ + 高さによる減衰)
+uniform float2 uResolution;
+uniform float uTime;
+uniform float uDensity;    // 0..1
+uniform float3 uColor;
+
+float hash(float2 p){ return fract(sin(dot(p,float2(41.3,289.1)))*45758.5453); }
+
+float noise(float2 p){
+    float2 i=floor(p);
+    float2 f=fract(p);
+    float2 u=f*f*(3.0-2.0*f);
+    return mix(mix(hash(i),hash(i+float2(1,0)),u.x),mix(hash(i+float2(0,1)),hash(i+float2(1,1)),u.x),u.y);
+}
+
+half4 main(float2 coord){
+    float2 uv=coord/uResolution.y;
+    float y=coord.y/uResolution.y;
+    float n=noise(uv*2.0+float2(uTime*0.02,0.0))*0.6+noise(uv*5.0-float2(uTime*0.03,0.0))*0.4;
+    float height=smoothstep(0.15,0.95,y);
+    float a=clamp(uDensity*(0.35+0.65*height)*(0.7+0.3*n),0.0,0.95);
+    return half4(half3(uColor*a),half(a));
+}

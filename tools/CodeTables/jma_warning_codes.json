@@ -1,0 +1,158 @@
+{
+ "02": {
+  "elem": "wind_snow",
+  "level": 30
+ },
+ "03": {
+  "elem": "rain",
+  "level": 30
+ },
+ "05": {
+  "elem": "wind",
+  "level": 30
+ },
+ "06": {
+  "elem": "snow",
+  "level": 30
+ },
+ "07": {
+  "elem": "wave",
+  "level": 30
+ },
+ "08": {
+  "elem": "tide",
+  "level": 30
+ },
+ "09": {
+  "elem": "landslide",
+  "level": 30
+ },
+ "10": {
+  "elem": "rain",
+  "level": 20
+ },
+ "12": {
+  "elem": "snow",
+  "level": 20
+ },
+ "13": {
+  "elem": "wind_snow",
+  "level": 20
+ },
+ "14": {
+  "elem": "thunder",
+  "level": 20
+ },
+ "15": {
+  "elem": "wind",
+  "level": 20
+ },
+ "16": {
+  "elem": "wave",
+  "level": 20
+ },
+ "17": {
+  "elem": "snow_melting",
+  "level": 20
+ },
+ "19": {
+  "elem": "tide",
+  "level": 20
+ },
+ "20": {
+  "elem": "fog",
+  "level": 20
+ },
+ "21": {
+  "elem": "dry",
+  "level": 20
+ },
+ "22": {
+  "elem": "avalanche",
+  "level": 20
+ },
+ "23": {
+  "elem": "cold",
+  "level": 20
+ },
+ "24": {
+  "elem": "frost",
+  "level": 20
+ },
+ "25": {
+  "elem": "ice_accretion",
+  "level": 20
+ },
+ "26": {
+  "elem": "snow_accretion",
+  "level": 20
+ },
+ "29": {
+  "elem": "landslide",
+  "level": 20
+ },
+ "30": {
+  "elem": "flood",
+  "level": 30
+ },
+ "31": {
+  "elem": "flood",
+  "level": 30
+ },
+ "32": {
+  "elem": "wind_snow",
+  "level": 50
+ },
+ "33": {
+  "elem": "rain",
+  "level": 50
+ },
+ "35": {
+  "elem": "wind",
+  "level": 50
+ },
+ "36": {
+  "elem": "snow",
+  "level": 50
+ },
+ "37": {
+  "elem": "wave",
+  "level": 50
+ },
+ "38": {
+  "elem": "tide",
+  "level": 50
+ },
+ "39": {
+  "elem": "landslide",
+  "level": 50
+ },
+ "40": {
+  "elem": "flood",
+  "level": 40
+ },
+ "41": {
+  "elem": "flood",
+  "level": 40
+ },
+ "43": {
+  "elem": "rain",
+  "level": 40
+ },
+ "48": {
+  "elem": "tide",
+  "level": 40
+ },
+ "49": {
+  "elem": "landslide",
+  "level": 40
+ },
+ "51": {
+  "elem": "flood",
+  "level": 50
+ },
+ "53": {
+  "elem": "flood",
+  "level": 50
+ }
+}

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Weather.Presentation.Resources;assembly=Weather.Presentation"
+             xmlns:vm="clr-namespace:Weather.Presentation.ViewModels;assembly=Weather.Presentation"
+             xmlns:core="clr-namespace:Weather.Core;assembly=Weather.Core"
+             xmlns:controls="clr-namespace:Weather.App.Controls"
+             x:Class="Weather.App.Views.HistoryPage"
+             x:DataType="vm:HistoryViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="#102040">
+    <Grid RowDefinitions="Auto,Auto,Auto,200,*,Auto" Padding="12" RowSpacing="6">
+        <Label Grid.Row="0" Text="{Binding Message}" IsVisible="{Binding Message, Converter={StaticResource HasValue}}" TextColor="#FFE082" />
+        <Picker Grid.Row="1" Title="{x:Static res:Strings.Station}" ItemsSource="{Binding Stations}" SelectedItem="{Binding Station}" ItemDisplayBinding="{Binding Name, x:DataType=core:ObservationStation}" TextColor="White" />
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+            <Picker x:Name="RangePicker" SelectedIndex="{Binding Range, Converter={StaticResource RangeIndex}}" TextColor="White">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:Static Member="res:Strings.Range24Hours" />
+                        <x:Static Member="res:Strings.Range7Days" />
+                        <x:Static Member="res:Strings.Range30Days" />
+                        <x:Static Member="res:Strings.Range1Year" />
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+            <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="White" />
+        </Grid>
+        <controls:ChartView x:Name="Chart" Grid.Row="3" Points="{Binding Chart}" ShowProbability="False" />
+        <CollectionView Grid.Row="4" ItemsSource="{Binding Rows}">
+            <CollectionView.Header>
+                <Label Text="{Binding SummaryText}" TextColor="White" FontAttributes="Bold" Margin="0,4" />
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ObservationRow">
+                    <Grid ColumnDefinitions="90,60,70,70,*" Padding="0,4">
+                        <Label Grid.Column="0" Text="{Binding Time}" TextColor="#CFD8DC" FontSize="12" />
+                        <Label Grid.Column="1" Text="{Binding Temperature}" TextColor="White" FontSize="13" />
+                        <Label Grid.Column="2" Text="{Binding Precipitation}" TextColor="#90CAF9" FontSize="12" />
+                        <Label Grid.Column="3" Text="{Binding Wind}" TextColor="#CFD8DC" FontSize="12" />
+                        <Label Grid.Column="4" Text="{Binding Text}" TextColor="#CFD8DC" FontSize="11" LineBreakMode="TailTruncation" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <Label Grid.Row="5" Text="{Binding Attribution}" Style="{StaticResource Caption}" TextColor="#B0BEC5" />
+    </Grid>
+</ContentPage>

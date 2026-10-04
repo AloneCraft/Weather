@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Weather.Presentation.Resources;assembly=Weather.Presentation"
+             xmlns:vm="clr-namespace:Weather.Presentation.ViewModels;assembly=Weather.Presentation"
+             x:Class="Weather.App.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="{x:Static res:Strings.Settings}">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{x:Static res:Strings.UseImperial}" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding UseImperial}" />
+            </Grid>
+            <VerticalStackLayout>
+                <Label Text="{x:Static res:Strings.RenderQualityLabel}" />
+                <Picker ItemsSource="{x:Static vm:SettingsViewModel.QualityOptions}" SelectedIndex="{Binding QualityIndex}" />
+            </VerticalStackLayout>
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{x:Static res:Strings.ReduceFlashes}" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding ReduceFlashes}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{x:Static res:Strings.PowerSaving}" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding PowerSaving}" />
+            </Grid>
+            <VerticalStackLayout>
+                <Label Text="{x:Static res:Strings.RetentionLabel}" />
+                <Picker ItemsSource="{x:Static vm:SettingsViewModel.RetentionOptions}" SelectedIndex="{Binding RetentionIndex}" />
+            </VerticalStackLayout>
+            <Button Text="{x:Static res:Strings.DeleteHistory}" Command="{Binding DeleteHistoryCommand}" />
+            <Button Text="{x:Static res:Strings.DataAndSources}" Command="{Binding OpenAboutCommand}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

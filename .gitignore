@@ -1,0 +1,21 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+*.swp
+TestResults/
+artifacts/
+
+## MAUI / platform
+*.keystore
+*.mobileprovision
+*.p12
+
+## GeoDataBuilder の作業ディレクトリ(ダウンロードした元データ)
+tools/Weather.GeoDataBuilder/.cache/
+
+## テストの出力
+tests/**/GoldenOutput/

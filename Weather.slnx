@@ -1,0 +1,37 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="AGENTS.md" />
+    <File Path="AI_SYNTAX_RULES.md" />
+    <File Path="BannedSymbols.txt" />
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Weather.Core/Weather.Core.csproj" />
+    <Project Path="src/Weather.Providers/Weather.Providers.csproj" />
+    <Project Path="src/Weather.Geo/Weather.Geo.csproj" />
+    <Project Path="src/Weather.Scene/Weather.Scene.csproj" />
+    <Project Path="src/Weather.Rendering/Weather.Rendering.csproj" />
+    <Project Path="src/Weather.Infrastructure/Weather.Infrastructure.csproj" />
+    <Project Path="src/Weather.Presentation/Weather.Presentation.csproj" />
+    <Project Path="src/Weather.App/Weather.App.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Weather.SceneLab/Weather.SceneLab.csproj" />
+    <Project Path="tools/Weather.GeoDataBuilder/Weather.GeoDataBuilder.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Weather.Core.Tests/Weather.Core.Tests.csproj" />
+    <Project Path="tests/Weather.Providers.Tests/Weather.Providers.Tests.csproj" />
+    <Project Path="tests/Weather.Providers.LiveTests/Weather.Providers.LiveTests.csproj" />
+    <Project Path="tests/Weather.Geo.Tests/Weather.Geo.Tests.csproj" />
+    <Project Path="tests/Weather.Scene.Tests/Weather.Scene.Tests.csproj" />
+    <Project Path="tests/Weather.Rendering.Tests/Weather.Rendering.Tests.csproj" />
+    <Project Path="tests/Weather.Infrastructure.Tests/Weather.Infrastructure.Tests.csproj" />
+    <Project Path="tests/Weather.Presentation.Tests/Weather.Presentation.Tests.csproj" />
+  </Folder>
+</Solution>

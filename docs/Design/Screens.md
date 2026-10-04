@@ -1,0 +1,108 @@
+# 画面構成と画面遷移
+
+MVVM(CommunityToolkit.Mvvm)+ MAUI Shell。ViewModel は `Weather.Presentation`(net10.0)に置き、MAUI に依存しない。View(XAML)と MAUI 固有の実装は `Weather.App` に置く。
+
+## 決定事項
+
+| 論点 | 決定 | 根拠 |
+|---|---|---|
+| グラフ | `Weather.Rendering.Charts` の自前描画(Rendering.md) | SkiaSharp 4 と既製ライブラリ(3.119 依存)の衝突回避、見た目の統一 |
+| 世界地図・地点選択 | `Weather.Rendering.Map` の自前描画。Phase 2 で提供し、MVP は検索と現在地で選ぶ | オフライン動作、キー不要 |
+| UI 言語 | MVP は日本語。文字列は最初から resx に置き、英語は後で追加する | 利用者は日本語話者。世界の地点名は GeoNames の日本語名・英語名を使う |
+| 単位の既定 | 端末の地域が米国なら °F / mph / inch、それ以外は °C / m/s / mm。設定で変更可 | 地域の慣習に合わせる |
+| テーマ | 文字の色はシーンの明るさに追従させる(VM が背景が暗いかを公開する) | 背景がシーン描画のため、固定のライト/ダークでは読みにくい |
+
+## 画面一覧
+
+| 画面 | 目的 | 主な要素 | MVP |
+|---|---|---|---|
+| メイン | 選択地点の現在〜直近の天気 | 全面のシーン描画(背景)、地点名、現在の気温と天気(日本は気象庁の天気文)、警報バナー、時間別の帯(横スクロール)、日別の一覧、出典の欄。お気に入りの地点間を横スワイプで切り替え | ✓ |
+| 時間別の詳細 | 時間ごとの推移 | 気温・降水量・降水確率・風のグラフ。グラフのドラッグでシーンの時刻が動く | ✓ |
+| 日別の詳細 | 1 日の詳細 | 天気文・風・波(気象庁)、DayPart(6 時間降水確率・NWS の昼夜の文章)、信頼度、予測範囲 | ✓ |
+| 警報 | 発表中の警報・注意報 | 一覧と詳細。機関の名称・本文・発表官署・発表時刻をそのまま表示 | ✓ |
+| 地点検索 | 地点を探して追加 | オフライン検索、現在地ボタン、検索結果から追加(Phase 2 で地図タブ) | ✓ |
+| 地点の管理 | お気に入りの並べ替え・削除 | 一覧、並べ替え、削除 | ✓ |
+| 設定 | 表示と動作の設定 | 単位、描画品質(自動 / 低 / 中 / 高)、稲光の点滅を抑える、省電力(30 fps)、履歴の保持期間(Phase 2)、履歴の全削除(Phase 2) | ✓ |
+| データと出典 | ライセンス表示 | 気象庁・NWS・MET Norway・GeoNames・Natural Earth の出典とライセンス、加工の説明、プライバシー(位置情報の扱い) | ✓ |
+| 観測履歴 | 観測所の履歴 | 観測所の選択、期間(24 時間 / 7 日 / 30 日 / 1 年)、気温・降水量・風・日照のグラフと表 | Phase 2 |
+| 地図で選ぶ | 世界地図から地点を選ぶ | ズーム・パン、タップで地点を解決、お気に入りのマーカー | Phase 2 |
+
+## 画面遷移(Shell ルート)
+
+```
+//main(ルート)
+ ├─ push  hourly?place={placeId}
+ ├─ push  daily?place={placeId}&date={yyyy-MM-dd}
+ ├─ push  alerts?place={placeId}
+ │    └─ push alert?place={placeId}&id={alertId}
+ ├─ push  history?place={placeId}              (Phase 2)
+ ├─ modal search                               (Phase 2 で地図タブを追加)
+ ├─ push  places
+ ├─ push  settings
+ │    └─ push about
+```
+
+ナビゲーションは Presentation の `INavigator`(`GoToAsync(route, parameters)`)経由で行う。VM が Shell を直接触らない。
+
+## ViewModel とサービス
+
+| ViewModel | 役割 |
+|---|---|
+| MainViewModel | お気に入り地点の一覧と現在のページ |
+| PlaceWeatherViewModel | 1 地点の予報・警報・SceneState・出典・状態(読み込み中 / 古い / 対象外 / エラー) |
+| HourlyViewModel / DailyDetailViewModel | 詳細とグラフ用データ、スクラブ時刻 |
+| AlertsViewModel / AlertDetailViewModel | 警報 |
+| SearchViewModel / PlacesViewModel | 検索・現在地・お気に入り管理 |
+| SettingsViewModel / AboutViewModel | 設定・出典 |
+| HistoryViewModel / MapPickerViewModel | Phase 2 |
+
+Presentation に定義する抽象(App が実装):
+
+| 抽象 | 内容 |
+|---|---|
+| INavigator | 画面遷移 |
+| IDialogService | 確認・通知 |
+| ILocationService | 現在地(MAUI Geolocation:最後の既知位置 → 現在位置、権限の確認) |
+| IAppLifecycle | 前面/背景の切り替え(MAUI の Window イベント) |
+| ISettingsStore | 設定(MAUI Preferences) |
+| IFavoritesStore | お気に入り。Infrastructure(Core にのみ依存)が実装するため、抽象は Core に置く |
+| IMotionPreferences | 「視差効果を減らす」等の OS 設定 |
+
+データ取得は Providers の `IWeatherService` を使う。
+
+## MAUI 固有の注意点
+
+- **コンパイル済みバインディング**: すべての XAML で `x:DataType` を指定する。性能面と、トリミング時にバインディングが壊れないための対策。.NET 9 以降はコンパイルされないバインディングに警告が出る。
+- **Shell の引数**: `IQueryAttributable` は MAUI の型なので VM に実装しない。Presentation に `INavigationAware.OnNavigatedToAsync(IReadOnlyDictionary<string,string>)` を定義し、App のページ基底クラスから呼ぶ。
+- **スレッド**: VM のメソッドでは `ConfigureAwait(false)` を使わない(UI スレッドに戻って PropertyChanged を発火させるため)。Providers・Infrastructure では `ConfigureAwait(false)` を使う。
+- **ソース生成**: `[ObservableProperty]` は部分プロパティ(partial property)の形で書き、`[RelayCommand]` は CancellationToken 対応の非同期コマンドにする。
+- **ライフサイクル**: `Window.Stopped` で描画ループを止め、自動更新も止める。`Window.Resumed` で必要なら更新する。
+- **レイアウト**: シーンのキャンバスを Grid の最背面に置き、上に半透明のカードを重ねる。iOS はセーフエリアを考慮する。
+- **お気に入り間の横スワイプ**: CarouselView の性能と描画ホストの再利用(地点ごとにキャンバスを作らない)を試作で確認する。キャンバスは 1 枚を共有し、表示中の地点の SceneState を切り替える(**要確認**)。
+- **位置情報の権限**: 初回は説明を表示してから要求する。拒否された場合は検索で使えるようにする。
+
+## 出典の表示ルール
+
+- 予報・警報・観測を表示する各カードの下部に、短い出典を出す(例:「気象庁 05:00 発表」「MET Norway 06:30 更新(アプリで集計)」)。
+- タップすると出典の詳細(機関名、プロダクト名、発表時刻、取得時刻、ライセンス、出典 URL、加工の有無)を表示する。
+- 気象庁: 「出典:気象庁ホームページ」と対応ページの URL を必ず表示する。`Processing` に加工がある場合は、その旨を併記する。
+- MET Norway: CC BY 4.0 / NLOD 2.0 のクレジットとライセンスへのリンク。日別はアプリで集計した旨を表示する。
+- `IsStale`: 「最終取得 hh:mm(オフライン)」を表示する。
+
+## 状態の表示
+
+| 状態 | 表示 |
+|---|---|
+| 読み込み中 | 前回のデータがあれば表示したまま、控えめな表示を出す |
+| 古いキャッシュ | 取得時刻と「オフライン」を表示 |
+| 補助プロダクト欠落(Issues) | 該当の欄に「取得できませんでした」 |
+| 日本の対象外 | 「この地点は気象庁の予報区域外のため表示できません」。シーンは空のみ |
+| 最寄り区域で表示 | 「最寄りの予報区域:〇〇市」 |
+| 位置情報が拒否された | 検索への導線 |
+| 警報非対応の地域 | 「この地域の警報情報は提供されていません」(「警報なし」と区別) |
+
+## アクセシビリティ
+
+- シーンは装飾として扱い、代わりに天気の要約を `SemanticProperties.Description` に設定する。
+- 文字のコントラストは、シーンの明るさに応じて自動で調整する。
+- 「視差効果を減らす」が有効なら、静止または低速のシーンにし、稲光の点滅を抑える。

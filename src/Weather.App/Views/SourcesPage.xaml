@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Weather.Presentation.Resources;assembly=Weather.Presentation"
+             xmlns:vm="clr-namespace:Weather.Presentation.ViewModels;assembly=Weather.Presentation"
+             x:Class="Weather.App.Views.SourcesPage"
+             x:DataType="vm:SourcesViewModel"
+             Title="{x:Static res:Strings.Sources}"
+             BackgroundColor="#102040">
+    <CollectionView ItemsSource="{Binding Items}" Margin="16">
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="vm:SourceItem">
+                <Border Style="{StaticResource Card}" BackgroundColor="#22FFFFFF">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="{Binding Agency}" TextColor="White" FontSize="16" FontAttributes="Bold" />
+                        <Label Text="{Binding Product}" TextColor="#ECEFF1" />
+                        <Label Text="{Binding Office, StringFormat={x:Static res:Strings.OfficeFormat}}" TextColor="#CFD8DC" FontSize="12" IsVisible="{Binding Office, Converter={StaticResource HasValue}}" />
+                        <Label Text="{Binding Issued, StringFormat={x:Static res:Strings.IssuedFormat}}" TextColor="#CFD8DC" FontSize="12" IsVisible="{Binding Issued, Converter={StaticResource HasValue}}" />
+                        <Label Text="{Binding Retrieved, StringFormat={x:Static res:Strings.RetrievedFormat}}" TextColor="#CFD8DC" FontSize="12" />
+                        <Label Text="{Binding License, StringFormat={x:Static res:Strings.LicenseFormat}}" TextColor="#CFD8DC" FontSize="12" />
+                        <Label Text="{Binding Credit}" TextColor="White" FontSize="12" />
+                        <Label Text="{Binding Processing}" TextColor="#FFE082" FontSize="12" IsVisible="{Binding Processing, Converter={StaticResource HasValue}}" />
+                        <Label Text="{Binding Url}" TextColor="#90CAF9" FontSize="11" IsVisible="{Binding Url, Converter={StaticResource HasValue}}" />
+                    </VerticalStackLayout>
+                </Border>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>

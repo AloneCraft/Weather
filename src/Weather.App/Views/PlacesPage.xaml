@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Weather.Presentation.Resources;assembly=Weather.Presentation"
+             xmlns:vm="clr-namespace:Weather.Presentation.ViewModels;assembly=Weather.Presentation"
+             xmlns:core="clr-namespace:Weather.Core;assembly=Weather.Core"
+             x:Class="Weather.App.Views.PlacesPage"
+             x:DataType="vm:PlacesViewModel"
+             Title="{x:Static res:Strings.PlacesTitle}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{x:Static res:Strings.Add}" Command="{Binding AddCommand}" />
+    </ContentPage.ToolbarItems>
+    <CollectionView ItemsSource="{Binding Items}" Margin="12">
+        <CollectionView.EmptyView>
+            <Label Text="{x:Static res:Strings.PlacesEmpty}" HorizontalOptions="Center" Margin="0,40" />
+        </CollectionView.EmptyView>
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="core:FavoritePlace">
+                <Grid ColumnDefinitions="*,Auto,Auto,Auto" Padding="4,8" ColumnSpacing="4">
+                    <Label Grid.Column="0" Text="{Binding DisplayName}" FontSize="16" VerticalOptions="Center" />
+                    <Button Grid.Column="1" Text="↑" WidthRequest="44" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PlacesViewModel}}, Path=MoveUpCommand, x:DataType=vm:PlacesViewModel}" CommandParameter="{Binding .}" SemanticProperties.Description="{x:Static res:Strings.MoveUp}" />
+                    <Button Grid.Column="2" Text="↓" WidthRequest="44" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PlacesViewModel}}, Path=MoveDownCommand, x:DataType=vm:PlacesViewModel}" CommandParameter="{Binding .}" SemanticProperties.Description="{x:Static res:Strings.MoveDown}" />
+                    <Button Grid.Column="3" Text="{x:Static res:Strings.Delete}" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PlacesViewModel}}, Path=DeleteCommand, x:DataType=vm:PlacesViewModel}" CommandParameter="{Binding .}" />
+                </Grid>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>

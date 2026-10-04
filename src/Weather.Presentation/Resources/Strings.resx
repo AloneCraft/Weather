@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AlertsFetchFailed" xml:space="preserve"><value>警報を取得できませんでした</value></data>
+  <data name="OutOfCoverage" xml:space="preserve"><value>この地点は気象庁の予報区域外のため表示できません</value></data>
+  <data name="IssuesFormat" xml:space="preserve"><value>{0} を取得できませんでした</value></data>
+  <data name="OfflineShowingPrevious" xml:space="preserve"><value>オフラインのため前回のデータを表示しています</value></data>
+  <data name="AlertsNotSupported" xml:space="preserve"><value>この地域の警報情報は提供されていません</value></data>
+  <data name="NoActiveAlerts" xml:space="preserve"><value>発表中の警報・注意報はありません</value></data>
+  <data name="AndMore" xml:space="preserve"><value> ほか</value></data>
+  <data name="NearestAreaFormat" xml:space="preserve"><value>最寄りの予報区域:{0}</value></data>
+  <data name="ReliabilityFormat" xml:space="preserve"><value>信頼度 {0}</value></data>
+  <data name="FailureNetwork" xml:space="preserve"><value>通信できません。接続を確認してください</value></data>
+  <data name="FailureTimeout" xml:space="preserve"><value>応答がありません。しばらくしてから再度お試しください</value></data>
+  <data name="FailureRateLimited" xml:space="preserve"><value>アクセスが集中しています。しばらくしてから再度お試しください</value></data>
+  <data name="FailureNotFound" xml:space="preserve"><value>この地点の予報は提供されていません</value></data>
+  <data name="FailureInvalid" xml:space="preserve"><value>データの形式が変わった可能性があります</value></data>
+  <data name="FailureOther" xml:space="preserve"><value>予報を取得できませんでした</value></data>
+  <data name="AccessibleSummaryFormat" xml:space="preserve"><value>{0}、{1}、{2}</value></data>
+  <data name="CurrentLocation" xml:space="preserve"><value>現在地</value></data>
+  <data name="CurrentLocationFailed" xml:space="preserve"><value>現在地を取得できませんでした</value></data>
+  <data name="LocationDenied" xml:space="preserve"><value>位置情報が許可されていません。地点を検索して追加できます</value></data>
+  <data name="HourlyTitleFormat" xml:space="preserve"><value>{0} の時間別予報</value></data>
+  <data name="TemperaturePointFormat" xml:space="preserve"><value>気温は {0} の予想</value></data>
+  <data name="MinIsTonight" xml:space="preserve"><value>最低気温はその日の夜の予想</value></data>
+  <data name="MinIsMorning" xml:space="preserve"><value>最低気温は朝の予想</value></data>
+  <data name="TemperatureSourceFormat" xml:space="preserve"><value>気温: {0}</value></data>
+  <data name="AlertsTitleFormat" xml:space="preserve"><value>{0} の警報・注意報</value></data>
+  <data name="AlertsDefaultTitle" xml:space="preserve"><value>警報・注意報</value></data>
+  <data name="JmaOutOfCoverageShort" xml:space="preserve"><value>この地点は気象庁の予報区域外です</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>解除</value></data>
+  <data name="StatusUpdated" xml:space="preserve"><value>更新</value></data>
+  <data name="StatusDowngraded" xml:space="preserve"><value>切り替え</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>発表中</value></data>
+  <data name="NotFound" xml:space="preserve"><value>見つかりませんでした</value></data>
+  <data name="LocationTitle" xml:space="preserve"><value>位置情報</value></data>
+  <data name="LocationDeniedDetail" xml:space="preserve"><value>位置情報が許可されていません。設定アプリから許可するか、地点を検索してください。</value></data>
+  <data name="DeletePlaceTitle" xml:space="preserve"><value>地点の削除</value></data>
+  <data name="DeletePlaceFormat" xml:space="preserve"><value>{0} を削除しますか?</value></data>
+  <data name="Delete" xml:space="preserve"><value>削除</value></data>
+  <data name="Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="MapOutOfCoverage" xml:space="preserve"><value>気象庁の予報区域外のため表示できません</value></data>
+  <data name="QualityAuto" xml:space="preserve"><value>自動</value></data>
+  <data name="QualityLow" xml:space="preserve"><value>低</value></data>
+  <data name="QualityMedium" xml:space="preserve"><value>中</value></data>
+  <data name="QualityHigh" xml:space="preserve"><value>高</value></data>
+  <data name="Retention30Days" xml:space="preserve"><value>30 日</value></data>
+  <data name="Retention1Year" xml:space="preserve"><value>1 年</value></data>
+  <data name="Retention3Years" xml:space="preserve"><value>3 年</value></data>
+  <data name="DeleteHistoryTitle" xml:space="preserve"><value>観測履歴の削除</value></data>
+  <data name="DeleteHistoryConfirm" xml:space="preserve"><value>端末に保存した観測履歴をすべて削除しますか?</value></data>
+  <data name="Deleted" xml:space="preserve"><value>削除しました。</value></data>
+  <data name="AboutJmaUsage" xml:space="preserve"><value>日本の予報・警報・観測(アメダス)・予報区域</value></data>
+  <data name="AboutJmaLicense" xml:space="preserve"><value>公共データ利用規約(第1.0版)。出典:気象庁ホームページ</value></data>
+  <data name="AboutNwsUsage" xml:space="preserve"><value>米国の予報・警報・観測</value></data>
+  <data name="AboutNwsLicense" xml:space="preserve"><value>米国政府のオープンデータ</value></data>
+  <data name="AboutMetUsage" xml:space="preserve"><value>日本・米国以外の予報(日別はアプリで集計)</value></data>
+  <data name="AboutGeoNamesUsage" xml:space="preserve"><value>世界の地名(地点検索)</value></data>
+  <data name="AboutNaturalEarthUsage" xml:space="preserve"><value>国境(国の判定・世界地図)</value></data>
+  <data name="AboutPublicDomain" xml:space="preserve"><value>パブリックドメイン</value></data>
+  <data name="Privacy" xml:space="preserve"><value>現在地は予報の取得にのみ使い、MET Norway / NWS へは小数 2 桁(約 1 km)に丸めて送ります。気象庁へは座標を送りません。観測履歴とお気に入りは端末内だけに保存します。</value></data>
+  <data name="Law" xml:space="preserve"><value>日本域の予報・警報は気象庁の発表をそのまま表示しています。アプリが独自に予報や警報を作ることはありません。</value></data>
+  <data name="HistoryTitleFormat" xml:space="preserve"><value>{0} の観測履歴</value></data>
+  <data name="HistoryDefaultTitle" xml:space="preserve"><value>観測履歴</value></data>
+  <data name="NoPlaceInfo" xml:space="preserve"><value>地点の情報がありません</value></data>
+  <data name="ObservationsNotSupported" xml:space="preserve"><value>この地域の観測データは提供されていません</value></data>
+  <data name="NoStationNearby" xml:space="preserve"><value>近くに観測所がありません</value></data>
+  <data name="SyncFailed" xml:space="preserve"><value>新しい観測を取得できませんでした(保存済みの範囲を表示しています)</value></data>
+  <data name="NoSavedObservations" xml:space="preserve"><value>保存済みの観測はまだありません</value></data>
+  <data name="TodaySummaryFormat" xml:space="preserve"><value>今日の最高 {0} / 最低 {1}</value></data>
+  <data name="HourFormat" xml:space="preserve"><value>H'時'</value></data>
+  <data name="DayFormat" xml:space="preserve"><value>M/d(ddd)</value></data>
+  <data name="Issued" xml:space="preserve"><value>発表</value></data>
+  <data name="Updated" xml:space="preserve"><value>更新</value></data>
+  <data name="AggregatedNote" xml:space="preserve"><value>(アプリで集計)</value></data>
+  <data name="LastRetrievedFormat" xml:space="preserve"><value> ・最終取得 {0}(オフライン)</value></data>
+  <data name="ProcessingAggregated" xml:space="preserve"><value>元データをもとにアプリで集計しています。</value></data>
+  <data name="ProcessingUnits" xml:space="preserve"><value>単位を換算しています。</value></data>
+  <data name="Thunderstorm" xml:space="preserve"><value>雷雨</value></data>
+  <data name="Snow" xml:space="preserve"><value>雪</value></data>
+  <data name="Sleet" xml:space="preserve"><value>みぞれ</value></data>
+  <data name="IcePellets" xml:space="preserve"><value>凍雨</value></data>
+  <data name="FreezingRain" xml:space="preserve"><value>着氷性の雨</value></data>
+  <data name="Hail" xml:space="preserve"><value>ひょう</value></data>
+  <data name="Drizzle" xml:space="preserve"><value>霧雨</value></data>
+  <data name="HeavyRain" xml:space="preserve"><value>強い雨</value></data>
+  <data name="Rain" xml:space="preserve"><value>雨</value></data>
+  <data name="Fog" xml:space="preserve"><value>霧</value></data>
+  <data name="Clear" xml:space="preserve"><value>晴れ</value></data>
+  <data name="MostlyClear" xml:space="preserve"><value>おおむね晴れ</value></data>
+  <data name="PartlyCloudy" xml:space="preserve"><value>晴れ時々くもり</value></data>
+  <data name="MostlyCloudy" xml:space="preserve"><value>くもりがち</value></data>
+  <data name="Overcast" xml:space="preserve"><value>くもり</value></data>
+  <data name="JoinLater" xml:space="preserve"><value>のち</value></data>
+  <data name="JoinOccasionally" xml:space="preserve"><value>時々</value></data>
+  <data name="JoinTemporarily" xml:space="preserve"><value>一時</value></data>
+  <data name="Search" xml:space="preserve"><value>検索</value></data>
+  <data name="SearchDescription" xml:space="preserve"><value>地点を検索</value></data>
+  <data name="Map" xml:space="preserve"><value>地図</value></data>
+  <data name="MapDescription" xml:space="preserve"><value>地図で地点を選ぶ</value></data>
+  <data name="Places" xml:space="preserve"><value>地点</value></data>
+  <data name="PlacesDescription" xml:space="preserve"><value>地点の管理</value></data>
+  <data name="Settings" xml:space="preserve"><value>設定</value></data>
+  <data name="NoPlaces" xml:space="preserve"><value>地点がありません</value></data>
+  <data name="SearchAndAdd" xml:space="preserve"><value>地点を検索して追加</value></data>
+  <data name="ActiveAlerts" xml:space="preserve"><value>発表中の警報・注意報</value></data>
+  <data name="Hourly" xml:space="preserve"><value>時間別</value></data>
+  <data name="History" xml:space="preserve"><value>観測履歴</value></data>
+  <data name="ScrubHint" xml:space="preserve"><value>グラフをなぞると、その時刻の空を表示します</value></data>
+  <data name="High" xml:space="preserve"><value>最高</value></data>
+  <data name="Low" xml:space="preserve"><value>最低</value></data>
+  <data name="Wind" xml:space="preserve"><value>風</value></data>
+  <data name="Waves" xml:space="preserve"><value>波</value></data>
+  <data name="Sources" xml:space="preserve"><value>出典</value></data>
+  <data name="OfficeFormat" xml:space="preserve"><value>発表官署: {0}</value></data>
+  <data name="IssuedFormat" xml:space="preserve"><value>発表・更新: {0}</value></data>
+  <data name="RetrievedFormat" xml:space="preserve"><value>取得: {0}</value></data>
+  <data name="LicenseFormat" xml:space="preserve"><value>ライセンス: {0}</value></data>
+  <data name="SearchTitle" xml:space="preserve"><value>地点を検索</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>市町村名・都市名(日本語・英語)</value></data>
+  <data name="AddCurrentLocation" xml:space="preserve"><value>現在地を追加</value></data>
+  <data name="PlacesTitle" xml:space="preserve"><value>地点の管理</value></data>
+  <data name="Add" xml:space="preserve"><value>追加</value></data>
+  <data name="PlacesEmpty" xml:space="preserve"><value>地点がありません。「追加」から検索してください。</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>上へ</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>下へ</value></data>
+  <data name="UseImperial" xml:space="preserve"><value>ヤード・ポンド法(°F・mph・inch)</value></data>
+  <data name="RenderQualityLabel" xml:space="preserve"><value>描画品質</value></data>
+  <data name="ReduceFlashes" xml:space="preserve"><value>稲光の点滅を抑える</value></data>
+  <data name="PowerSaving" xml:space="preserve"><value>省電力(30 fps)</value></data>
+  <data name="RetentionLabel" xml:space="preserve"><value>観測履歴の保持期間</value></data>
+  <data name="DeleteHistory" xml:space="preserve"><value>観測履歴をすべて削除</value></data>
+  <data name="DataAndSources" xml:space="preserve"><value>データと出典</value></data>
+  <data name="PrivacyTitle" xml:space="preserve"><value>プライバシー</value></data>
+  <data name="JapanNoteTitle" xml:space="preserve"><value>日本域の表示について</value></data>
+  <data name="Station" xml:space="preserve"><value>観測所</value></data>
+  <data name="Range24Hours" xml:space="preserve"><value>24 時間</value></data>
+  <data name="Range7Days" xml:space="preserve"><value>7 日</value></data>
+  <data name="Range30Days" xml:space="preserve"><value>30 日</value></data>
+  <data name="Range1Year" xml:space="preserve"><value>1 年</value></data>
+  <data name="MapTitle" xml:space="preserve"><value>地図で選ぶ</value></data>
+  <data name="ZoomIn" xml:space="preserve"><value>拡大</value></data>
+  <data name="ZoomOut" xml:space="preserve"><value>縮小</value></data>
+</root>

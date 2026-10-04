@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Weather.Presentation.Resources;assembly=Weather.Presentation"
+             xmlns:vm="clr-namespace:Weather.Presentation.ViewModels;assembly=Weather.Presentation"
+             xmlns:controls="clr-namespace:Weather.App.Controls"
+             x:Class="Weather.App.Views.MainPage"
+             x:DataType="vm:MainViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#0B1026">
+    <Grid>
+        <!-- シーンは 1 枚を共有し、表示中の地点の SceneState を切り替える(Screens.md) -->
+        <controls:SceneView x:Name="Scene" Scene="{Binding Current.Scene}" />
+
+        <Grid RowDefinitions="Auto,*,Auto" Padding="12,44,12,16">
+            <HorizontalStackLayout Grid.Row="0" Spacing="8" HorizontalOptions="End">
+                <Button Text="{x:Static res:Strings.Search}" Style="{StaticResource ToolButton}" Command="{Binding OpenSearchCommand}" SemanticProperties.Description="{x:Static res:Strings.SearchDescription}" />
+                <Button Text="{x:Static res:Strings.Map}" Style="{StaticResource ToolButton}" Command="{Binding OpenMapCommand}" SemanticProperties.Description="{x:Static res:Strings.MapDescription}" />
+                <Button Text="{x:Static res:Strings.Places}" Style="{StaticResource ToolButton}" Command="{Binding OpenPlacesCommand}" SemanticProperties.Description="{x:Static res:Strings.PlacesDescription}" />
+                <Button Text="{x:Static res:Strings.Settings}" Style="{StaticResource ToolButton}" Command="{Binding OpenSettingsCommand}" SemanticProperties.Description="{x:Static res:Strings.Settings}" />
+            </HorizontalStackLayout>
+
+            <VerticalStackLayout Grid.Row="1" IsVisible="{Binding IsEmpty}" VerticalOptions="Center" Spacing="12">
+                <Label Text="{x:Static res:Strings.NoPlaces}" TextColor="White" FontSize="20" HorizontalOptions="Center" />
+                <Label Text="{Binding LocationMessage}" TextColor="White" HorizontalTextAlignment="Center" />
+                <Button Text="{x:Static res:Strings.SearchAndAdd}" Command="{Binding OpenSearchCommand}" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <CarouselView Grid.Row="1" x:Name="Carousel" ItemsSource="{Binding Places}" Position="{Binding CurrentIndex}" IndicatorView="Indicator" Loop="False" IsVisible="{Binding IsEmpty, Converter={StaticResource Invert}}">
+                <CarouselView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PlaceWeatherViewModel">
+                        <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}" RefreshColor="White">
+                            <ScrollView>
+                                <VerticalStackLayout Spacing="4" Padding="0,8,0,24">
+                                    <!-- 現在の天気 -->
+                                    <Label Text="{Binding Name}" FontSize="26" FontAttributes="Bold" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
+                                    <Label Text="{Binding AreaNote}" IsVisible="{Binding AreaNote, Converter={StaticResource HasValue}}" Style="{StaticResource Caption}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
+                                    <HorizontalStackLayout Spacing="12" Margin="0,8,0,0" SemanticProperties.Description="{Binding AccessibleSummary}">
+                                        <Label Text="{Binding CurrentIcon}" FontSize="52" VerticalOptions="Center" />
+                                        <Label Text="{Binding CurrentTemperature}" FontSize="64" FontAttributes="Bold" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                    <Label Text="{Binding CurrentText}" FontSize="16" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" LineBreakMode="WordWrap" />
+                                    <Label Text="{Binding StatusMessage}" IsVisible="{Binding StatusMessage, Converter={StaticResource HasValue}}" FontSize="13" TextColor="#FFD54F" />
+
+                                    <!-- 警報 -->
+                                    <Border Style="{StaticResource Card}" BackgroundColor="{Binding HighestAlertTier, Converter={StaticResource TierColor}}" IsVisible="{Binding HasActiveAlerts}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding OpenAlertsCommand}" />
+                                        </Border.GestureRecognizers>
+                                        <VerticalStackLayout>
+                                            <Label Text="{x:Static res:Strings.ActiveAlerts}" FontSize="12" TextColor="White" />
+                                            <Label Text="{Binding AlertSummary}" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                                        </VerticalStackLayout>
+                                    </Border>
+                                    <Label Text="{Binding AlertSummary}" IsVisible="{Binding HasActiveAlerts, Converter={StaticResource Invert}}" Style="{StaticResource Caption}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding OpenAlertsCommand}" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+
+                                    <!-- 時間別 -->
+                                    <Border Style="{StaticResource Card}" BackgroundColor="{Binding IsDarkBackground, Converter={StaticResource CardColor}}" IsVisible="{Binding State, Converter={StaticResource HasData}}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding OpenHourlyCommand}" />
+                                        </Border.GestureRecognizers>
+                                        <VerticalStackLayout>
+                                            <Label Text="{x:Static res:Strings.Hourly}" Style="{StaticResource SectionTitle}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
+                                            <CollectionView ItemsSource="{Binding Hours}" HeightRequest="96" ItemsLayout="HorizontalList" HorizontalScrollBarVisibility="Never">
+                                                <CollectionView.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:HourItem">
+                                                        <VerticalStackLayout WidthRequest="56" Spacing="2">
+                                                            <Label Text="{Binding TimeText}" FontSize="12" HorizontalOptions="Center" TextColor="White" />
+                                                            <Label Text="{Binding Icon}" FontSize="22" HorizontalOptions="Center" />
+                                                            <Label Text="{Binding Temperature}" FontSize="15" FontAttributes="Bold" HorizontalOptions="Center" TextColor="White" />
+                                                            <Label Text="{Binding Probability}" FontSize="11" HorizontalOptions="Center" TextColor="#90CAF9" />
+                                                        </VerticalStackLayout>
+                                                    </DataTemplate>
+                                                </CollectionView.ItemTemplate>
+                                            </CollectionView>
+                                            <Label Text="{Binding IssuesText}" IsVisible="{Binding IssuesText, Converter={StaticResource HasValue}}" Style="{StaticResource Caption}" TextColor="#FFD54F" />
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <!-- 日別 -->
+                                    <Border Style="{StaticResource Card}" BackgroundColor="{Binding IsDarkBackground, Converter={StaticResource CardColor}}" IsVisible="{Binding State, Converter={StaticResource HasData}}">
+                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Days}" Spacing="2">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:DayItem">
+                                                    <Grid ColumnDefinitions="78,32,*,44,44,40" Padding="0,6" ColumnSpacing="4">
+                                                        <Grid.GestureRecognizers>
+                                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PlaceWeatherViewModel}}, Path=OpenDayCommand, x:DataType=vm:PlaceWeatherViewModel}" CommandParameter="{Binding .}" />
+                                                        </Grid.GestureRecognizers>
+                                                        <Label Grid.Column="0" Text="{Binding DateText}" FontSize="13" TextColor="White" VerticalOptions="Center" />
+                                                        <Label Grid.Column="1" Text="{Binding Icon}" FontSize="18" VerticalOptions="Center" />
+                                                        <Label Grid.Column="2" Text="{Binding Weather}" FontSize="12" TextColor="White" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                                        <Label Grid.Column="3" Text="{Binding Max}" FontSize="14" TextColor="#FFAB91" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                                        <Label Grid.Column="4" Text="{Binding Min}" FontSize="14" TextColor="#90CAF9" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                                        <Label Grid.Column="5" Text="{Binding Probability}" FontSize="11" TextColor="#90CAF9" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <HorizontalStackLayout Spacing="8" IsVisible="{Binding ObservationsAvailable}">
+                                        <Button Text="{x:Static res:Strings.History}" Style="{StaticResource ToolButton}" Command="{Binding OpenHistoryCommand}" />
+                                    </HorizontalStackLayout>
+
+                                    <!-- 出典(各カードの短い出典 + タップで詳細) -->
+                                    <VerticalStackLayout Margin="0,8,0,0">
+                                        <VerticalStackLayout.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding OpenSourcesCommand}" />
+                                        </VerticalStackLayout.GestureRecognizers>
+                                        <Label Text="{Binding AttributionShort}" Style="{StaticResource Caption}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
+                                        <Label Text="{Binding AttributionCredit}" Style="{StaticResource Caption}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </ScrollView>
+                        </RefreshView>
+                    </DataTemplate>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
+
+            <IndicatorView Grid.Row="2" x:Name="Indicator" IndicatorColor="#55FFFFFF" SelectedIndicatorColor="White" HorizontalOptions="Center" />
+        </Grid>
+    </Grid>
+</ContentPage>

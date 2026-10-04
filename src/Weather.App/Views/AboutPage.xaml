@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Weather.Presentation.Resources;assembly=Weather.Presentation"
+             xmlns:vm="clr-namespace:Weather.Presentation.ViewModels;assembly=Weather.Presentation"
+             x:Class="Weather.App.Views.AboutPage"
+             x:DataType="vm:AboutViewModel"
+             Title="{x:Static res:Strings.DataAndSources}">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" Spacing="10">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LicenseItem">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
+                            <Label Text="{Binding Usage}" FontSize="13" />
+                            <Label Text="{Binding License}" FontSize="13" />
+                            <Label Text="{Binding Url}" FontSize="11" TextColor="#1E88E5" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+            <Label Text="{x:Static res:Strings.PrivacyTitle}" FontSize="16" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Label Text="{Binding Privacy}" FontSize="13" />
+            <Label Text="{x:Static res:Strings.JapanNoteTitle}" FontSize="16" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Label Text="{Binding Law}" FontSize="13" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

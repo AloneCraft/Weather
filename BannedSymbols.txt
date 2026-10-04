@@ -1,0 +1,5 @@
+P:System.DateTime.Now;TimeProvider を注入して取得してください
+P:System.DateTime.UtcNow;TimeProvider を注入して取得してください
+P:System.DateTime.Today;TimeProvider を注入して取得してください
+P:System.DateTimeOffset.Now;TimeProvider を注入して取得してください
+P:System.DateTimeOffset.UtcNow;TimeProvider を注入して取得してください

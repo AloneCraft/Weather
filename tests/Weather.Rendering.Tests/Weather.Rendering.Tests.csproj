@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Weather.Rendering\Weather.Rendering.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Golden\*.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

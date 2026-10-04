@@ -1,0 +1,210 @@
+"""
+気象庁の天気コード表・警報コード表から C# の表を生成する(WeatherProviders.md 付録 A・C)。
+
+入力(このフォルダ):
+  telops.json            気象庁 予報ページの JS にある Forecast.Const.TELOPS(コード → [昼画像, 夜画像, 区分, 名称, 英語名])
+  jma_warning_codes.json 気象庁 警報ページの JS にあるコード → {elem, level}
+出力:
+  src/Weather.Providers/Jma/JmaWeatherCodes.Table.cs
+  src/Weather.Providers/Jma/JmaWarningCodes.Table.cs
+
+実行: python tools/CodeTables/generate.py
+生成後は差分をレビューし、テスト(JmaWeatherCodes / JmaWarningCodes)を通すこと。
+"""
+import json
+import os
+import re
+
+HERE=os.path.dirname(os.path.abspath(__file__))
+ROOT=os.path.abspath(os.path.join(HERE,'..','..'))
+OUT=os.path.join(ROOT,'src','Weather.Providers','Jma')
+
+
+def cond(sky,precip=None,inten=None,showery=False,thunder=False,wind=False,obs=None):
+    return dict(sky=sky,precip=precip,inten=inten,showery=showery,thunder=thunder,wind=wind,obs=obs)
+
+
+ATOMS={
+    '晴':cond('Clear'),
+    '曇':cond('Overcast'),
+    '雨':cond('Overcast','Rain','Moderate'),
+    '雪':cond('Overcast','Snow','Moderate'),
+    '雨か雪':cond('Overcast','RainAndSnow','Moderate'),
+    '雪か雨':cond('Overcast','RainAndSnow','Moderate'),
+    'みぞれ':cond('Overcast','RainAndSnow','Moderate'),
+    '雷雨':cond('MostlyCloudy','Rain','Moderate',showery=True,thunder=True),
+    '雨か雷雨':cond('MostlyCloudy','Rain','Moderate',showery=True,thunder=True),
+    '霧':cond('Overcast',obs='Fog'),
+    '大雨':cond('Overcast','Rain','Heavy'),
+    '大雪':cond('Overcast','Snow','Heavy'),
+    '暴風雪':cond('Overcast','Snow','Heavy',wind=True),
+    '風雪強い':cond('Overcast','Snow','Moderate',wind=True),
+}
+
+
+def atom(text):
+    if text not in ATOMS:
+        raise ValueError('unknown atom '+text)
+    return dict(ATOMS[text])
+
+
+def showery(c):
+    if c['precip']:
+        c['showery']=True
+        c['sky']='MostlyCloudy'
+    return c
+
+
+def parse(name):
+    """付録 A の規則: 基本語・接続(時々/一時/後)・時間の修飾・場所の修飾。"""
+    thunder=False
+    wind=False
+    n=name
+    if n.endswith('で雷を伴う'):
+        thunder=True
+        n=n[:-len('で雷を伴う')]
+    if n.endswith('で暴風を伴う'):
+        wind=True
+        n=n[:-len('で暴風を伴う')]
+
+    def finish(p,t,s):
+        for c in (p,s):
+            if c is not None and c['precip']:
+                if thunder:
+                    c['thunder']=True
+                if wind:
+                    c['wind']=True
+                    c['inten']='Heavy'
+        return p,t,s
+
+    for q in ('山沿い','海上海岸は'):
+        if q in n:
+            return finish(atom(n.split(q)[0]),None,None)
+    if n in ('雨時々止む','雪時々止む'):
+        return finish(showery(atom(n[0])),None,None)
+    if n.endswith('一時強く降る'):
+        b=atom(n[:-len('一時強く降る')])
+        h=dict(b)
+        h['inten']='Heavy'
+        return finish(b,'Temporarily',h)
+    m=re.fullmatch(r'朝の内(.+?)後(.+)',n)
+    if m:
+        return finish(atom(m.group(1)),'Later',atom(m.group(2)))
+    for pat,tr,sh in ((r'(.+?)(?:朝夕|朝晩|朝の内|夕方)一時(.+)','Temporarily',True),
+                      (r'(.+?)(?:昼頃から|夕方から|夜は|午後は)(.+)','Later',False),
+                      (r'(.+?)日中時々(.+)','Occasionally',True),
+                      (r'(.+?)朝夕(.+)','Temporarily',False),
+                      (r'(.+?)明け方(.+)','Temporarily',False)):
+        m=re.fullmatch(pat,n)
+        if m:
+            s=atom(m.group(2))
+            if sh:
+                s=showery(s)
+            return finish(atom(m.group(1)),tr,s)
+    for con,tr,sh in (('後時々','Later',True),('後一時','Later',True),('後','Later',False),('時々','Occasionally',True),('一時','Temporarily',True)):
+        i=n.find(con)
+        if i>0:
+            try:
+                p=atom(n[:i])
+                s=atom(n[i+len(con):])
+            except ValueError:
+                continue
+            if sh:
+                s=showery(s)
+            return finish(p,tr,s)
+    return finish(atom(n),None,None)
+
+
+def cs_condition(c):
+    args=['SkyCover.'+c['sky']]
+    named=[]
+    if c['precip']:
+        args.append('PrecipitationType.'+c['precip'])
+        args.append('PrecipitationIntensity.'+c['inten'])
+    if c['showery']:
+        named.append('isShowery:true')
+    if c['thunder']:
+        named.append('hasThunder:true')
+    if c['wind']:
+        named.append('hasStrongWind:true')
+    if c['obs']:
+        named.append('obscuration:Obscuration.'+c['obs'])
+    return 'new WeatherCondition('+','.join(args+named)+')'
+
+
+def write(path,lines):
+    with open(path,'w',encoding='utf-8',newline='\n') as f:
+        f.write('\n'.join(lines))
+
+
+def weather_codes():
+    telops=json.load(open(os.path.join(HERE,'telops.json'),encoding='utf-8'))
+    rows=[]
+    for code,v in telops.items():
+        p,tr,s=parse(v[3])
+        if tr:
+            cc=f'new CompositeCondition({cs_condition(p)},ConditionTransition.{tr},{cs_condition(s)})'
+        else:
+            cc=f'new CompositeCondition({cs_condition(p)})'
+        rows.append(f'        ["{code}"]=new("{v[3]}","{v[4].strip()}",{cc}),')
+    write(os.path.join(OUT,'JmaWeatherCodes.Table.cs'),[
+        '// <auto-generated>',
+        '// 気象庁 天気コード表(TELOPS、2026-10-04 に気象庁ページの JS から抽出)を',
+        '// WeatherProviders.md 付録 A の規則で変換した表。再生成: tools/CodeTables/generate.py',
+        '// </auto-generated>',
+        'using System.Collections.Frozen;',
+        'using Weather.Core;',
+        '',
+        'namespace Weather.Providers.Jma;',
+        '',
+        'internal static partial class JmaWeatherCodes{',
+        '    private static readonly FrozenDictionary<string,JmaWeatherCode> Table=new Dictionary<string,JmaWeatherCode>(StringComparer.Ordinal){',
+    ]+rows+['    }.ToFrozenDictionary(StringComparer.Ordinal);','}',''])
+    return len(rows)
+
+
+HAZARD={'rain':'大雨','landslide':'土砂災害','flood':'氾濫','tide':'高潮'}
+PLAIN={'snow':'大雪','wave':'波浪','thunder':'雷','snow_melting':'融雪','fog':'濃霧','dry':'乾燥','avalanche':'なだれ','cold':'低温','frost':'霜','ice_accretion':'着氷','snow_accretion':'着雪'}
+KIND={20:'注意報',30:'警報',40:'危険警報',50:'特別警報'}
+TIER={20:'Advisory',30:'Warning',40:'Danger',50:'Emergency'}
+
+
+def warning_name(e,l):
+    if e in HAZARD:
+        return f'レベル{l//10}{HAZARD[e]}{KIND[l]}'
+    if e=='wind':
+        return {20:'強風注意報',30:'暴風警報',50:'暴風特別警報'}[l]
+    if e=='wind_snow':
+        return {20:'風雪注意報',30:'暴風雪警報',50:'暴風雪特別警報'}[l]
+    return PLAIN[e]+KIND[l]
+
+
+def warning_codes():
+    codes=json.load(open(os.path.join(HERE,'jma_warning_codes.json'),encoding='utf-8'))
+    rows=[]
+    for code in sorted(codes):
+        e=codes[code]['elem']
+        l=codes[code]['level']
+        level='null'
+        if e in HAZARD:
+            level=str(l//10)
+        rows.append(f'        ["{code}"]=new("{warning_name(e,l)}","{e}",AlertTier.{TIER[l]},{level}),')
+    write(os.path.join(OUT,'JmaWarningCodes.Table.cs'),[
+        '// <auto-generated>',
+        '// 気象庁 警報コード(r8、2026-10-04 に気象庁 警報ページの JS から抽出)。WeatherProviders.md 付録 C。',
+        '// 再生成: tools/CodeTables/generate.py',
+        '// </auto-generated>',
+        'using System.Collections.Frozen;',
+        'using Weather.Core;',
+        '',
+        'namespace Weather.Providers.Jma;',
+        '',
+        'internal static partial class JmaWarningCodes{',
+        '    private static readonly FrozenDictionary<string,JmaWarningCode> Table=new Dictionary<string,JmaWarningCode>(StringComparer.Ordinal){',
+    ]+rows+['    }.ToFrozenDictionary(StringComparer.Ordinal);','}',''])
+    return len(rows)
+
+
+if __name__=='__main__':
+    print('weather codes',weather_codes())
+    print('warning codes',warning_codes())

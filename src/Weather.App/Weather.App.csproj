@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- 対象は iOS / Android のみ(SolutionStructure.md)。iOS のパッケージ作成・署名には Mac が必要 -->
+    <TargetFrameworks>net10.0-android;net10.0-ios</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Weather.App</RootNamespace>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <MauiXamlInflator>SourceGen</MauiXamlInflator>
+    <!-- コンパイル済みバインディングを必須にする(Screens.md「MAUI 固有の注意点」) -->
+    <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
+    <ApplicationTitle>空模様</ApplicationTitle>
+    <ApplicationId>com.weatherapp.soramoyou</ApplicationId>
+    <ApplicationDisplayVersion>0.1</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">23.0</SupportedOSPlatformVersion>
+    <NoWarn>$(NoWarn);XC0103</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#2E6CCC" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#1D2B5A" BaseSize="128,128" />
+    <MauiFont Include="Resources\Fonts\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" />
+    <PackageReference Include="SkiaSharp.Views.Maui.Controls" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <!-- SKMetalView(iOS の Metal 描画ホスト。Rendering.md「描画ホスト」) -->
+    <PackageReference Include="SkiaSharp.Views" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Weather.Core\Weather.Core.csproj" />
+    <ProjectReference Include="..\Weather.Providers\Weather.Providers.csproj" />
+    <ProjectReference Include="..\Weather.Geo\Weather.Geo.csproj" />
+    <ProjectReference Include="..\Weather.Scene\Weather.Scene.csproj" />
+    <ProjectReference Include="..\Weather.Rendering\Weather.Rendering.csproj" />
+    <ProjectReference Include="..\Weather.Infrastructure\Weather.Infrastructure.csproj" />
+    <ProjectReference Include="..\Weather.Presentation\Weather.Presentation.csproj" />
+  </ItemGroup>
+</Project>

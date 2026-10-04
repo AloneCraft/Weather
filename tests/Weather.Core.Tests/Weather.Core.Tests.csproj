@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Weather.Core\Weather.Core.csproj" />
+  </ItemGroup>
+</Project>

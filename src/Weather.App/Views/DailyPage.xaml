@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Weather.Presentation.Resources;assembly=Weather.Presentation"
+             xmlns:vm="clr-namespace:Weather.Presentation.ViewModels;assembly=Weather.Presentation"
+             x:Class="Weather.App.Views.DailyPage"
+             x:DataType="vm:DailyDetailViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="#102040">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+            <HorizontalStackLayout Spacing="12">
+                <Label Text="{Binding Icon}" FontSize="48" />
+                <VerticalStackLayout VerticalOptions="Center">
+                    <Label Text="{Binding Weather}" FontSize="18" TextColor="White" LineBreakMode="WordWrap" />
+                    <Label Text="{Binding Reliability}" IsVisible="{Binding Reliability, Converter={StaticResource HasValue}}" FontSize="12" TextColor="#B0BEC5" />
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+
+            <Border Style="{StaticResource Card}" BackgroundColor="#22FFFFFF">
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto">
+                    <Label Grid.Column="0" Text="{x:Static res:Strings.High}" TextColor="#FFAB91" FontSize="12" />
+                    <Label Grid.Column="1" Text="{x:Static res:Strings.Low}" TextColor="#90CAF9" FontSize="12" />
+                    <Label Grid.Row="1" Grid.Column="0" Text="{Binding Max}" TextColor="White" FontSize="28" FontAttributes="Bold" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Min}" TextColor="White" FontSize="28" FontAttributes="Bold" />
+                    <Label Grid.Row="2" Grid.Column="0" Text="{Binding MaxRange}" TextColor="#B0BEC5" FontSize="12" />
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding MinRange}" TextColor="#B0BEC5" FontSize="12" />
+                </Grid>
+            </Border>
+            <Label Text="{Binding TemperaturePoint}" IsVisible="{Binding TemperaturePoint, Converter={StaticResource HasValue}}" Style="{StaticResource Caption}" TextColor="#CFD8DC" />
+            <Label Text="{Binding MinNote}" IsVisible="{Binding MinNote, Converter={StaticResource HasValue}}" Style="{StaticResource Caption}" TextColor="#CFD8DC" />
+
+            <Border Style="{StaticResource Card}" BackgroundColor="#22FFFFFF" IsVisible="{Binding Wind, Converter={StaticResource HasValue}}">
+                <VerticalStackLayout>
+                    <Label Text="{x:Static res:Strings.Wind}" Style="{StaticResource SectionTitle}" TextColor="White" />
+                    <Label Text="{Binding Wind}" TextColor="White" />
+                    <Label Text="{x:Static res:Strings.Waves}" Style="{StaticResource SectionTitle}" TextColor="White" Margin="0,8,0,4" IsVisible="{Binding Wave, Converter={StaticResource HasValue}}" />
+                    <Label Text="{Binding Wave}" TextColor="White" IsVisible="{Binding Wave, Converter={StaticResource HasValue}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Parts}" Spacing="6">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DayPartItem">
+                        <Border Style="{StaticResource Card}" BackgroundColor="#22FFFFFF">
+                            <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="{Binding Label}" TextColor="White" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding Temperature}" TextColor="White" />
+                                <Label Grid.Column="2" Text="{Binding Probability}" TextColor="#90CAF9" />
+                                <Label Grid.Row="1" Grid.ColumnSpan="3" Text="{Binding Text}" TextColor="#ECEFF1" IsVisible="{Binding Text, Converter={StaticResource HasValue}}" />
+                                <Label Grid.Row="2" Grid.ColumnSpan="3" Text="{Binding Detail}" TextColor="#B0BEC5" FontSize="12" IsVisible="{Binding Detail, Converter={StaticResource HasValue}}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Label Text="{Binding Attribution}" Style="{StaticResource Caption}" TextColor="#B0BEC5" />
+            <Label Text="{Binding TemperatureAttribution}" IsVisible="{Binding TemperatureAttribution, Converter={StaticResource HasValue}}" Style="{StaticResource Caption}" TextColor="#B0BEC5" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

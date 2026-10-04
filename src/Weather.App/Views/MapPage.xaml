@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Weather.Presentation.Resources;assembly=Weather.Presentation"
+             xmlns:vm="clr-namespace:Weather.Presentation.ViewModels;assembly=Weather.Presentation"
+             xmlns:controls="clr-namespace:Weather.App.Controls"
+             x:Class="Weather.App.Views.MapPage"
+             x:DataType="vm:MapPickerViewModel"
+             Title="{x:Static res:Strings.MapTitle}">
+    <Grid RowDefinitions="*,Auto">
+        <controls:MapView x:Name="Map" Grid.Row="0" />
+        <VerticalStackLayout Grid.Row="0" HorizontalOptions="End" VerticalOptions="Start" Margin="12" Spacing="8">
+            <Button Text="+" Clicked="OnZoomIn" WidthRequest="44" SemanticProperties.Description="{x:Static res:Strings.ZoomIn}" />
+            <Button Text="−" Clicked="OnZoomOut" WidthRequest="44" SemanticProperties.Description="{x:Static res:Strings.ZoomOut}" />
+        </VerticalStackLayout>
+        <Border Grid.Row="1" Padding="12" StrokeThickness="0" BackgroundColor="#1D2B5A" IsVisible="{Binding SelectedName, Converter={StaticResource HasValue}}">
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout>
+                    <Label Text="{Binding SelectedName}" TextColor="White" FontSize="16" FontAttributes="Bold" />
+                    <Label Text="{Binding SelectedDetail}" TextColor="#CFD8DC" FontSize="12" />
+                </VerticalStackLayout>
+                <Button Grid.Column="1" Text="{x:Static res:Strings.Add}" Command="{Binding AddCommand}" IsEnabled="{Binding CanAdd}" />
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

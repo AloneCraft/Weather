@@ -1,0 +1,581 @@
+{
+    "@context": [
+        "https://geojson.org/geojson-ld/geojson-context.jsonld",
+        {
+            "@version": "1.1",
+            "wx": "https://api.weather.gov/ontology#",
+            "@vocab": "https://api.weather.gov/ontology#"
+        }
+    ],
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.cc96776d62cda898dcc11a2969a23f8604be2cf6.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -95.88,
+                            32.24
+                        ],
+                        [
+                            -95.96,
+                            32.19
+                        ],
+                        [
+                            -95.83,
+                            32.12
+                        ],
+                        [
+                            -95.77,
+                            32.15
+                        ],
+                        [
+                            -95.78,
+                            32.24
+                        ],
+                        [
+                            -95.83,
+                            32.25
+                        ],
+                        [
+                            -95.88,
+                            32.24
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.cc96776d62cda898dcc11a2969a23f8604be2cf6.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.cc96776d62cda898dcc11a2969a23f8604be2cf6.001.1",
+                "areaDesc": "Henderson, TX",
+                "geocode": {
+                    "SAME": [
+                        "048213"
+                    ],
+                    "UGC": [
+                        "TXC213"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/TXC213"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3cb9706d96f7a1bf3defe72b9ec0b71986da5132.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.3cb9706d96f7a1bf3defe72b9ec0b71986da5132.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-10-03T13:59:00-05:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.79b959c351fa6589287f552a597e576ed0ad03a4.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.79b959c351fa6589287f552a597e576ed0ad03a4.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-10-03T15:45:00-05:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.95de3fffa23779d9ef9dc147a219a3e982727b53.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.95de3fffa23779d9ef9dc147a219a3e982727b53.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-10-03T15:53:00-05:00"
+                    }
+                ],
+                "sent": "2026-10-03T16:36:00-05:00",
+                "effective": "2026-10-03T16:36:00-05:00",
+                "onset": "2026-10-03T16:36:00-05:00",
+                "expires": "2026-10-03T19:00:00-05:00",
+                "ends": "2026-10-03T19:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Likely",
+                "urgency": "Immediate",
+                "event": "Flash Flood Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Fort Worth TX",
+                "headline": "Flash Flood Warning issued October 3 at 4:36PM CDT until October 3 at 7:00PM CDT by NWS Fort Worth TX",
+                "description": "FFWFWD\n\nThe National Weather Service in Fort Worth has extended the\n\n* Flash Flood Warning for...\nCentral Henderson County in central Texas...\n\n* Until 700 PM CDT.\n\n* At 436 PM CDT, thunderstorms continue producing heavy rain in\nAthens. Numerous reports and videos have been received of flooded\nand impassible roadways across the area. Between 4 and 7 inches of\nrain have fallen. Additional rainfall amounts of 1 to 2 inches are\npossible in the warned area. Flash flooding is already occurring.\n\nHAZARD...Life threatening flash flooding. Thunderstorms producing\nflash flooding.\n\nSOURCE...Public reported.\n\nIMPACT...Life threatening flash flooding of creeks and streams,\nurban areas, highways, streets and underpasses.\n\n* Some locations that will experience flash flooding include...\nAthens and Crescent Heights.",
+                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nBe aware of your surroundings and do not drive on flooded roads.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FFWFWD"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS54 KFWD 032136"
+                    ],
+                    "flashFloodDetection": [
+                        "OBSERVED"
+                    ],
+                    "flashFloodDamageThreat": [
+                        "CONSIDERABLE"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.EXT.KFWD.FF.W.0094.000000T0000Z-261004T0000Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-10-03T19:00:00-05:00"
+                    ],
+                    "WEAHandling": [
+                        "Imminent Threat"
+                    ],
+                    "CMAMtext": [
+                        "NWS: FLASH FLOOD WARNING this area til 7:00 PM CDT. Avoid flooded areas."
+                    ],
+                    "CMAMlongtext": [
+                        "National Weather Service: A FLASH FLOOD WARNING is in effect for this area until 7:00 PM CDT. This is a dangerous and life-threatening situation. Do not attempt to travel unless you are fleeing an area subject to flooding or under an evacuation order."
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FFW"
+                    ],
+                    "NationalWeatherService": [
+                        "FFW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7586ab371fdd7c2d27d5f48f281c387ede11c701.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -95.77,
+                            32.2
+                        ],
+                        [
+                            -95.75,
+                            32.2
+                        ],
+                        [
+                            -95.7,
+                            32.31
+                        ],
+                        [
+                            -95.81,
+                            32.34
+                        ],
+                        [
+                            -95.87,
+                            32.33
+                        ],
+                        [
+                            -95.88,
+                            32.24
+                        ],
+                        [
+                            -95.83,
+                            32.25
+                        ],
+                        [
+                            -95.78,
+                            32.24
+                        ],
+                        [
+                            -95.78,
+                            32.23
+                        ],
+                        [
+                            -95.77,
+                            32.2
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7586ab371fdd7c2d27d5f48f281c387ede11c701.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.7586ab371fdd7c2d27d5f48f281c387ede11c701.001.1",
+                "areaDesc": "Henderson, TX",
+                "geocode": {
+                    "SAME": [
+                        "048213"
+                    ],
+                    "UGC": [
+                        "TXC213"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/TXC213"
+                ],
+                "references": [],
+                "sent": "2026-10-03T16:06:00-05:00",
+                "effective": "2026-10-03T16:06:00-05:00",
+                "onset": "2026-10-03T16:06:00-05:00",
+                "expires": "2026-10-03T19:00:00-05:00",
+                "ends": "2026-10-03T19:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Likely",
+                "urgency": "Immediate",
+                "event": "Flash Flood Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Fort Worth TX",
+                "headline": "Flash Flood Warning issued October 3 at 4:06PM CDT until October 3 at 7:00PM CDT by NWS Fort Worth TX",
+                "description": "FFWFWD\n\nThe National Weather Service in Fort Worth has issued a\n\n* Flash Flood Warning for...\nNorth Central Henderson County in central Texas...\n\n* Until 700 PM CDT.\n\n* At 406 PM CDT, Doppler radar indicated thunderstorms producing\nheavy rain across the warned area. Between 3 and 5 inches of rain\nhave fallen. Additional rainfall amounts of 2 to 3 inches are\npossible in the warned area. Flash flooding is ongoing or expected\nto begin shortly.\n\nHAZARD...Flash flooding caused by thunderstorms.\n\nSOURCE...Radar indicated.\n\nIMPACT...Flash flooding of small creeks and streams, urban areas,\nhighways, streets and underpasses as well as other poor\ndrainage and low-lying areas.\n\n* Some locations that will experience flash flooding include...\nMurchison.",
+                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nBe aware of your surroundings and do not drive on flooded roads.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FFWFWD"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS54 KFWD 032106"
+                    ],
+                    "flashFloodDetection": [
+                        "RADAR INDICATED"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KFWD.FF.W.0095.261003T2106Z-261004T0000Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-10-03T19:00:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FFW"
+                    ],
+                    "NationalWeatherService": [
+                        "FFW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.caf1be01e6da369f9dabe17a3b815d7b344befe7.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -96.32,
+                            32.3
+                        ],
+                        [
+                            -96.28,
+                            32.35
+                        ],
+                        [
+                            -95.84,
+                            32.36
+                        ],
+                        [
+                            -95.63,
+                            32.36
+                        ],
+                        [
+                            -95.76,
+                            32.04
+                        ],
+                        [
+                            -96.06,
+                            32.01
+                        ],
+                        [
+                            -96.3,
+                            31.89
+                        ],
+                        [
+                            -96.42,
+                            31.92
+                        ],
+                        [
+                            -96.45,
+                            32.15
+                        ],
+                        [
+                            -96.32,
+                            32.3
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.caf1be01e6da369f9dabe17a3b815d7b344befe7.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.caf1be01e6da369f9dabe17a3b815d7b344befe7.001.1",
+                "areaDesc": "Henderson, TX; Navarro, TX",
+                "geocode": {
+                    "SAME": [
+                        "048213",
+                        "048349"
+                    ],
+                    "UGC": [
+                        "TXC213",
+                        "TXC349"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/TXC213",
+                    "https://api.weather.gov/zones/county/TXC349"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.23113d87a309167e3a8ba5e53bf1c50a2d52de77.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.23113d87a309167e3a8ba5e53bf1c50a2d52de77.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-10-03T13:33:00-05:00"
+                    }
+                ],
+                "sent": "2026-10-03T15:56:00-05:00",
+                "effective": "2026-10-03T15:56:00-05:00",
+                "onset": "2026-10-03T15:56:00-05:00",
+                "expires": "2026-10-03T19:30:00-05:00",
+                "ends": "2026-10-03T19:30:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Flood Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Fort Worth TX",
+                "headline": "Flood Advisory issued October 3 at 3:56PM CDT until October 3 at 7:30PM CDT by NWS Fort Worth TX",
+                "description": "* WHAT...Flooding caused by excessive rainfall continues.\n\n* WHERE...Henderson County in central Texas...\nEastern Navarro County in north central Texas...\n\n* WHEN...Until 730 PM CDT.\n\n* IMPACTS...Minor flooding in low-lying and poor drainage areas.\nOverflowing poor drainage areas. Some low-water crossings may\nbecome impassable.\n\n* ADDITIONAL DETAILS...\n- At 354 PM CDT, Doppler radar indicated heavy rain due to\nthunderstorms. Overflowing poor drainage areas will cause minor\nflooding in the advisory area.\n- A Flash Flood Warning remains in effect for the city of Athens\nthrough 6 PM CDT. Please see the warning bulletin for more\ninformation.\n- Some locations that will experience flooding include...\nCorsicana, Athens, Gun Barrel City, Mabank, Malakoff, Tool,\nKerens, Seven Points, Eustace, Trinidad, Angus, Enchanted Oaks,\nCaney City, Navarro, Trinidad Lake, Forest Grove Reservoir, Cedar\nCreek Reservoir, Flag Lake, Purtis Creek State Park and\nRichland-Chambers Reservoir.",
+                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FLSFWD"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS84 KFWD 032056"
+                    ],
+                    "NWSheadline": [
+                        "FLOOD ADVISORY NOW IN EFFECT UNTIL 730 PM CDT THIS EVENING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.EXT.KFWD.FA.Y.0142.000000T0000Z-261004T0030Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-10-03T19:30:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "FAY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.bb373c15683949c9d1fe4b5680316c757a2cc910.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.bb373c15683949c9d1fe4b5680316c757a2cc910.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.bb373c15683949c9d1fe4b5680316c757a2cc910.001.1",
+                "areaDesc": "Matagorda Islands; Brazoria Islands; Galveston Island; Bolivar Peninsula",
+                "geocode": {
+                    "SAME": [
+                        "048321",
+                        "048039",
+                        "048167"
+                    ],
+                    "UGC": [
+                        "TXZ436",
+                        "TXZ437",
+                        "TXZ438",
+                        "TXZ439"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/TXZ436",
+                    "https://api.weather.gov/zones/forecast/TXZ437",
+                    "https://api.weather.gov/zones/forecast/TXZ438",
+                    "https://api.weather.gov/zones/forecast/TXZ439"
+                ],
+                "references": [],
+                "sent": "2026-10-03T09:32:00-05:00",
+                "effective": "2026-10-03T09:32:00-05:00",
+                "onset": "2026-10-03T09:32:00-05:00",
+                "expires": "2026-10-04T09:00:00-05:00",
+                "ends": "2026-10-04T09:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Houston/Galveston TX",
+                "headline": "Rip Current Statement issued October 3 at 9:32AM CDT until October 4 at 9:00AM CDT by NWS Houston/Galveston TX",
+                "description": "* WHAT...Dangerous rip currents.\n\n* WHERE...Gulf-facing beaches, including the Matagorda\nPeninsula, Brazoria County beaches, Galveston Island and the\nBolivar Peninsula.\n\n* WHEN...Through Sunday morning.\n\n* IMPACTS...Rip currents can sweep even the best swimmers away\nfrom shore into deeper water.",
+                "instruction": "Swim near a lifeguard and away from rocks, jetties, and piers. If\ncaught in a rip current, relax and float. Don't swim against the\ncurrent. If able, swim in a direction following the shoreline. If\nunable to escape, face the shore and call or wave for help.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWHGX"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS44 KHGX 031432"
+                    ],
+                    "NWSheadline": [
+                        "HIGH RIP CURRENT RISK IN EFFECT THROUGH SUNDAY MORNING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KHGX.RP.S.0018.261003T1432Z-261004T1400Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-10-04T09:00:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.820020da04533c285afc3e888eeae28836c8a3fa.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.820020da04533c285afc3e888eeae28836c8a3fa.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.820020da04533c285afc3e888eeae28836c8a3fa.001.1",
+                "areaDesc": "Kenedy Island; Willacy Island; Cameron Island",
+                "geocode": {
+                    "SAME": [
+                        "048261",
+                        "048489",
+                        "048061"
+                    ],
+                    "UGC": [
+                        "TXZ451",
+                        "TXZ454",
+                        "TXZ455"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/TXZ451",
+                    "https://api.weather.gov/zones/forecast/TXZ454",
+                    "https://api.weather.gov/zones/forecast/TXZ455"
+                ],
+                "references": [],
+                "sent": "2026-10-03T08:33:00-05:00",
+                "effective": "2026-10-03T08:33:00-05:00",
+                "onset": "2026-10-03T22:00:00-05:00",
+                "expires": "2026-10-04T07:00:00-05:00",
+                "ends": "2026-10-04T07:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Coastal Flood Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Brownsville TX",
+                "headline": "Coastal Flood Statement issued October 3 at 8:33AM CDT until October 4 at 7:00AM CDT by NWS Brownsville TX",
+                "description": "* WHAT...Isolated minor coastal flooding expected.\n\n* WHERE...Kenedy Island, Willacy Island and Cameron Island\nCounties.\n\n* WHEN...From this evening through Sunday morning.\n\n* IMPACTS...Wave run-up may approach the dunes along narrow\nbeaches. Beach equipment, such as umbrellas and chairs, could\nbe moved by waves. Vehicles driving along narrow beaches may\nexperience higher water levels. Elevated water levels may also\noccur across the Laguna Madre and South Bay, and along State\nHighway 4 west of Boca Chica State Park.\n\n* ADDITIONAL DETAILS...Peak inundation will occur just before and\nafter high tide at 222 AM.",
+                "instruction": "Do not drive through flooded roadways.",
+                "response": "Monitor",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWBRO"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS44 KBRO 031333"
+                    ],
+                    "NWSheadline": [
+                        "COASTAL FLOOD STATEMENT IN EFFECT FROM 10 PM THIS EVENING THROUGH 7 AM SUNDAY MORNING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KBRO.CF.S.0010.261004T0300Z-261004T1200Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-10-04T07:00:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "CFS"
+                    ]
+                }
+            }
+        }
+    ],
+    "title": "Current watches, warnings, and advisories for Texas",
+    "updated": "2026-10-03T21:56:16+00:00"
+}

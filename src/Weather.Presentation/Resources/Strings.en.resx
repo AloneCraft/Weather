@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AlertsFetchFailed" xml:space="preserve"><value>Couldn't load alerts</value></data>
+  <data name="OutOfCoverage" xml:space="preserve"><value>This location is outside JMA's forecast areas, so no forecast can be shown</value></data>
+  <data name="IssuesFormat" xml:space="preserve"><value>Couldn't load {0}</value></data>
+  <data name="OfflineShowingPrevious" xml:space="preserve"><value>Offline — showing the last data</value></data>
+  <data name="AlertsNotSupported" xml:space="preserve"><value>Alerts aren't available for this region</value></data>
+  <data name="NoActiveAlerts" xml:space="preserve"><value>No active warnings or advisories</value></data>
+  <data name="AndMore" xml:space="preserve"><value> and more</value></data>
+  <data name="NearestAreaFormat" xml:space="preserve"><value>Nearest forecast area: {0}</value></data>
+  <data name="ReliabilityFormat" xml:space="preserve"><value>Reliability {0}</value></data>
+  <data name="FailureNetwork" xml:space="preserve"><value>Can't connect. Check your connection.</value></data>
+  <data name="FailureTimeout" xml:space="preserve"><value>No response. Please try again later.</value></data>
+  <data name="FailureRateLimited" xml:space="preserve"><value>Too many requests. Please try again later.</value></data>
+  <data name="FailureNotFound" xml:space="preserve"><value>No forecast is available for this location</value></data>
+  <data name="FailureInvalid" xml:space="preserve"><value>The data format may have changed</value></data>
+  <data name="FailureOther" xml:space="preserve"><value>Couldn't load the forecast</value></data>
+  <data name="AccessibleSummaryFormat" xml:space="preserve"><value>{0}, {1}, {2}</value></data>
+  <data name="CurrentLocation" xml:space="preserve"><value>Current location</value></data>
+  <data name="CurrentLocationFailed" xml:space="preserve"><value>Couldn't get your location</value></data>
+  <data name="LocationDenied" xml:space="preserve"><value>Location access is off. You can search and add places.</value></data>
+  <data name="HourlyTitleFormat" xml:space="preserve"><value>{0} — Hourly</value></data>
+  <data name="TemperaturePointFormat" xml:space="preserve"><value>Temperatures are forecast for {0}</value></data>
+  <data name="MinIsTonight" xml:space="preserve"><value>The low is for that night</value></data>
+  <data name="MinIsMorning" xml:space="preserve"><value>The low is for the morning</value></data>
+  <data name="TemperatureSourceFormat" xml:space="preserve"><value>Temperature: {0}</value></data>
+  <data name="AlertsTitleFormat" xml:space="preserve"><value>{0} — Warnings</value></data>
+  <data name="AlertsDefaultTitle" xml:space="preserve"><value>Warnings &amp; advisories</value></data>
+  <data name="JmaOutOfCoverageShort" xml:space="preserve"><value>This location is outside JMA's forecast areas</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="StatusUpdated" xml:space="preserve"><value>Updated</value></data>
+  <data name="StatusDowngraded" xml:space="preserve"><value>Downgraded</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>In effect</value></data>
+  <data name="NotFound" xml:space="preserve"><value>No results</value></data>
+  <data name="LocationTitle" xml:space="preserve"><value>Location</value></data>
+  <data name="LocationDeniedDetail" xml:space="preserve"><value>Location access is off. Allow it in Settings or search for a place.</value></data>
+  <data name="DeletePlaceTitle" xml:space="preserve"><value>Delete place</value></data>
+  <data name="DeletePlaceFormat" xml:space="preserve"><value>Delete {0}?</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="MapOutOfCoverage" xml:space="preserve"><value>Outside JMA's forecast areas — no forecast can be shown</value></data>
+  <data name="QualityAuto" xml:space="preserve"><value>Auto</value></data>
+  <data name="QualityLow" xml:space="preserve"><value>Low</value></data>
+  <data name="QualityMedium" xml:space="preserve"><value>Medium</value></data>
+  <data name="QualityHigh" xml:space="preserve"><value>High</value></data>
+  <data name="Retention30Days" xml:space="preserve"><value>30 days</value></data>
+  <data name="Retention1Year" xml:space="preserve"><value>1 year</value></data>
+  <data name="Retention3Years" xml:space="preserve"><value>3 years</value></data>
+  <data name="DeleteHistoryTitle" xml:space="preserve"><value>Delete observation history</value></data>
+  <data name="DeleteHistoryConfirm" xml:space="preserve"><value>Delete all observation history stored on this device?</value></data>
+  <data name="Deleted" xml:space="preserve"><value>Deleted.</value></data>
+  <data name="AboutJmaUsage" xml:space="preserve"><value>Japan: forecasts, warnings, observations (AMeDAS), forecast areas</value></data>
+  <data name="AboutJmaLicense" xml:space="preserve"><value>Public Data License (v1.0). Source: Japan Meteorological Agency website (出典:気象庁ホームページ)</value></data>
+  <data name="AboutNwsUsage" xml:space="preserve"><value>United States: forecasts, alerts, observations</value></data>
+  <data name="AboutNwsLicense" xml:space="preserve"><value>U.S. Government open data</value></data>
+  <data name="AboutMetUsage" xml:space="preserve"><value>Other regions: forecasts (daily values aggregated by the app)</value></data>
+  <data name="AboutGeoNamesUsage" xml:space="preserve"><value>World place names (search)</value></data>
+  <data name="AboutNaturalEarthUsage" xml:space="preserve"><value>Country borders (country detection, world map)</value></data>
+  <data name="AboutPublicDomain" xml:space="preserve"><value>Public domain</value></data>
+  <data name="Privacy" xml:space="preserve"><value>Your location is used only to get forecasts. It is rounded to 2 decimal places (about 1 km) before being sent to MET Norway / NWS, and is never sent to JMA. Observation history and favorites are stored only on this device.</value></data>
+  <data name="Law" xml:space="preserve"><value>Forecasts and warnings for Japan are shown exactly as issued by JMA. The app never creates its own forecasts or warnings.</value></data>
+  <data name="HistoryTitleFormat" xml:space="preserve"><value>{0} — Observations</value></data>
+  <data name="HistoryDefaultTitle" xml:space="preserve"><value>Observations</value></data>
+  <data name="NoPlaceInfo" xml:space="preserve"><value>No location information</value></data>
+  <data name="ObservationsNotSupported" xml:space="preserve"><value>Observations aren't available for this region</value></data>
+  <data name="NoStationNearby" xml:space="preserve"><value>No station nearby</value></data>
+  <data name="SyncFailed" xml:space="preserve"><value>Couldn't get new observations (showing saved data)</value></data>
+  <data name="NoSavedObservations" xml:space="preserve"><value>No saved observations yet</value></data>
+  <data name="TodaySummaryFormat" xml:space="preserve"><value>Today: high {0} / low {1}</value></data>
+  <data name="HourFormat" xml:space="preserve"><value>H':00'</value></data>
+  <data name="DayFormat" xml:space="preserve"><value>ddd M/d</value></data>
+  <data name="Issued" xml:space="preserve"><value>issued</value></data>
+  <data name="Updated" xml:space="preserve"><value>updated</value></data>
+  <data name="AggregatedNote" xml:space="preserve"><value> (aggregated by the app)</value></data>
+  <data name="LastRetrievedFormat" xml:space="preserve"><value> · last updated {0} (offline)</value></data>
+  <data name="ProcessingAggregated" xml:space="preserve"><value>Aggregated by the app from the source data.</value></data>
+  <data name="ProcessingUnits" xml:space="preserve"><value>Units have been converted.</value></data>
+  <data name="Thunderstorm" xml:space="preserve"><value>Thunderstorms</value></data>
+  <data name="Snow" xml:space="preserve"><value>Snow</value></data>
+  <data name="Sleet" xml:space="preserve"><value>Sleet</value></data>
+  <data name="IcePellets" xml:space="preserve"><value>Ice pellets</value></data>
+  <data name="FreezingRain" xml:space="preserve"><value>Freezing rain</value></data>
+  <data name="Hail" xml:space="preserve"><value>Hail</value></data>
+  <data name="Drizzle" xml:space="preserve"><value>Drizzle</value></data>
+  <data name="HeavyRain" xml:space="preserve"><value>Heavy rain</value></data>
+  <data name="Rain" xml:space="preserve"><value>Rain</value></data>
+  <data name="Fog" xml:space="preserve"><value>Fog</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="MostlyClear" xml:space="preserve"><value>Mostly clear</value></data>
+  <data name="PartlyCloudy" xml:space="preserve"><value>Partly cloudy</value></data>
+  <data name="MostlyCloudy" xml:space="preserve"><value>Mostly cloudy</value></data>
+  <data name="Overcast" xml:space="preserve"><value>Cloudy</value></data>
+  <data name="JoinLater" xml:space="preserve"><value>, later </value></data>
+  <data name="JoinOccasionally" xml:space="preserve"><value>, occasionally </value></data>
+  <data name="JoinTemporarily" xml:space="preserve"><value>, at times </value></data>
+  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="SearchDescription" xml:space="preserve"><value>Search places</value></data>
+  <data name="Map" xml:space="preserve"><value>Map</value></data>
+  <data name="MapDescription" xml:space="preserve"><value>Pick a place on the map</value></data>
+  <data name="Places" xml:space="preserve"><value>Places</value></data>
+  <data name="PlacesDescription" xml:space="preserve"><value>Manage places</value></data>
+  <data name="Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="NoPlaces" xml:space="preserve"><value>No places yet</value></data>
+  <data name="SearchAndAdd" xml:space="preserve"><value>Search and add a place</value></data>
+  <data name="ActiveAlerts" xml:space="preserve"><value>Active warnings &amp; advisories</value></data>
+  <data name="Hourly" xml:space="preserve"><value>Hourly</value></data>
+  <data name="History" xml:space="preserve"><value>Observations</value></data>
+  <data name="ScrubHint" xml:space="preserve"><value>Drag across the chart to see the sky at that time</value></data>
+  <data name="High" xml:space="preserve"><value>High</value></data>
+  <data name="Low" xml:space="preserve"><value>Low</value></data>
+  <data name="Wind" xml:space="preserve"><value>Wind</value></data>
+  <data name="Waves" xml:space="preserve"><value>Waves</value></data>
+  <data name="Sources" xml:space="preserve"><value>Sources</value></data>
+  <data name="OfficeFormat" xml:space="preserve"><value>Office: {0}</value></data>
+  <data name="IssuedFormat" xml:space="preserve"><value>Issued/updated: {0}</value></data>
+  <data name="RetrievedFormat" xml:space="preserve"><value>Retrieved: {0}</value></data>
+  <data name="LicenseFormat" xml:space="preserve"><value>License: {0}</value></data>
+  <data name="SearchTitle" xml:space="preserve"><value>Search places</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>City or municipality (Japanese or English)</value></data>
+  <data name="AddCurrentLocation" xml:space="preserve"><value>Add current location</value></data>
+  <data name="PlacesTitle" xml:space="preserve"><value>Manage places</value></data>
+  <data name="Add" xml:space="preserve"><value>Add</value></data>
+  <data name="PlacesEmpty" xml:space="preserve"><value>No places. Tap "Add" to search.</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="UseImperial" xml:space="preserve"><value>Imperial units (°F, mph, inch)</value></data>
+  <data name="RenderQualityLabel" xml:space="preserve"><value>Rendering quality</value></data>
+  <data name="ReduceFlashes" xml:space="preserve"><value>Reduce lightning flashes</value></data>
+  <data name="PowerSaving" xml:space="preserve"><value>Power saving (30 fps)</value></data>
+  <data name="RetentionLabel" xml:space="preserve"><value>Keep observation history for</value></data>
+  <data name="DeleteHistory" xml:space="preserve"><value>Delete all observation history</value></data>
+  <data name="DataAndSources" xml:space="preserve"><value>Data &amp; sources</value></data>
+  <data name="PrivacyTitle" xml:space="preserve"><value>Privacy</value></data>
+  <data name="JapanNoteTitle" xml:space="preserve"><value>About data for Japan</value></data>
+  <data name="Station" xml:space="preserve"><value>Station</value></data>
+  <data name="Range24Hours" xml:space="preserve"><value>24 hours</value></data>
+  <data name="Range7Days" xml:space="preserve"><value>7 days</value></data>
+  <data name="Range30Days" xml:space="preserve"><value>30 days</value></data>
+  <data name="Range1Year" xml:space="preserve"><value>1 year</value></data>
+  <data name="MapTitle" xml:space="preserve"><value>Pick on map</value></data>
+  <data name="ZoomIn" xml:space="preserve"><value>Zoom in</value></data>
+  <data name="ZoomOut" xml:space="preserve"><value>Zoom out</value></data>
+</root>

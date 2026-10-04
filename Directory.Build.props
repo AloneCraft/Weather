@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <Deterministic>true</Deterministic>
+    <Company>Weather</Company>
+    <Product>Weather</Product>
+    <NeutralLanguage>ja</NeutralLanguage>
+    <IsSrcProject Condition="$(MSBuildProjectDirectory.Contains('\src\'))">true</IsSrcProject>
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests')) or $(MSBuildProjectName.EndsWith('.LiveTests'))">true</IsTestProject>
+  </PropertyGroup>
+
+  <!-- src 配下の共有ライブラリ: 警告をエラーに、トリミング/AOT 解析を有効化(App は個別に上書き) -->
+  <PropertyGroup Condition="'$(IsSrcProject)'=='true' and '$(MSBuildProjectName)'!='Weather.App'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsAotCompatible>true</IsAotCompatible>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- 現在時刻は TimeProvider 経由で取得する(SolutionStructure.md 不変条件 4) -->
+  <ItemGroup Condition="'$(IsSrcProject)'=='true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+  </ItemGroup>
+</Project>

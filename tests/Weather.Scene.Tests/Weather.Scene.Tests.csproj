@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Weather.Scene\Weather.Scene.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CsCheck" />
+  </ItemGroup>
+</Project>
