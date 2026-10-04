@@ -85,7 +85,15 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
             return CreateResponse(request,entry!,"stale");
         }
         if(response.StatusCode is HttpStatusCode.OK or HttpStatusCode.PartialContent&&HttpFreshness.IsStorable(response)){
-            var body=await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+            byte[] body;
+            try{
+                body=await this.ReadBodyWithTimeoutAsync(response,cancellationToken).ConfigureAwait(false);
+            }catch(Exception ex) when((ex is HttpRequestException or TimeoutException)&&HttpFreshness.CanServeStale(entry,now,rule.MaxStale)){
+                //ヘッダーの後、本文の途中で切れた / 止まった場合も、通信失敗と同じく古いエントリを返す
+                LogServingStale(logger,request.RequestUri!,ex.GetType().Name);
+                response.Dispose();
+                return CreateResponse(request,entry!,"stale");
+            }
             var stored=HttpFreshness.CreateEntry(key,response,body,now);
             response.Dispose();
             await this.TrySetAsync(stored,cancellationToken).ConfigureAwait(false);
@@ -101,6 +109,17 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
             return await base.SendAsync(request,linked.Token).ConfigureAwait(false);
         }catch(OperationCanceledException ex) when(!cancellationToken.IsCancellationRequested&&timeout.IsCancellationRequested){
             throw new TimeoutException($"タイムアウトしました: {request.RequestUri}",ex);
+        }
+    }
+
+    /// <summary>本文の読み込みにも、ヘッダー受信と同じタイムアウトを適用する(CacheAndRouting.md「構成」: タイムアウトもここで扱う)。</summary>
+    private async Task<byte[]> ReadBodyWithTimeoutAsync(HttpResponseMessage response,CancellationToken cancellationToken){
+        using var timeout=new CancellationTokenSource(options.Timeout,time);
+        using var linked=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,timeout.Token);
+        try{
+            return await response.Content.ReadAsByteArrayAsync(linked.Token).ConfigureAwait(false);
+        }catch(OperationCanceledException ex) when(!cancellationToken.IsCancellationRequested&&timeout.IsCancellationRequested){
+            throw new TimeoutException($"本文の読み込みがタイムアウトしました: {response.RequestMessage?.RequestUri}",ex);
         }
     }
 

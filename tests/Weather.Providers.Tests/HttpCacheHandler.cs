@@ -55,6 +55,40 @@ public class HttpCacheHandler{
             Assert.Equal(TestHost.Now,stale.Daily[0].Source.RetrievedAt);
         }
         {
+            //ヘッダーを受け取った後、本文の途中で通信が切れたときも、許容期間内の古いエントリを返す
+            using var host=TestHost.Create(Fixtures.MapNws);
+            var provider=host.Get<Target>();
+            await provider.GetForecastAsync(Locations.Washington,TestContext.Current.CancellationToken);
+            host.Time.Advance(TimeSpan.FromDays(2));
+            host.Handler.Override=static _=>new HttpResponseMessage(HttpStatusCode.OK){Content=new BrokenContent()};
+            var stale=await provider.GetForecastAsync(Locations.Washington,TestContext.Current.CancellationToken);
+            Assert.True(stale.IsStale);
+            Assert.Equal(TestHost.Now,stale.Daily[0].Source.RetrievedAt);
+        }
+        {
+            //本文が止まったままでもタイムアウトで打ち切り、古いエントリを返す
+            using var host=TestHost.Create(Fixtures.MapNws);
+            var provider=host.Get<Target>();
+            await provider.GetForecastAsync(Locations.Washington,TestContext.Current.CancellationToken);
+            host.Time.Advance(TimeSpan.FromDays(2));
+            host.Handler.Override=static _=>new HttpResponseMessage(HttpStatusCode.OK){Content=new StalledContent()};
+            var task=provider.GetForecastAsync(Locations.Washington,TestContext.Current.CancellationToken);
+            for(var i=0;i<500&&!task.IsCompleted;i++){
+                host.Time.Advance(TimeSpan.FromSeconds(5));
+                await Task.Delay(10,TestContext.Current.CancellationToken);
+            }
+            Assert.True(task.IsCompleted);
+            var stale=await task;
+            Assert.True(stale.IsStale);
+        }
+        {
+            //本文の途中で切れて古いエントリもなければ Network
+            using var host=TestHost.Create();
+            host.Handler.Override=static _=>new HttpResponseMessage(HttpStatusCode.OK){Content=new BrokenContent()};
+            var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await host.Get<Target>().GetAlertsAsync(Locations.Washington,TestContext.Current.CancellationToken));
+            Assert.Equal(ProviderFailure.Network,ex.Failure);
+        }
+        {
             //警報は 6 時間を超えた古いキャッシュを返さない
             using var host=TestHost.Create(Fixtures.MapNws);
             var provider=host.Get<Target>();
@@ -71,6 +105,34 @@ public class HttpCacheHandler{
             var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await host.Get<Target>().GetAlertsAsync(Locations.Washington,TestContext.Current.CancellationToken));
             Assert.Equal(ProviderFailure.ServerError,ex.Failure);
         }
+    }
+}
+
+/// <summary>ヘッダーは届くが、本文の途中で接続が切れる応答の再現用。</summary>
+internal sealed class BrokenContent:HttpContent{
+    protected override Task SerializeToStreamAsync(Stream stream,TransportContext? context){
+        throw new IOException("connection reset");
+    }
+
+    protected override bool TryComputeLength(out long length){
+        length=0;
+        return false;
+    }
+}
+
+/// <summary>ヘッダーは届くが、本文が止まったまま進まない応答の再現用(取り消されるまで待つ)。</summary>
+internal sealed class StalledContent:HttpContent{
+    protected override Task SerializeToStreamAsync(Stream stream,TransportContext? context){
+        return Task.Delay(Timeout.Infinite);
+    }
+
+    protected override Task SerializeToStreamAsync(Stream stream,TransportContext? context,CancellationToken cancellationToken){
+        return Task.Delay(Timeout.Infinite,cancellationToken);
+    }
+
+    protected override bool TryComputeLength(out long length){
+        length=0;
+        return false;
     }
 }
 
