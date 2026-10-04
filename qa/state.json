@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 64,
-  "updated_at": "2026-10-04T16:05:24Z",
+  "revision": 68,
+  "updated_at": "2026-10-04T16:14:20Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 54,
+      "run_minutes": 63,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1166,6 +1166,68 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0021",
+      "title": "GRIB2 復号: 破損データで巨大なメモリ確保(最大 9.6 GB・最長 36 秒)と、Map が変換しない OverflowException / OutOfMemoryException",
+      "source_ids": [
+        "M-fuzz"
+      ],
+      "severity": "中(破損・改ざんされたキャッシュ/応答でアプリが落ち得る。発生は稀)",
+      "fix_priority": 3,
+      "symptom": "記録データ(GFS 1°)のバイト列を壊すと、24,000 回中 41 回が 200 MB 超を割り当て(最大 9.6 GB・36 秒)、OverflowException 67 回・OutOfMemoryException 8 回(ProviderHttp.Map の捕捉対象外)。例: 先頭 200 バイト内の 1 か所を 0/255 にしただけで 208 MB",
+      "expected": "破損データは FormatException(→ InvalidResponse)で短時間・小さなメモリで失敗する",
+      "cause": {
+        "confirmed": "Grib2Decoder が節の記述子の値(符号付きに変換した encoded・groups、格子の点数)を検証せずに new float[encoded]・new long[groups] などの大きさに使う(Decode:89、UnpackComplex:202)",
+        "hypotheses": [],
+        "unknown": [
+          "実運用で破損が起こる頻度(キャッシュの途中書き込み・サーバー障害)"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [
+        "M-6"
+      ],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:12:55Z",
+          "reason": "優先3位相当: 外部から来るバイナリを読む処理で、破損データによりアプリがメモリ不足で落ち得る。Map が変換しない例外種別も漏れる。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "a265b9e097a0c8506656f33f9ba5b51850ddd78c",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "変異実行: 200 MB 超 41 回(最大 9.6 GB)、OverflowException 67 回、OutOfMemoryException 8 回",
+          "hypothesis": "格子の点数・値の数・群の数を、確保の前に妥当な上限(格子の点数 ≤ 4M、値の数 ≤ 格子の点数、群の数 ≤ 値の数・データ節のビット数)で検証すれば、FormatException で小さく失敗する",
+          "planned_change": "src/Weather.Providers/Grib/Grib2Decoder.cs の検証追加のみ + tests/Weather.Providers.Tests/Grib2Decoder.cs に追加",
+          "success_criteria": "追加テスト(対象の破損 + 固定シードの変異)が修正前 FAIL・修正後 PASS、記録データの復号結果が不変(既存の Decode テスト)、Providers テスト全 PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:14:20Z",
+          "diff_sha256": "fbd8484b8de814bce53b4b4b3b8930b021771f757285d615acd321b68b935532",
+          "commit": "927b675f0425f7d7a7d458cab7b5e3e5c69c6b42"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/Grib2Decoder.Decode"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/fuzz-grib-1.log",
+        "qa/artifacts/RUN-20261004-1510/fuzz-grib-2.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:12:39Z",
+      "verified": {
+        "commit": "927b675f0425f7d7a7d458cab7b5e3e5c69c6b42",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 63,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1358,7 +1420,7 @@
     {
       "id": "M-6",
       "status": "UNREPRODUCED",
-      "note": "走査モード 0x80 で Grid.Lo1 が不一致(GFS は到達しない)"
+      "note": "走査モード 0x80 で Grid.Lo1 が不一致(GFS は到達しない) (BUG-0021 の検証追加後も走査モード 0x80 の Grid.Lo1 の食い違いは未対応)"
     },
     {
       "id": "S-2/S-3/S-4/S-6/S-7/S-8",
