@@ -64,7 +64,7 @@
                                             <TapGestureRecognizer Command="{Binding OpenHourlyCommand}" />
                                         </Border.GestureRecognizers>
                                         <VerticalStackLayout>
-                                            <Label Text="{x:Static res:Strings.Hourly}" Style="{StaticResource SectionTitle}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
+                                            <Label Text="{x:Static res:Strings.Hourly}" Style="{StaticResource SectionTitle}" TextColor="White" />
                                             <CollectionView ItemsSource="{Binding Hours}" HeightRequest="96" ItemsLayout="HorizontalList" HorizontalScrollBarVisibility="Never">
                                                 <CollectionView.ItemTemplate>
                                                     <DataTemplate x:DataType="vm:HourItem">
@@ -106,14 +106,16 @@
                                         <Button Text="{x:Static res:Strings.History}" Style="{StaticResource ToolButton}" Command="{Binding OpenHistoryCommand}" />
                                     </HorizontalStackLayout>
 
-                                    <!-- 出典(各カードの短い出典 + タップで詳細) -->
-                                    <VerticalStackLayout Margin="0,8,0,0">
-                                        <VerticalStackLayout.GestureRecognizers>
+                                    <!-- 出典(各カードの短い出典 + タップで詳細)。画面下部は地形で暗いため、空の明るさに関係なく読めるようカードに載せる(方針 7) -->
+                                    <Border Style="{StaticResource Card}" BackgroundColor="{Binding IsDarkBackground, Converter={StaticResource CardColor}}" IsVisible="{Binding AttributionCredit, Converter={StaticResource HasValue}}">
+                                        <Border.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding OpenSourcesCommand}" />
-                                        </VerticalStackLayout.GestureRecognizers>
-                                        <Label Text="{Binding AttributionShort}" Style="{StaticResource Caption}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
-                                        <Label Text="{Binding AttributionCredit}" Style="{StaticResource Caption}" TextColor="{Binding IsDarkBackground, Converter={StaticResource TextColor}}" />
-                                    </VerticalStackLayout>
+                                        </Border.GestureRecognizers>
+                                        <VerticalStackLayout>
+                                            <Label Text="{Binding AttributionShort}" Style="{StaticResource Caption}" TextColor="White" />
+                                            <Label Text="{Binding AttributionCredit}" Style="{StaticResource Caption}" TextColor="White" />
+                                        </VerticalStackLayout>
+                                    </Border>
                                 </VerticalStackLayout>
                             </ScrollView>
                         </RefreshView>

@@ -61,20 +61,41 @@ public sealed class TimeSeriesChart:IDisposable{
 
         this.grid.Color=style.Text.WithAlpha(40);
         this.text.Color=style.Text;
-        //日付の区切りと時刻の目盛り(現地時刻)
-        var lastLabelX=float.MinValue;
-        var step=Math.Max(1,(int)Math.Ceiling(samples.Count/8.0));
+        //日付の区切りと時刻の目盛り(現地時刻)。文字幅を測り、日付を優先して、重なる・はみ出す時刻の目盛りは描かない
+        //(固定の幅で判定すると、端末の画素密度が高いときに日付と時刻が重なる)
+        var gap=style.FontSize*0.5f;
+        var dates=new List<(float Left,float Right)>();
         for(var i=0;i<samples.Count;i++){
             var local=TimeZoneInfo.ConvertTime(samples[i].Time,style.Zone);
-            var x=X(samples[i].Time);
-            if(local.Hour==0&&local.Minute==0){
-                canvas.DrawLine(x,plot.Top,x,plot.Bottom,this.grid);
-                canvas.DrawText(local.ToString(style.DateFormat,CultureInfo.InvariantCulture),x+3,bounds.Bottom-2,SKTextAlign.Left,font,this.text);
-                lastLabelX=x+40;
-            }else if(i%step==0&&x>lastLabelX){
-                canvas.DrawText(local.ToString(style.HourFormat,CultureInfo.InvariantCulture),x,bounds.Bottom-2,SKTextAlign.Center,font,this.text);
-                lastLabelX=x+28;
+            if(local.Hour!=0||local.Minute!=0){
+                continue;
             }
+            var x=X(samples[i].Time);
+            canvas.DrawLine(x,plot.Top,x,plot.Bottom,this.grid);
+            var label=local.ToString(style.DateFormat,CultureInfo.InvariantCulture);
+            var right=x+3+font.MeasureText(label);
+            if(right<=bounds.Right){
+                canvas.DrawText(label,x+3,bounds.Bottom-2,SKTextAlign.Left,font,this.text);
+                dates.Add((x,right));
+            }
+        }
+        var lastRight=float.MinValue;
+        var step=Math.Max(1,(int)Math.Ceiling(samples.Count/8.0));
+        for(var i=0;i<samples.Count;i+=step){
+            var local=TimeZoneInfo.ConvertTime(samples[i].Time,style.Zone);
+            if(local.Hour==0&&local.Minute==0){
+                continue;
+            }
+            var x=X(samples[i].Time);
+            var label=local.ToString(style.HourFormat,CultureInfo.InvariantCulture);
+            var half=font.MeasureText(label)/2;
+            var left=x-half;
+            var right=x+half;
+            if(left<bounds.Left||right>bounds.Right||left<lastRight+gap||Overlaps(dates,left-gap,right+gap)){
+                continue;
+            }
+            canvas.DrawText(label,x,bounds.Bottom-2,SKTextAlign.Center,font,this.text);
+            lastRight=right;
         }
 
         //降水確率の面(下 40%)
@@ -166,6 +187,15 @@ public sealed class TimeSeriesChart:IDisposable{
     }
 
     /// <summary>x 座標 → 時刻(グラフのドラッグでシーンの時刻を動かす)。</summary>
+    private static bool Overlaps(List<(float Left,float Right)> ranges,float left,float right){
+        foreach(var (l,r) in ranges){
+            if(left<r&&right>l){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static DateTimeOffset? HitTest(SKRect bounds,IReadOnlyList<ChartSample> samples,float x){
         ArgumentNullException.ThrowIfNull(samples);
         if(samples.Count<2||bounds.Width<=0){

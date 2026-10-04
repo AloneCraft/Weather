@@ -146,6 +146,31 @@ public class MainViewModel{
             Assert.True(vm.Places[0].Data.IsCurrentLocation);
             Assert.Same(vm.Places[0],vm.Current);
         }
+        {
+            //再読み込みでは既存の地点の VM を使い回し、追加された地点だけ取得する。削除・並べ替えも反映する
+            var h=new Harness();
+            h.Weather.Forecast=new ForecastResult(Availability.Available,Sample.JmaForecast());
+            var favorites=new FakeFavorites();
+            favorites.Items.Add(new FavoritePlace("f1","大阪",new GeoPoint(34.69,135.5),0));
+            favorites.Items.Add(new FavoritePlace("f2","札幌",new GeoPoint(43.06,141.35),1));
+            var vm=new Presentation.ViewModels.MainViewModel(favorites,new FakeLocationService(LocationStatus.Denied,null),h.Lifecycle,h.Navigator,h.Time,d=>new Presentation.ViewModels.PlaceWeatherViewModel(d,h.Weather,h.Session,h.Settings,h.Navigator,h.Lifecycle,h.Time),h.Widget());
+            await vm.LoadAsync(TestContext.Current.CancellationToken);
+            var osaka=vm.Places[0];
+            var sapporo=vm.Places[1];
+            Assert.Equal(2,h.Weather.ForecastCalls);
+            favorites.Items.Add(new FavoritePlace("f3","那覇",new GeoPoint(26.21,127.68),2));
+            await vm.LoadAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(3,vm.Places.Count);
+            Assert.Same(osaka,vm.Places[0]);
+            Assert.Same(sapporo,vm.Places[1]);
+            Assert.Equal(3,h.Weather.ForecastCalls);
+            await favorites.DeleteAsync("f1",TestContext.Current.CancellationToken);
+            await favorites.ReorderAsync(["f3","f2"],TestContext.Current.CancellationToken);
+            await vm.LoadAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(["那覇","札幌"],vm.Places.Select(static p=>p.Name));
+            Assert.Same(sapporo,vm.Places[1]);
+            Assert.Equal(3,h.Weather.ForecastCalls);
+        }
     }
 }
 

@@ -20,11 +20,15 @@ public sealed class BackgroundToTextColorConverter:IValueConverter{
 
 /// <summary>背景が暗いか → カードの背景色(半透明)。</summary>
 public sealed class BackgroundToCardColorConverter:IValueConverter{
+    /// <summary>
+    /// カード内の文字は常に白・淡色(行のテンプレートは地点の背景に依存できない)。
+    /// 明るい空(厚い雲・霧の昼)でも読めるよう、明るい背景では濃い色を強めに重ねる。
+    /// </summary>
     public object Convert(object? value,Type targetType,object? parameter,CultureInfo culture){
         if(value is true){
             return Color.FromArgb("#40000000");
         }
-        return Color.FromArgb("#55FFFFFF");
+        return Color.FromArgb("#A01A2440");
     }
 
     public object ConvertBack(object? value,Type targetType,object? parameter,CultureInfo culture){

@@ -51,7 +51,11 @@ public sealed partial class MainViewModel:ObservableObject,IDisposable{
         }
     }
 
-    /// <summary>お気に入りと現在地を読み込む。現在地は権限があれば先頭に置く。</summary>
+    /// <summary>
+    /// お気に入りと現在地を読み込む。現在地は権限があれば先頭に置く。
+    /// 2 回目以降(お気に入りの変更後)は既存の地点の VM を使い回し、追加された地点だけ取得する
+    /// (全項目を入れ替えると、読み込み中のスワイプでカルーセルが途中で止まる。取得済みのデータも捨てない)。
+    /// </summary>
     [RelayCommand]
     public async Task LoadAsync(CancellationToken cancellationToken){
         var list=new List<PlaceData>();
@@ -70,16 +74,52 @@ public sealed partial class MainViewModel:ObservableObject,IDisposable{
         foreach(var f in await this.favorites.GetAllAsync(cancellationToken)){
             list.Add(new PlaceData{PlaceId=f.Id,Name=f.DisplayName,Point=f.Point,StationKey=f.StationKey});
         }
-        this.Places.Clear();
+        var existing=this.Places.ToDictionary(static p=>p.Data.PlaceId,StringComparer.Ordinal);
+        var next=new List<PlaceWeatherViewModel>(list.Count);
+        var added=new List<PlaceWeatherViewModel>();
         foreach(var data in list){
-            this.Places.Add(this.createPlace(data));
+            if(existing.TryGetValue(data.PlaceId,out var reused)&&reused.Data.Point==data.Point&&reused.Name==data.Name){
+                next.Add(reused);
+            }else{
+                var created=this.createPlace(data);
+                next.Add(created);
+                added.Add(created);
+            }
         }
+        Synchronize(this.Places,next);
         this.IsEmpty=this.Places.Count==0;
         if(this.Places.Count>0){
             this.CurrentIndex=Math.Clamp(this.CurrentIndex,0,this.Places.Count-1);
             this.Current=this.Places[this.CurrentIndex];
         }
-        await this.RefreshAllAsync(cancellationToken);
+        if(added.Count==next.Count){
+            await this.RefreshAllAsync(cancellationToken);
+            return;
+        }
+        if(!this.lifecycle.IsForeground){
+            return;
+        }
+        foreach(var place in added){
+            await place.RefreshAsync(cancellationToken);
+        }
+        this.widget.Publish(this.Places.Select(static p=>p.Data));
+    }
+
+    /// <summary>項目を入れ替えずに、削除・挿入・移動だけで並びを合わせる。</summary>
+    private static void Synchronize(ObservableCollection<PlaceWeatherViewModel> target,List<PlaceWeatherViewModel> next){
+        for(var i=target.Count-1;i>=0;i--){
+            if(!next.Contains(target[i])){
+                target.RemoveAt(i);
+            }
+        }
+        for(var i=0;i<next.Count;i++){
+            var index=target.IndexOf(next[i]);
+            if(index<0){
+                target.Insert(i,next[i]);
+            }else if(index!=i){
+                target.Move(index,i);
+            }
+        }
     }
 
     [RelayCommand]

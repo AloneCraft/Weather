@@ -36,8 +36,7 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet workload install maui-android
-      # TargetFrameworks を android だけにする(ios の TFM が残ると ios ワークロードも要求される)
-      - run: dotnet build src/Weather.App/Weather.App.csproj -f net10.0-android -p:TargetFrameworks=net10.0-android -warnaserror
+      - run: dotnet build src/Weather.App/Weather.App.csproj -f net10.0-android -warnaserror
 
   build-ios:
     if: github.event_name != 'schedule'
@@ -52,10 +51,11 @@ jobs:
           xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           sudo xcode-select -s "$xcode"
           xcodebuild -version
-      - run: dotnet workload install maui-ios
-      # TargetFrameworks を ios だけにする(android の TFM が残ると android ワークロードも要求される)
+      # 復元は App の全 TFM(android / ios)を評価するため android のワークロードも入れる
+      # (-p:TargetFrameworks で絞ると参照先のライブラリにも伝わり net10.0 が消えるので使わない)
+      - run: dotnet workload install maui-ios maui-android
       - name: アプリ(シミュレーター向け・署名なし)
-        run: dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:TargetFrameworks=net10.0-ios -p:EnableCodeSigning=false
+        run: dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:EnableCodeSigning=false
       - name: ウィジェット拡張(Swift / WidgetKit)
         working-directory: src/Weather.Widget.iOS
         run: |
@@ -63,7 +63,7 @@ jobs:
           xcodegen generate
           xcodebuild -project WeatherWidget.xcodeproj -target WeatherWidget -configuration Release -sdk iphonesimulator SYMROOT=build CODE_SIGNING_ALLOWED=NO build
       - name: アプリ + ウィジェット拡張
-        run: dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:TargetFrameworks=net10.0-ios -p:EnableCodeSigning=false -p:IncludeWidgetExtension=true
+        run: dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:EnableCodeSigning=false -p:IncludeWidgetExtension=true
 
   live:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
