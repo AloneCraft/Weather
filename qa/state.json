@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 2,
-  "updated_at": "2026-10-04T15:07:33Z",
+  "revision": 3,
+  "updated_at": "2026-10-04T15:08:59Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -96,8 +96,14 @@
       "reason": "dotnet がない。実 API の契約テストは通常の実行では動かない(Explicit)"
     },
     "push": {
-      "available": "limited",
-      "note": "ユーザーが指示した指定ブランチ claude/zen-keller-0fx365 のみ。それ以外への push・Pull Request 作成は行わない"
+      "available": true,
+      "scope": "クラウド作業の開始ごとに作る、そのセッション専用のブランチ(claude/…)のみ",
+      "not_included": [
+        "main・他セッションのブランチ・feature/** への push",
+        "Pull Request の作成・公開・申請",
+        "force push などの履歴書き換え"
+      ],
+      "authorized_by": "ユーザー指示(2026-10-04)"
     },
     "instruction_file_G_drive": {
       "available": false,
@@ -146,6 +152,12 @@
       "at": "2026-10-04T15:07:10Z",
       "decision": "Unity 前提の表現は docs/QA_WORKFLOW.md 0.1 の表で .NET MAUI に読み替えた。本文の規則は変更していない",
       "made_by": "AI"
+    },
+    {
+      "id": "D-0003",
+      "at": "2026-10-04T15:08:59Z",
+      "decision": "push はセッション専用ブランチに限り許可(docs/QA_WORKFLOW.md 0.3)。Pull Request の作成は引き続き明示指示が必要",
+      "made_by": "ユーザー"
     }
   ]
 }

@@ -1,2 +1,3 @@
 {"seq":1,"ts":"2026-10-04T15:07:10Z","type":"SETUP","run_id":null,"summary":"QA 運用の準備。docs/QA_WORKFLOW.md と qa/ の最小記録を新規作成した。実行枠は開始していない。製品コードの修正・テスト実行は行っていない","code_state":{"commit":"62ea11e14f4e38a83e4ad080fcef4a360baf669c","uncommitted_changes":0},"refs":["docs/QA_WORKFLOW.md","qa/state.json","qa/handoff.md"],"existing_qa_records_found":false}
 {"seq":2,"ts":"2026-10-04T15:07:33Z","type":"NOTE","run_id":null,"summary":"確認事項 Q-0001〜Q-0003 を state.json と handoff.md に記録した。実行枠は未開始"}
+{"seq":3,"ts":"2026-10-04T15:08:59Z","type":"HUMAN_DECISION","run_id":null,"question_id":null,"answer":"クラウドで作業を開始するたびにブランチを分ければ push してよい","scope_confirmed":"セッション専用ブランチへの push のみ。Pull Request 作成・force push・他ブランチは含めない(AI の解釈)","summary":"push 許可の判断記録(D-0003)"}
