@@ -44,6 +44,10 @@ jobs:
   build-ios:
     if: github.event_name != 'schedule'
     runs-on: macos-latest
+    # 既定のシェル(bash -e)は pipefail がなく「dotnet build | tee」の失敗を見逃すため、明示して -eo pipefail にする
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-dotnet@v5

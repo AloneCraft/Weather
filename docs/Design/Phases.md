@@ -74,29 +74,41 @@
 
 ## 実装の状況(2026-10-04)
 
+リポジトリ: https://github.com/AloneCraft/Weather(公開)。CI(GitHub Actions)で Windows のテスト、Android のビルド、macOS での iOS のビルド(ウィジェット拡張を含む)を PR・push ごとに実行する。
+
 | フェーズ | 状況 | 確認方法 |
 |---|---|---|
-| Phase 0 基盤と試作 | 完了。ソリューション・規約・CPM・BannedApiAnalyzers・アーキテクチャテスト・CI 定義・GeoDataBuilder | ビルド(警告 0)・テスト |
-| Phase 1 MVP | 実装完了。3 機関の予報、気象庁(r8)と NWS の警報、シーン描画、検索・お気に入り、出典表示、オフライン時の古いキャッシュ表示 | 単体テスト 78 件・実 API の契約テスト 11 件(東京・札幌・ニューヨーク・ホノルル・ロンドン・シドニーの予報、東京・稚内・ニューヨークの警報、アメダスと NWS の観測)。Android / iOS のビルド |
-| Phase 2 履歴と地図 | 実装完了。観測履歴(同期・間引き・保持期間・グラフ)、世界地図での地点選択 | 単体テスト(SQLite)・ビルド |
-| Phase 3 仕上げ | 一部。英語 UI(resx、日本語既定)、読み上げ用の天気の要約、稲光の点滅制限・視差効果の設定、品質段階の自動調整 | 単体テスト(言語・要約・稲光の頻度) |
-| Phase 4 発展 | 未着手(任意)。Functions のワーカーパッケージは net10.0 に対応済み(Microsoft.Azure.Functions.Worker 2.52.0) | — |
+| Phase 0 基盤と試作 | 完了。ソリューション・規約・CPM・BannedApiAnalyzers・アーキテクチャテスト・CI・GeoDataBuilder | ビルド(警告 0)・テスト・CI |
+| Phase 1 MVP | 完了。3 機関の予報、気象庁(r8)と NWS の警報、シーン描画、検索・お気に入り、出典表示、オフライン時の古いキャッシュ表示 | 単体テスト・実 API の契約テスト 11 件・Android エミュレーターでの動作確認 |
+| Phase 2 履歴と地図 | 完了。観測履歴(同期・間引き・保持期間・グラフ)、世界地図での地点選択 | 単体テスト(SQLite)・エミュレーターで観測履歴(アメダス東京)を確認 |
+| Phase 3 仕上げ | 完了(iOS の実機確認を除く)。英語 UI、読み上げ用の要約、警報の通知、ウィジェット(Android の AppWidget・iOS の WidgetKit 拡張)、背景更新(WorkManager・BGTaskScheduler)、MET の背景取得の二重防止 | 単体テスト。Android エミュレーターで、ウィジェット・画面なしでの背景起動・警報の通知(小笠原村の波浪警報)を確認。iOS は CI でビルドと拡張の同梱を確認 |
+| Phase 4 発展 | Functions への移行を実装(中継 API・RemoteWeatherService)。Azure への配置はしていない。Web 版は未着手(後で検討) | 単体テスト・記録データでの結合テスト・Functions のビルド |
 
 試作 S1〜S5 の結果:
 
 | # | 結果 |
 |---|---|
-| S1 iOS SKMetalView | ハンドラーを実装し iOS 向けにコンパイルできることを確認。実機での描画・フレームレートは未確認(Mac が必要) |
-| S2 Android SKGLView | `HasRenderLoop` による連続描画を実装しビルドを確認。実機・エミュレーターでの性能は未確認 |
-| S3 GeoDataBuilder | 合計約 4.3 MB(目標 15 MB 以下)。解決・検索はテストで確認 |
-| S4 Microsoft.Data.Sqlite | Windows でのテストは成功。iOS リリースビルド(トリミング・AOT)での動作は未確認 |
+| S1 iOS SKMetalView | ハンドラーを実装し、CI(macOS)でシミュレーター向けにビルドできることを確認。実機での描画・フレームレートは未確認(Mac / iPhone が必要) |
+| S2 Android SKGLView | エミュレーター(Android 16)で連続描画・画面遷移・背景移行を確認。中位機種の実機での 60 fps は未確認 |
+| S3 GeoDataBuilder | 合計約 4.3 MB(目標 15 MB 以下)。解決・検索はテストとエミュレーター(ローマ字・かな検索)で確認 |
+| S4 Microsoft.Data.Sqlite | Windows のテストと Android エミュレーター(Debug)で動作を確認。iOS リリースビルド(トリミング・AOT)での動作は未確認 |
 | S5 Adapter | 記録データと実 API の両方で確認 |
+
+### エミュレーターでの確認で見つけて直した不具合
+
+- 明るい空(曇り)でカード内の白い文字が読めない → カードの背景を常に濃い半透明にした。
+- 出典が画面下部の暗い地形と同じ色で読めない → 出典をカードに載せた(方針 7)。
+- お気に入りの変更後に全地点を作り直していた(読み込み中のスワイプでカルーセルが途中で止まる) → 既存の地点を使い回し、追加分だけ取得する。
+- グラフの時刻軸で日付と時刻が重なる・左端の目盛りが切れる → 文字幅を測って判定する。
+- WorkManager 2.11 が新しい AndroidX を引き込みクラスが重複 → MAUI と同じ AndroidX に依存する 2.10.3 に固定。
 
 ### 残作業と理由
 
-- **実機・エミュレーターでの確認**(描画性能、背景移行時の停止、権限、オフライン、VoiceOver / TalkBack): この環境にはエミュレーターも実機もなく、iOS は Mac が必要。
-- **ウィジェット・警報の通知**: バックグラウンド取得(Android WorkManager / iOS BGTaskScheduler)と実機での検証が必要。MET はバックグラウンド取得が規約で禁止のため、気象庁・NWS のみが対象。通知の文面は気象業務法第 23 条に沿い、気象庁の警報をそのまま伝える形に限る。
-- **公開前の確定事項**: アプリ ID と署名、ストア用のプライバシーポリシー。User-Agent の連絡先は公開リポジトリ `github.com/AloneCraft/Weather` に確定した。
+- **iOS の実機確認**(SKMetalView の描画性能、BGTaskScheduler、通知、ウィジェット、SQLite のリリースビルド): iPhone と Mac(署名)が必要。
+- **Android の中位機種の実機での性能確認**: エミュレーターは GPU 性能が実機と異なる。
+- **公開前の確定事項**: アプリ ID(現在は仮の `com.weatherapp.soramoyou`)と署名、iOS の App Group の登録(ウィジェットを同梱する場合)、ストア用のプライバシーポリシー。User-Agent の連絡先は公開リポジトリ `github.com/AloneCraft/Weather` に確定した。
+- **Functions の配置**(任意): Azure のサブスクリプションが必要。Azure 側の .NET 10 ランタイム対応は配置時に**要確認**。公開時はレート制限(API Management 等)を前提にする。
+- **Web 版**: 後で検討(SolutionStructure.md)。
 - **要確認のまま残る仕様**: 気象庁の時系列予報の天気区分と風速階級、警報の電文種別と状態文字列、氾濫注意報のコード、アメダスの品質フラグと elems、NWS の qualityControl と雲量区分、MET の altitude、VI / AS / MP の NWS 対応。実 API の契約テスト(週 1 回)で変化を検知する。
 
 ## リスクと対策

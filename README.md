@@ -20,7 +20,10 @@
 | `src/Weather.Rendering` | SkiaSharp 4 によるシーン・グラフ・世界地図の描画 |
 | `src/Weather.Infrastructure` | ファイルの HTTP キャッシュ、SQLite(お気に入り・観測履歴) |
 | `src/Weather.Presentation` | ViewModel(CommunityToolkit.Mvvm) |
-| `src/Weather.App` | MAUI アプリ(Android は SKGLView、iOS は SKMetalView の自作ハンドラー) |
+| `src/Weather.App` | MAUI アプリ(Android は SKGLView、iOS は SKMetalView の自作ハンドラー)。通知・ウィジェット・背景更新の各 OS の実装 |
+| `src/Weather.Widget.iOS` | iOS のウィジェット(WidgetKit 拡張。Swift / XcodeGen) |
+| `src/Weather.Remote` | Phase 4: 中継の電文・サーバー側の要求処理・RemoteWeatherService(Core のみに依存) |
+| `src/Weather.Functions` | Phase 4: Azure Functions(isolated worker)の中継 API。既定のアプリは使わない(直接取得) |
 | `tools/Weather.SceneLab` | 描画調整ツール(WPF、記録データの予報を時間軸で再生) |
 | `tools/Weather.GeoDataBuilder` | 地理データの生成 |
 
@@ -36,7 +39,19 @@ dotnet test --solution Weather.slnx
 dotnet build src/Weather.App/Weather.App.csproj -f net10.0-android
 ```
 
-- iOS は Windows 上では C# のコンパイルまで。パッケージ作成・署名・実機実行には Mac(Pair to Mac / ローカル)が必要。
+- iOS は Windows 上では C# のコンパイルまで。パッケージ作成・署名・実機実行には Mac(Pair to Mac / ローカル)が必要。CI(macOS)ではシミュレーター向けにビルドしている。
+- iOS のウィジェットを同梱する場合は、Mac で拡張をビルドしてから App をビルドする(App Group `group.com.weatherapp.soramoyou` を有効にしたプロビジョニングが必要):
+
+```bash
+cd src/Weather.Widget.iOS && xcodegen generate && xcodebuild -project WeatherWidget.xcodeproj -target WeatherWidget -configuration Release -sdk iphonesimulator SYMROOT=build CODE_SIGNING_ALLOWED=NO build
+```
+
+```bash
+dotnet build src/Weather.App/Weather.App.csproj -f net10.0-ios -p:IncludeWidgetExtension=true
+```
+
+- Functions(任意)をローカルで動かすには Azure Functions Core Tools が必要。`src/Weather.Functions/local.settings.example.json` を `local.settings.json` に複製してから `func start` を実行する。アプリを中継に切り替えるには、MauiProgram で `AddWeatherProviders` の後に `AddRemoteWeatherService(new Uri("https://<関数アプリ>/api/"),userAgent)` を呼ぶ。
+- Android エミュレーターでの確認手順は [docs/Design/TestStrategy.md](docs/Design/TestStrategy.md)「エミュレーターでの確認手順」。
 - 実 API の契約テストは通常の実行では動かない。週 1 回(CI の schedule)または手動で実行する。
 
 ```bash
@@ -57,7 +72,7 @@ WEATHER_UPDATE_GOLDEN=1 dotnet test --project tests/Weather.Rendering.Tests
 
 ## 公開前に確定すること
 
-- アプリ ID(`ApplicationId`)と署名
+- アプリ ID(`ApplicationId`。現在は仮の `com.weatherapp.soramoyou`)と署名。変える場合は iOS の App Group・BGTask の識別子・ウィジェット拡張の Bundle ID も合わせる
 - 公開時に各 API の利用規約を再確認する(WeatherProviders.md「利用規約・法令」)
 
 ## ライセンス表示

@@ -4,7 +4,7 @@
 
 - .NET 10(最新 LTS)/ C# 14。.NET 11 は STS のため採用しない。
 - iOS のビルド・署名には Mac + Xcode が必要。Mac は利用可能(Pair to Mac / ローカルビルド)。
-- 将来の Azure Functions は isolated worker モデル前提(in-process モデルは 2026 年 11 月サポート終了予定)。ワーカーのパッケージ(Microsoft.Azure.Functions.Worker 2.52.0)は net10.0 に対応済み(2026-10-04 確認)。Azure 側のランタイムの対応は移行時に**要確認**。
+- Azure Functions(Phase 4 で Weather.Functions として実装、未配置)は isolated worker モデル(in-process モデルは 2026 年 11 月サポート終了予定)。Microsoft.Azure.Functions.Worker 2.52.0 / Worker.Sdk 2.1.0 / Extensions.Http 3.3.0 で net10.0 のビルドを確認(2026-10-04)。Azure 側のランタイムの対応は配置時に**要確認**。
 
 ## 構成
 
@@ -50,7 +50,10 @@ Weather/
 | Rendering | SceneState → SkiaSharp 描画、グラフ、世界地図。MAUI 非依存 | Scene, Geo | 不要(Web 版で再利用可能) |
 | Infrastructure | 端末側永続化(キャッシュストア・履歴ストアの実装) | Core | Blob / Table 等に置き換え |
 | Presentation | ViewModel、画面状態、ナビゲーション・ダイアログ・位置情報・Dispatcher の薄い抽象 | Core, Scene | 不要 |
-| App | MAUI ホスト、XAML View、DI 合成ルート、プラットフォーム実装(位置情報・保存パス・接続状態)、描画ホスト(Android は SKGLView、iOS は SKMetalView の自作ハンドラー) | すべて | クライアント側は RemoteWeatherService に差し替え |
+| App | MAUI ホスト、XAML View、DI 合成ルート、プラットフォーム実装(位置情報・保存パス・接続状態・通知・ウィジェット・背景更新)、描画ホスト(Android は SKGLView、iOS は SKMetalView の自作ハンドラー) | すべて(Remote を除く) | `AddRemoteWeatherService` で RemoteWeatherService に差し替え |
+| Remote | Functions とアプリの間の電文(DTO)と変換、サーバー側の要求処理(WeatherApi。Functions のホストに依存しない)、クライアント(RemoteWeatherService) | Core | Phase 4 で実装済み。既定のアプリでは使わない(方針 2) |
+| Functions | Azure Functions(isolated worker)の HTTP API。resolve / forecast / alerts / stations / observations を WeatherApi に渡すだけ | Core, Providers, Geo, Remote | Phase 4 で実装済み(未配置) |
+| Widget.iOS | iOS のウィジェット(WidgetKit 拡張。Swift。XcodeGen で生成)。App Group の widget.json を表示するだけ | なし(JSON の形のみ Presentation と共有) | 不要 |
 | SceneLab | SceneState をスライダーで操作し描画を即時プレビューする開発ツール | Scene, Rendering | — |
 | GeoDataBuilder | 気象庁・GeoNames・Natural Earth から地理データを生成し、Geo の埋め込みリソースに出力する | Geo | — |
 
@@ -59,10 +62,11 @@ Weather/
 - Providers / Geo / Scene / Infrastructure → Core
 - Rendering → Scene, Geo(世界地図で国境・区域データを描くため)
 - Presentation → Core, Scene
-- App → すべて
+- App → すべて(Remote を除く)
+- Remote → Core(アーキテクチャテストで検査)
+- Functions → Core, Providers, Geo, Remote
 - SceneLab → Scene, Rendering
 - GeoDataBuilder → Geo
-- (将来)Functions → Core, Providers, Geo
 
 ## 設計判断と根拠
 

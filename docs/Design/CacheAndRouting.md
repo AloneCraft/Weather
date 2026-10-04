@@ -34,7 +34,7 @@ UI(Presentation)
                                             ↘ IHttpCacheStore(Core 抽象 / Infrastructure 実装)
 ```
 
-`IWeatherService` は Core の抽象のみに依存するため、Functions 移行時はサーバー側で同じ実装を動かし、クライアントは RemoteWeatherService に差し替える。
+`IWeatherService` は Core の抽象のみに依存するため、Functions 移行時はサーバー側で同じ実装を動かし、クライアントは RemoteWeatherService(Weather.Remote)に差し替える。RemoteWeatherService は同期で答えるメソッド(観測の可否・背景取得の可否・保持期間)を直前の resolve の応答で答え、resolve していない地点には安全側(対応なし・背景取得しない)で答える。
 
 ## 地点の解決
 
