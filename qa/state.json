@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 9,
-  "updated_at": "2026-10-04T15:17:41Z",
+  "revision": 20,
+  "updated_at": "2026-10-04T15:35:22Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,13 +29,20 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 6,
+      "run_minutes": 19,
       "exploratory_minutes": 0
     },
     "survey": {
       "launched_at": "2026-10-04T15:16:35Z",
       "agents": 5,
-      "status": "RUNNING"
+      "status": "REPORTS_RECEIVED",
+      "reports_received": [
+        "scene",
+        "geo-core",
+        "infra-presentation",
+        "map",
+        "providers"
+      ]
     }
   },
   "baseline_snapshot": {
@@ -124,8 +131,422 @@
     }
   },
   "running_processes_at_capture": "dotnet / msbuild / testhost / adb / emulator / unity に該当するプロセスなし(準備時に ps で確認)",
-  "bugs": [],
-  "queue": [],
+  "bugs": [
+    {
+      "id": "BUG-0010",
+      "title": "JMA警報: 警報のない地点に別区域の見出しが付く",
+      "source_ids": [
+        "P-1"
+      ],
+      "severity": "高",
+      "fix_priority": 1,
+      "symptom": "Providers.Tests の記録データ warning_130000.json + Locations.Tokyo で GetAlertsAsync → Headline が null でなく他区域の文面になる(コード読みで機構確認。実行再現は修正前テストで行う)",
+      "expected": "警報がない地点では Headline==null(WeatherProviders.md「警報(r8)」。気象業務法の趣旨で他区域の文面を出さない)",
+      "cause": {
+        "confirmed": "matched が areaCode 一致のみで立ち、「なし」の電文(code なし)の見出しも採用していた(確定。修正前テストで FAIL を確認)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:31:03Z",
+          "reason": "優先1位: 利用者に誤情報(他区域の警報文面)を出し得る安全情報の問題。独立して修正・検証できる",
+          "code_before": {
+            "commit": "9737cbe3f1593b608a51389996f130308a971394",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "JmaAlertMapper.cs:36,41,64-66 で matched が areaCode 一致のみで立つ(コード読み)",
+          "hypothesis": "kinds に code を持つ項目がある電文の headlineText だけを採用すべきで、なしの電文の見出しは採用されない",
+          "planned_change": "src/Weather.Providers/Jma/JmaAlertMapper.cs の matched 判定のみ + tests/Weather.Providers.Tests/JmaProvider.cs へ再現テスト追加",
+          "success_criteria": "再現テストが修正前 FAIL・修正後 PASS、Weather.Providers.Tests / Remote.Tests 全 PASS、稚内(警報あり)の既存ケースが変わらない",
+          "isolation": "git diff を qa/artifacts に保存。不採用なら今回追加した hunk のみ git apply -R で戻す(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:32:27Z",
+          "diff_sha256": "6e22b16da3b1b11b32da8945a51c2f76c70854ca689a403a4b5c1913aa7b2633",
+          "commit": "8a7b61400de76febe7d71db378c76b88ae912a6e",
+          "evidence": [
+            "qa/artifacts/RUN-20261004-1510/BUG-0010-a1.diff",
+            "qa/artifacts/RUN-20261004-1510/BUG-0010-a1-before.log"
+          ]
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/JmaProvider.GetAlertsAsync",
+        "Weather.Providers.Tests/JmaProvider.GetAlertsAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "8a7b61400de76febe7d71db378c76b88ae912a6e",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ Providers/Remote/Presentation の全テスト PASS",
+        "visual_check_required": false,
+        "full_regression": "未実施(関連 3 プロジェクトのみ)"
+      }
+    },
+    {
+      "id": "BUG-0001",
+      "title": "日本沖(OutOfCoverage)で DistanceKm=Infinity となり Remote の JSON 直列化が例外",
+      "source_ids": [
+        "G-1"
+      ],
+      "severity": "高(Remote 使用時)",
+      "fix_priority": 2,
+      "symptom": "LocationResolver.Resolve(GeoPoint(34.3,141.6)) の JmaArea.DistanceKm=Infinity → RemoteJson.Serialize(ContractMapper.ToDto(loc)) が ArgumentException",
+      "expected": "例外にならない(往復で値が保たれる)",
+      "cause": {
+        "confirmed": "RemoteJson の NumberHandling に AllowNamedFloatingPointLiterals がない",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:32:57Z",
+          "reason": "優先2位: Remote 経路でサーバーの /resolve が日本沖の地点で例外になる(機構確認済み・再現済み)。独立して修正・検証できる",
+          "code_before": {
+            "commit": "8a7b61400de76febe7d71db378c76b88ae912a6e",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "RemoteJson.Serialize(ContractMapper.ToDto(OutOfCoverage の location)) が ArgumentException(Infinity は JSON に書けない)",
+          "hypothesis": "JsonSourceGenerationOptions に NumberHandling=AllowNamedFloatingPointLiterals を足せば、Infinity が文字列 \"Infinity\" で往復する",
+          "planned_change": "src/Weather.Remote/Contracts/RemoteJson.cs の 1 属性 + tests/Weather.Remote.Tests/RemoteTests.cs に再現テスト",
+          "success_criteria": "再現テストが修正前 FAIL・修正後 PASS、Remote/Providers/Presentation テスト全 PASS、既存の JSON 形式(camelCase・列挙は文字列・null 省略)が不変",
+          "isolation": "git で 1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:33:38Z",
+          "diff_sha256": "9cc811e19006a4c1dc8c1a05d17ffa870fa56f4f1051ec5a783bb991d4de5094",
+          "commit": "70a4bf60ba45fc9edc8a1f948352b7061f874b1d"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Remote.Tests/*",
+        "Weather.Remote.Tests/ContractMapper.ToDto"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/survey-geo-core.md"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "70a4bf60ba45fc9edc8a1f948352b7061f874b1d",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ Remote/Providers/Presentation 全テスト + Functions ビルド",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0002",
+      "title": "高緯度で最寄り都市の探索が取りこぼされ、TimeZone が Etc/GMT± に落ちる",
+      "source_ids": [
+        "G-3"
+      ],
+      "severity": "中",
+      "fix_priority": 3,
+      "symptom": "Resolve(GeoPoint(65,-124.5)) → TZ=Etc/GMT+8(最寄りは Yellowknife 572km, America/Edmonton)。FindNearestPlace を総当たりと比較: 緯度55〜70で 316/8000、70〜84で 717/8000 不一致",
+      "expected": "maxKm 以内の最寄り都市を返す",
+      "cause": {
+        "confirmed": "探索の区画数が経度方向も緯度と同じ度数(range=ceil(maxKm/100)+1)で、高緯度では経度1°が短い",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:34:25Z",
+          "reason": "優先3位: 高緯度の地点でタイムゾーンが Etc/GMT± に落ちる(夏時間の地域で時刻が 1〜2 時間ずれる)。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "70a4bf60ba45fc9edc8a1f948352b7061f874b1d",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "総当たりとの比較で緯度 55〜70 の 316/8000、70〜84 の 717/8000 が不一致。Resolve(65,-124.5)=Etc/GMT+8",
+          "hypothesis": "探索する経度の区画数を、探索円が届く最高緯度での経度 1° の長さから決めれば総当たりと一致する",
+          "planned_change": "src/Weather.Geo/GeoDatabase.cs の FindNearestPlace のみ + tests/Weather.Geo.Tests に総当たり比較テスト",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Geo/Providers/Presentation/Remote テスト PASS、低緯度の結果が変わらない",
+          "isolation": "1 コミット。不採用なら git revert",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:35:22Z",
+          "diff_sha256": "40027586d5328127076f6667486896e12c854d24a6eea7690d88728b468429e1",
+          "commit": "6a3c67907ecf79dfa5b36fd4264609c84f9a30bb"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Geo.Tests/*",
+        "Weather.Geo.Tests/GeoDatabase.FindNearestPlace"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "6a3c67907ecf79dfa5b36fd4264609c84f9a30bb",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "総当たり比較テスト(修正前 FAIL → 修正後 PASS)+ Geo/Providers/Presentation/Remote の全テスト",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0004",
+      "title": "地点検索で「ヶ」と「ケ」の表記ゆれが吸収されず JMA 区域に当たらない",
+      "source_ids": [
+        "G-4"
+      ],
+      "severity": "中",
+      "fix_priority": 4,
+      "symptom": "Search(\"茅ケ崎\") / (\"金ヶ崎\") / (\"鎌ヶ谷\") の JMA 区域が 0 件(茅ヶ崎市・金ケ崎町・鎌ケ谷市は存在)",
+      "expected": "どちらの表記でも当たる",
+      "cause": {
+        "confirmed": "NFKC は ヶ/ケ を統合せず、カタカナ→ひらがな変換で ゖ/け に分かれる",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "READY",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Geo.Tests/*"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z"
+    },
+    {
+      "id": "BUG-0005",
+      "title": "孤立サロゲートの検索入力で ArgumentException",
+      "source_ids": [
+        "G-5"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 5,
+      "symptom": "PlaceSearch.Search(\"\\uD83D\",5) → ArgumentException: String contains invalid Unicode code points",
+      "expected": "例外にならず 0 件",
+      "cause": {
+        "confirmed": "string.Normalize(FormKC) が不正な Unicode で例外",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "READY",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Geo.Tests/*"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z"
+    },
+    {
+      "id": "BUG-0006",
+      "title": "GridField.Sample が循環継ぎ目の x≈-ε で格子外の列を読む(最南行で IndexOutOfRange)",
+      "source_ids": [
+        "G-7/M-4"
+      ],
+      "severity": "低",
+      "fix_priority": 6,
+      "symptom": "1440x721 格子で Sample(-90,-1e-15) が IndexOutOfRangeException。Sample(0,-1e-15) は 360 行でなく 361 行の値",
+      "expected": "Sample(lat,-1e-15)≒Sample(lat,0)",
+      "cause": {
+        "confirmed": "x+Columns が丸めで Columns ちょうどになる",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "READY",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Core.Tests/FieldTests"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z"
+    },
+    {
+      "id": "BUG-0007",
+      "title": "GridField.SampleNearest(NaN,NaN) が this[0,0] を返す / 非循環格子の外周半セルが NaN",
+      "source_ids": [
+        "G-6"
+      ],
+      "severity": "低",
+      "fix_priority": 8,
+      "symptom": "SampleNearest(NaN,NaN)=0(Sample は NaN)。非循環 GridGeometry(10,10,40,130,1,1) の SampleNearest(35,129.7)=NaN",
+      "expected": "NaN 入力は NaN。外周半セルの扱いは設計判断",
+      "cause": {
+        "confirmed": "TryGetPosition の比較が NaN で全て偽になる",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "READY",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Core.Tests/FieldTests"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": "外周半セルは仕様の判断",
+      "found_at": "2026-10-04T15:30:42Z"
+    },
+    {
+      "id": "BUG-0003",
+      "title": "国境付近で国はポリゴン由来、表示名/行政区/TZ は他国の最寄り都市になる",
+      "source_ids": [
+        "G-2"
+      ],
+      "severity": "中",
+      "fix_priority": 9,
+      "symptom": "Resolve(GeoPoint(41.85,-6.3)) → 国=ES, 表示名=ブラガンサ, TZ=Europe/Lisbon(正は Europe/Madrid)",
+      "expected": "国が判明していれば同じ国の都市を優先(設計書は「国境付近の誤差は既知の制約」としており境界が曖昧)",
+      "cause": {
+        "confirmed": "FindNearestPlace の結果の国を確認しない",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "READY",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Geo.Tests/*"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": "既知の制約の範囲か仕様判断",
+      "found_at": "2026-10-04T15:30:42Z"
+    },
+    {
+      "id": "BUG-0008",
+      "title": "不明な TimeZoneId を黙って UTC として日別予報の日付を選ぶ",
+      "source_ids": [
+        "S-5a"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 10,
+      "symptom": "TimeZoneId=Not/AZone の日本地点で JST 10/4 08:00 → 10/3 の日別(Rain)を選ぶ。Asia/Tokyo なら 10/4(None)",
+      "expected": "不明 ID でも地点の経度から妥当なオフセットを使う等(方針は判断)",
+      "cause": {
+        "confirmed": "SceneConverter.cs:379-385 が例外を握りつぶして TimeSpan.Zero",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "READY",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Scene.Tests/*"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": "フォールバック方針",
+      "found_at": "2026-10-04T15:30:42Z"
+    },
+    {
+      "id": "BUG-0009",
+      "title": "SceneTimeline.At が「後に雨」の区間前半から雨を返す(Convert は中点まで主天気)",
+      "source_ids": [
+        "S-1"
+      ],
+      "severity": "低(現行アダプターでは 6h 以上の Later なし)",
+      "fix_priority": 11,
+      "symptom": "06:00-12:00 に Clear→Later→Rain の ForecastPoint。At(06:30..08:54) が Rain 0.35→0.59、Convert 直接は None",
+      "expected": "SceneState.md「Later: 中点より前は主天気」",
+      "cause": {
+        "confirmed": "キーフレームが区間中点で、中点は常に副天気側(>=)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "READY",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Scene.Tests/*"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z"
+    }
+  ],
+  "queue": [
+    {
+      "id": "BUG-0004",
+      "priority": 4,
+      "reason": "地点検索で「ヶ」と「ケ」の表記ゆれが吸収されず JMA 区域に当たらない"
+    },
+    {
+      "id": "BUG-0005",
+      "priority": 5,
+      "reason": "孤立サロゲートの検索入力で ArgumentException"
+    },
+    {
+      "id": "BUG-0006",
+      "priority": 6,
+      "reason": "GridField.Sample が循環継ぎ目の x≈-ε で格子外の列を読む(最南行で IndexOutOfRange)"
+    },
+    {
+      "id": "BUG-0007",
+      "priority": 8,
+      "reason": "GridField.SampleNearest(NaN,NaN) が this[0,0] を返す / 非循環格子の外周半セルが NaN"
+    },
+    {
+      "id": "BUG-0003",
+      "priority": 9,
+      "reason": "国境付近で国はポリゴン由来、表示名/行政区/TZ は他国の最寄り都市になる"
+    },
+    {
+      "id": "BUG-0008",
+      "priority": 10,
+      "reason": "不明な TimeZoneId を黙って UTC として日別予報の日付を選ぶ"
+    },
+    {
+      "id": "BUG-0009",
+      "priority": 11,
+      "reason": "SceneTimeline.At が「後に雨」の区間前半から雨を返す(Convert は中点まで主天気)"
+    }
+  ],
   "human_questions": [
     {
       "id": "Q-0001",
