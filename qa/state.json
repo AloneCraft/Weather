@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 20,
-  "updated_at": "2026-10-04T15:35:22Z",
+  "revision": 24,
+  "updated_at": "2026-10-04T15:37:54Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 19,
+      "run_minutes": 26,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -322,18 +322,45 @@
         "unknown": []
       },
       "reproduced": true,
-      "state": "READY",
+      "state": "VERIFIED",
       "depends_on": [],
       "affects": [],
-      "attempts": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:36:03Z",
+          "reason": "優先4位: 実在の市町村名(茅ヶ崎市・金ケ崎町・鎌ケ谷市 ほか)が逆の表記で検索できない。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "a6b55c382ec4b7da064e5bf511c9cb0202786eb8",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "Search(茅ケ崎/金ヶ崎/鎌ヶ谷) の JMA 区域が 0 件",
+          "hypothesis": "カタカナ→ひらがな変換の前に ヶ→ケ・ヵ→カ(小書き)を統合すれば、表記ゆれが吸収される",
+          "planned_change": "src/Weather.Geo/PlaceSearch.cs の TextNormalizer.Normalize のみ + tests/Weather.Geo.Tests に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Geo/Providers/Presentation テスト PASS、既存の検索順(千代田区 先頭など)が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:36:51Z",
+          "diff_sha256": "7fd2a251f1b4a0db465f68c34e6d9c358e3c6a8217b94c209cfec4d70cb6f613",
+          "commit": "67056c4cf3bc3e362e202d6ee093d20c49fb0bae"
+        }
+      ],
       "rejected_hypotheses": [],
       "related_tests": [
-        "Weather.Geo.Tests/*"
+        "Weather.Geo.Tests/*",
+        "Weather.Geo.Tests/TextNormalizer.Normalize"
       ],
       "retry_when": null,
       "evidence": [],
       "human_needed": null,
-      "found_at": "2026-10-04T15:30:42Z"
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "67056c4cf3bc3e362e202d6ee093d20c49fb0bae",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 25,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     },
     {
       "id": "BUG-0005",
@@ -351,18 +378,45 @@
         "unknown": []
       },
       "reproduced": true,
-      "state": "READY",
+      "state": "VERIFIED",
       "depends_on": [],
       "affects": [],
-      "attempts": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:37:04Z",
+          "reason": "優先5位: 検索ボックスへの貼り付けや絵文字の途中切断で例外になり得る。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "67056c4cf3bc3e362e202d6ee093d20c49fb0bae",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "PlaceSearch.Search(\"\\uD83D\") が ArgumentException(String contains invalid Unicode code points)",
+          "hypothesis": "孤立サロゲートは検索の手がかりにならないので Normalize の前に除去すれば、例外にならず残りの文字で検索できる",
+          "planned_change": "src/Weather.Geo/PlaceSearch.cs の TextNormalizer.Normalize のみ + tests/Weather.Geo.Tests に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Geo/Providers/Presentation テスト PASS、正当なサロゲートペアは保たれる",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:37:54Z",
+          "diff_sha256": "2394be959a15600fc1b9c67079592a671433d2148a1c5e3c5ffadab6b4c78d7e",
+          "commit": "08ce1c403a77c4707cbb0ed8acc129d4cd732216"
+        }
+      ],
       "rejected_hypotheses": [],
       "related_tests": [
-        "Weather.Geo.Tests/*"
+        "Weather.Geo.Tests/*",
+        "Weather.Geo.Tests/TextNormalizer.Normalize"
       ],
       "retry_when": null,
       "evidence": [],
       "human_needed": null,
-      "found_at": "2026-10-04T15:30:42Z"
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "08ce1c403a77c4707cbb0ed8acc129d4cd732216",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 26,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     },
     {
       "id": "BUG-0006",
@@ -511,16 +565,6 @@
     }
   ],
   "queue": [
-    {
-      "id": "BUG-0004",
-      "priority": 4,
-      "reason": "地点検索で「ヶ」と「ケ」の表記ゆれが吸収されず JMA 区域に当たらない"
-    },
-    {
-      "id": "BUG-0005",
-      "priority": 5,
-      "reason": "孤立サロゲートの検索入力で ArgumentException"
-    },
     {
       "id": "BUG-0006",
       "priority": 6,
