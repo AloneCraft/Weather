@@ -172,6 +172,26 @@ public class MainViewModel{
             Assert.Equal(3,h.Weather.ForecastCalls);
         }
     }
+
+    [Fact,Trait("Category","Unit")]public async Task RefreshAllAsync(){
+        //初回の取得が取り消されたら(背景に回したときなど)、次の周期(1 分)ですぐ再取得する。10 分間「読み込み中」のままにしない
+        var h=new Harness();
+        h.Weather.Forecast=new ForecastResult(Availability.Available,Sample.JmaForecast());
+        h.Weather.Resolver=static _=>throw new OperationCanceledException();
+        var favorites=new FakeFavorites();
+        favorites.Items.Add(new FavoritePlace("f1","大阪",new GeoPoint(34.69,135.5),0));
+        var vm=new Presentation.ViewModels.MainViewModel(favorites,new FakeLocationService(LocationStatus.Denied,null),h.Lifecycle,h.Navigator,h.Time,d=>new Presentation.ViewModels.PlaceWeatherViewModel(d,h.Weather,h.Session,h.Settings,h.Navigator,h.Lifecycle,h.Time),h.Widget());
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async ()=>await vm.LoadAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(PlaceState.Loading,vm.Places[0].State);
+        h.Weather.Resolver=null;
+        vm.Start();
+        h.Time.Advance(TimeSpan.FromMinutes(1));
+        for(var i=0;i<300&&vm.Places[0].State!=PlaceState.Ready;i++){
+            await Task.Delay(10,TestContext.Current.CancellationToken);
+        }
+        vm.Stop();
+        Assert.Equal(PlaceState.Ready,vm.Places[0].State);
+    }
 }
 
 public class AlertsViewModel{
