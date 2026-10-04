@@ -13,7 +13,8 @@ namespace Weather.Providers.Maps;
 /// - 気温: 天気分布予報。現在時刻はアメダスの観測も重ねる
 /// - 雲・気圧: 天気分布予報の天気
 /// - 風: 現在時刻はアメダスの観測(矢印)、それ以降は海上分布予報(海域の風向の矢印)。
-///   海上は、最も近い時刻の海上分布予報の風向と風速の階級から風の格子(JapanWind)を作り、粒子を流す(現在時刻も同じ。2026-10-04 に利用者が決定)。
+///   海上は、最も近い時刻の海上分布予報の風向と風速の階級を区画ごとに持つ格子(JapanWind)で粒子を流す(現在時刻も同じ。2026-10-04 に利用者が決定)。
+///   補間しない(気象庁の格子点値の空間内挿は独自の予報とみなされ予報業務の許可が要るため)。
 ///   風速の階級は色では塗らない(海域全体を薄い色で塗り地図が読めなくなるため。強風は警報・注意報で伝わる)
 /// 気象庁の予報期間を過ぎた日本周辺は OutOfRange にし、GFS で埋めない。
 /// </summary>
@@ -387,10 +388,10 @@ internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions defi
             var arrows=new WindArrowSet(directions,ArrowKind.Forecast,t.ValidTime,source);
             WindField? field=null;
             if(await speedTask.ConfigureAwait(false) is {} speeds){
-                //階級の代表値(kt → m/s)と 8 方位から格子を作って補間するため、加工データとして出典を分ける
+                //風速は階級の代表値を m/s にした見た目の速さ(数値は表示しない)。補間はしない
                 var processed=source with{
                     ProductName="海上分布予報(風向・風速)",
-                    Processing=DataProcessing.Interpolated|DataProcessing.UnitConverted,
+                    Processing=DataProcessing.UnitConverted,
                 };
                 field=JmaMaps.MarineWindField(directions,speeds,t.ValidTime,t.BaseTime,processed);
             }else{

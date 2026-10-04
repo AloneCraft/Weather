@@ -59,7 +59,7 @@ internal static class MapSamples{
                 }
             }
         }
-        var source=new SourceAttribution{Provider=ProviderId.Jma,AgencyName="気象庁",ProductName="海上分布予報(風向・風速)",RetrievedAt=Time,License=new LicenseInfo("t",null),Processing=DataProcessing.Interpolated|DataProcessing.UnitConverted};
+        var source=new SourceAttribution{Provider=ProviderId.Jma,AgencyName="気象庁",ProductName="海上分布予報(風向・風速)",RetrievedAt=Time,License=new LicenseInfo("t",null),Processing=DataProcessing.UnitConverted};
         return new WindField(new GridField(geometry,u,FieldQuantity.WindU,Time,Time,source),new GridField(geometry,v,FieldQuantity.WindV,Time,Time,source));
     }
 

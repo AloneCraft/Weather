@@ -90,18 +90,18 @@ public class MapDataService{
             Assert.Empty(f.Tiles);
         }
         {
-            //風(予報の時刻): 海上の流れは海上分布予報の風向と風速の階級から作る。加工データとして出典を分ける
+            //風(予報の時刻): 海上の流れは海上分布予報の風向と風速の階級を区画ごとに使う。補間はしない(予報業務の許可)
             var f=await maps.GetFrameAsync(FieldLayer.Wind,Utc(4,6),ct);
             var japan=f.JapanWind!;
             Assert.Equal(ProviderId.Jma,japan.U.Source.Provider);
-            Assert.True(japan.U.Source.Processing.HasFlag(DataProcessing.Interpolated));
+            Assert.False(japan.U.Source.Processing.HasFlag(DataProcessing.Interpolated));
             Assert.True(japan.U.Source.Processing.HasFlag(DataProcessing.UnitConverted));
             Assert.Contains(f.Sources,static s=>s.ProductName=="海上分布予報(風向・風速)");
             //矢印の点では、流れの向きが矢印と同じで、速さが階級の代表値
             var representatives=new[]{12.5,27.5,32.5,37.5,42.5,47.5,57.5,70}.Select(static k=>k*Jma.JmaMaps.KnotMs).ToArray();
             var matched=0;
             foreach(var a in f.Arrows!.Arrows){
-                var (u,v)=japan.SampleAvailable(a.Point.Latitude,a.Point.Longitude);
+                var (u,v)=japan.SampleNearest(a.Point.Latitude,a.Point.Longitude);
                 if(float.IsNaN(u)){
                     continue;
                 }
@@ -113,7 +113,7 @@ public class MapDataService{
             }
             Assert.True(matched>1000,$"流れの値がある矢印の点 {matched}");
             //内陸(長野)は海上分布予報の範囲外で NaN(陸上の風の予報はない)
-            Assert.True(float.IsNaN(japan.SampleAvailable(36.65,138.18).U));
+            Assert.True(float.IsNaN(japan.SampleNearest(36.65,138.18).U));
         }
         {
             //風(海上分布予報の後): 日本周辺は予報期間外

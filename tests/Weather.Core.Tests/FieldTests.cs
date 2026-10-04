@@ -64,28 +64,20 @@ public class GridField{
         }
     }
 
-    [Fact,Trait("Category","Unit")]public void SampleAvailable(){
+    [Fact,Trait("Category","Unit")]public void SampleNearest(){
         {
-            //欠けた点がなければ Sample と同じ
+            //最も近い格子点の値をそのまま返す(補間しない)
             var f=Field([0,10,20,30,40,50,60,70],4,2);
-            Assert.Equal(f.Sample(0.5,45),f.SampleAvailable(0.5,45));
-            Assert.Equal(15f,f.SampleAvailable(1,315));
+            Assert.Equal(0f,f.SampleNearest(0.9,40));
+            Assert.Equal(50f,f.SampleNearest(0.2,80));
+            //経度方向に循環する(最後の列の右半分は最初の列)
+            Assert.Equal(40f,f.SampleNearest(0.2,350));
         }
         {
-            //欠けた点を除いて重みを付け直す(海岸近くで陸側の点が欠けていても値を返す)
+            //最も近い点が欠けていれば NaN(隣の点の値で埋めない)
             var f=Field([0,float.NaN,20,30,40,50,60,70],4,2);
-            Assert.Equal(0f,f.SampleAvailable(1,40));
-            Assert.Equal(30f,f.SampleAvailable(0.5,45),3);
-        }
-        {
-            //最も近い点が欠けていれば NaN(値のない区画に広げない)
-            var f=Field([0,float.NaN,20,30,40,50,60,70],4,2);
-            Assert.True(float.IsNaN(f.SampleAvailable(0.9,80)));
-        }
-        {
-            //4 点とも欠けていれば NaN
-            var f=Field([float.NaN,float.NaN,20,30,float.NaN,float.NaN,60,70],4,2);
-            Assert.True(float.IsNaN(f.SampleAvailable(0.5,45)));
+            Assert.True(float.IsNaN(f.SampleNearest(0.9,80)));
+            Assert.Equal(0f,f.SampleNearest(0.9,40));
         }
     }
 }

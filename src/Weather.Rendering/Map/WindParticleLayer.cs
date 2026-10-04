@@ -111,7 +111,8 @@ internal sealed class WindParticleLayer(JapanMaskTexture mask):IDisposable{
             if(japan is null){
                 return (float.NaN,float.NaN);
             }
-            return japan.SampleAvailable(latitude,longitude);
+            //気象庁の区画ごとの値をそのまま使う(補間しない)
+            return japan.SampleNearest(latitude,longitude);
         }
         if(global is null){
             return (float.NaN,float.NaN);

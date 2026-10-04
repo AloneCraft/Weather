@@ -192,6 +192,6 @@
   <data name="Back" xml:space="preserve"><value>戻る</value></data>
   <data name="Observed" xml:space="preserve"><value>観測</value></data>
   <data name="AboutGfsUsage" xml:space="preserve"><value>地図の風・降水・気温・雲・気圧(日本周辺以外。米国海洋大気庁の数値予報モデルの計算結果をアプリで色分けして表示)</value></data>
-  <data name="JapanNoteMarineFlow" xml:space="preserve"><value>日本周辺の海上: 気象庁の海上分布予報(風向 8 方位と風速の階級を加工して流れを表示)</value></data>
-  <data name="JapanNoteObservationMarineFlow" xml:space="preserve"><value>日本周辺: 陸上は気象庁のアメダスの観測値、海上は海上分布予報(加工して流れを表示)</value></data>
+  <data name="JapanNoteMarineFlow" xml:space="preserve"><value>日本周辺の海上: 気象庁の海上分布予報(風向 8 方位・風速の階級を区画ごとに流れで表示)</value></data>
+  <data name="JapanNoteObservationMarineFlow" xml:space="preserve"><value>日本周辺: 陸上は気象庁のアメダスの観測値、海上は海上分布予報(区画ごとに流れで表示)</value></data>
 </root>

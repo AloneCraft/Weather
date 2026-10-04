@@ -199,7 +199,7 @@ internal static class JmaMaps{
     /// <summary>
     /// 海上分布予報の風向(8 方位の点)と風速の階級から、海上の風の格子(0.5°、U・V)を作る(地図の海上の風の流れ用)。
     /// 風速の階級が分からない点(NoData・範囲外)と陸上は NaN。点がなければ null。
-    /// 階級の代表値と 8 方位からの補間は加工にあたるため、出典の Processing に Interpolated | UnitConverted を付けて渡す。
+    /// 格子は区画ごとの値をそのまま持ち、描画でも補間しない(GridField.SampleNearest)。風速は階級の代表値で、見た目の速さにだけ使う。
     /// </summary>
     public static WindField? MarineWindField(IReadOnlyList<WindArrow> directions,IReadOnlyList<MarineSpeedArea> speeds,DateTimeOffset validTime,DateTimeOffset referenceTime,SourceAttribution source){
         ArgumentNullException.ThrowIfNull(directions);

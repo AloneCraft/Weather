@@ -5,7 +5,7 @@ using Target=Weather.Providers.Jma.JmaMaps;
 namespace Weather.Providers.Tests;
 
 public class JmaMaps{
-    private static readonly SourceAttribution Source=new(){Provider=ProviderId.Jma,AgencyName="気象庁",ProductName="海上分布予報(風向・風速)",RetrievedAt=DateTimeOffset.UnixEpoch,License=new LicenseInfo("t",null),Processing=DataProcessing.Interpolated|DataProcessing.UnitConverted};
+    private static readonly SourceAttribution Source=new(){Provider=ProviderId.Jma,AgencyName="気象庁",ProductName="海上分布予報(風向・風速)",RetrievedAt=DateTimeOffset.UnixEpoch,License=new LicenseInfo("t",null),Processing=DataProcessing.UnitConverted};
 
     [Fact,Trait("Category","Unit")]public void ParseMarineSpeed(){
         {
@@ -38,14 +38,14 @@ public class JmaMaps{
         WindArrow[] arrows=[new(new GeoPoint(35.25,135.25),0,null),new(new GeoPoint(35.25,135.75),90,null),new(new GeoPoint(34.75,135.25),0,null),new(new GeoPoint(45.25,135.25),0,null)];
         var field=Target.MarineWindField(arrows,speeds,DateTimeOffset.UnixEpoch,DateTimeOffset.UnixEpoch,Source)!;
         var speed=27.5*Target.KnotMs;
-        var (u0,v0)=field.SampleAvailable(35.25,135.25);
+        var (u0,v0)=field.SampleNearest(35.25,135.25);
         Assert.Equal(0,u0,3);
         Assert.Equal(-speed,v0,3);
-        var (u1,v1)=field.SampleAvailable(35.25,135.75);
+        var (u1,v1)=field.SampleNearest(35.25,135.75);
         Assert.Equal(-speed,u1,3);
         Assert.Equal(0,v1,3);
         //風速の階級の外(北緯 45°)の点は NaN
-        Assert.True(float.IsNaN(field.SampleAvailable(45.25,135.25).U));
+        Assert.True(float.IsNaN(field.SampleNearest(45.25,135.25).U));
         Assert.Same(Source,field.U.Source);
         //点がなければ作らない
         Assert.Null(Target.MarineWindField([],speeds,DateTimeOffset.UnixEpoch,DateTimeOffset.UnixEpoch,Source));

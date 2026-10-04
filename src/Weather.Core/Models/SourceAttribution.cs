@@ -8,7 +8,7 @@ public enum DataProcessing{
     None=0,
     UnitConverted=1,   //単位換算(NWS の °F→°C、km/h→m/s)
     Aggregated=2,      //アプリ側の集計(MET の日別まとめ等)。気象庁データでは禁止
-    Interpolated=4,    //格子の補間・色分け(GFS の地図表示)。気象庁データでは地点の予報(Forecast)・矢印・タイルに使わない。例外は地図の海上の風の流れ(海上分布予報を補間。2026-10-04 に利用者が決定)
+    Interpolated=4,    //格子の補間・色分け(GFS の地図表示)。気象庁データでは禁止(格子点値の空間内挿は独自の予報とみなされ予報業務の許可が要る。気象庁「予報業務許可に関する Q&A」)
 }
 
 public sealed record LicenseInfo(string Name,Uri? Url);

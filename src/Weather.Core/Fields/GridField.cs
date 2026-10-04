@@ -135,58 +135,26 @@ public sealed class GridField{
     }
 
     /// <summary>
-    /// 周囲の 4 点のうち値のある点だけで補間する(重みは双線形と同じで、値のある点の重みの和で割る)。
-    /// ただし最も近い点が NaN なら NaN(各点はその点を中心とする 1 区画を代表するとみなし、値のない区画には値を広げない)。
-    /// 海岸近くで陸側の点が欠けていても海上の区画では値を返すため、海上の点だけの格子(気象庁の海上分布予報)に使う。
-    /// 日本周辺を NaN にした GFS の格子には使わない(NaN の範囲に値がにじむため)。
+    /// 最も近い格子点の値(補間しない)。各格子点はその点を中心とする 1 区画を代表するとみなし、区画の中は同じ値になる。範囲外・欠損は NaN。
+    /// 気象庁の格子(海上分布予報)はこれで描く。気象庁の格子点値を空間内挿すると独自の予報とみなされ予報業務の許可が必要になるため
+    /// (気象庁「予報業務許可に関する Q&A」)、気象庁のデータには Sample(双線形補間)を使わない。
     /// </summary>
-    public float SampleAvailable(double latitude,double longitude){
+    public float SampleNearest(double latitude,double longitude){
         var g=this.Geometry;
         if(!g.TryGetPosition(latitude,longitude,out var x,out var y)){
             return float.NaN;
         }
-        var c0=(int)Math.Floor(x);
-        var r0=(int)Math.Floor(y);
-        var fx=x-c0;
-        var fy=y-r0;
-        var c1=c0+1;
-        var r1=Math.Min(r0+1,g.Rows-1);
-        if(c1>=g.Columns){
+        var column=(int)Math.Round(x,MidpointRounding.AwayFromZero);
+        var row=(int)Math.Round(y,MidpointRounding.AwayFromZero);
+        if(column>=g.Columns){
             if(g.WrapsLongitude){
-                c1-=g.Columns;
+                column-=g.Columns;
             }else{
-                c1=g.Columns-1;
+                column=g.Columns-1;
             }
         }
-        var nearestColumn=c0;
-        if(fx>=0.5){
-            nearestColumn=c1;
-        }
-        var nearestRow=r0;
-        if(fy>=0.5){
-            nearestRow=r1;
-        }
-        if(float.IsNaN(this[nearestColumn,nearestRow])){
-            return float.NaN;
-        }
-        var sum=0.0;
-        var weight=0.0;
-        Accumulate(this[c0,r0],(1-fx)*(1-fy),ref sum,ref weight);
-        Accumulate(this[c1,r0],fx*(1-fy),ref sum,ref weight);
-        Accumulate(this[c0,r1],(1-fx)*fy,ref sum,ref weight);
-        Accumulate(this[c1,r1],fx*fy,ref sum,ref weight);
-        if(weight<=0){
-            return float.NaN;
-        }
-        return (float)(sum/weight);
-    }
-
-    private static void Accumulate(float value,double w,ref double sum,ref double weight){
-        if(float.IsNaN(value)||w<=0){
-            return;
-        }
-        sum+=value*w;
-        weight+=w;
+        row=Math.Min(row,g.Rows-1);
+        return this[column,row];
     }
 }
 
@@ -196,9 +164,9 @@ public sealed record WindField(GridField U,GridField V){
         return (this.U.Sample(latitude,longitude),this.V.Sample(latitude,longitude));
     }
 
-    /// <summary>値のある点だけで補間する(GridField.SampleAvailable)。海上分布予報の風に使う。</summary>
-    public (float U,float V) SampleAvailable(double latitude,double longitude){
-        return (this.U.SampleAvailable(latitude,longitude),this.V.SampleAvailable(latitude,longitude));
+    /// <summary>最も近い格子点の値(補間しない。GridField.SampleNearest)。気象庁の海上分布予報の風に使う。</summary>
+    public (float U,float V) SampleNearest(double latitude,double longitude){
+        return (this.U.SampleNearest(latitude,longitude),this.V.SampleNearest(latitude,longitude));
     }
 }
 
