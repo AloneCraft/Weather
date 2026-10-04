@@ -214,7 +214,7 @@ public class SettingsNotifications{
             var h=new Harness();
             h.Platform.Permission=false;
             var dialogs=new FakeDialogs();
-            var vm=new Presentation.ViewModels.SettingsViewModel(h.Settings,new NullHistory(),dialogs,h.Navigator,h.Platform,h.Platform);
+            var vm=new Presentation.ViewModels.SettingsViewModel(h.Settings,new FakeHistory(),dialogs,h.Navigator,h.Platform,h.Platform);
             vm.AlertNotifications=true;
             await Task.Yield();
             Assert.False(vm.AlertNotifications);
@@ -225,7 +225,7 @@ public class SettingsNotifications{
         {
             //許可されれば保存して背景更新を予約する
             var h=new Harness();
-            var vm=new Presentation.ViewModels.SettingsViewModel(h.Settings,new NullHistory(),new FakeDialogs(),h.Navigator,h.Platform,h.Platform);
+            var vm=new Presentation.ViewModels.SettingsViewModel(h.Settings,new FakeHistory(),new FakeDialogs(),h.Navigator,h.Platform,h.Platform);
             vm.AlertNotifications=true;
             await Task.Yield();
             Assert.True(h.Settings.AlertNotifications);
@@ -233,25 +233,4 @@ public class SettingsNotifications{
         }
     }
 
-    private sealed class NullHistory:IObservationHistoryService{
-        public ValueTask<HistorySyncResult> SyncAsync(ObservationStation station,CancellationToken cancellationToken){
-            throw new NotSupportedException();
-        }
-
-        public ValueTask<IReadOnlyList<Observation>> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken){
-            throw new NotSupportedException();
-        }
-
-        public ValueTask<IReadOnlyList<DailyObservationSummary>> GetDailySummariesAsync(ObservationStation station,DateOnly from,DateOnly to,CancellationToken cancellationToken){
-            throw new NotSupportedException();
-        }
-
-        public ValueTask ApplyRetentionAsync(TimeSpan retention,CancellationToken cancellationToken){
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask DeleteAllAsync(CancellationToken cancellationToken){
-            return ValueTask.CompletedTask;
-        }
-    }
 }

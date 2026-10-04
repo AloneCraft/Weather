@@ -112,18 +112,27 @@ public static class MapText{
                 return Strings.JapanNoteNotAvailable;
         }
         if(frame.Arrows is {Kind:ArrowKind.Observation}||frame.Points is not null&&frame.Tiles.Count==0){
+            if(frame.JapanWind is not null){
+                return Strings.JapanNoteObservationMarineFlow;
+            }
             return Strings.JapanNoteObservation;
         }
         if(frame.Arrows is {Kind:ArrowKind.Forecast}){
+            if(frame.JapanWind is not null){
+                return Strings.JapanNoteMarineFlow;
+            }
             return Strings.JapanNoteMarine;
         }
         return Strings.JapanNoteJma;
     }
 
-    /// <summary>出典の帯(方針 7)。例:「気象庁 降水ナウキャスト 17:15 | NOAA GFS 09:00 初期値」。</summary>
+    /// <summary>
+    /// 出典の帯(方針 7)。例:「気象庁 降水ナウキャスト 17:15 | NOAA GFS 09:00 初期値」。
+    /// 同じ文言になる出典(海上分布予報の矢印と流れなど、機関・時刻が同じもの)は 1 回だけ出す。
+    /// </summary>
     public static string Attribution(MapFrame frame,TimeZoneInfo zone){
         ArgumentNullException.ThrowIfNull(frame);
-        return string.Join(" | ",frame.Sources.Select(s=>AttributionText.Short(s,zone)));
+        return string.Join(" | ",frame.Sources.Select(s=>AttributionText.Short(s,zone)).Distinct(StringComparer.Ordinal));
     }
 
     /// <summary>格子の値(GFS)の表示。単位は設定に従う。</summary>

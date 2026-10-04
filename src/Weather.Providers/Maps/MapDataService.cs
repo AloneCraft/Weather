@@ -13,7 +13,9 @@ namespace Weather.Providers.Maps;
 /// - 気温: 天気分布予報。現在時刻はアメダスの観測も重ねる
 /// - 雲・気圧: 天気分布予報の天気
 /// - 風: 現在時刻はアメダスの観測(矢印)、それ以降は海上分布予報(海域の風向の矢印)。
-///   海上分布予報の風速のタイルは海域全体を薄い色で塗り地図が読めなくなるため使わない(強風は警報・注意報で伝わる)
+///   海上は、最も近い時刻の海上分布予報の風向と風速の階級を区画ごとに持つ格子(JapanWind)で粒子を流す(現在時刻も同じ。2026-10-04 に利用者が決定)。
+///   補間しない(気象庁の格子点値の空間内挿は独自の予報とみなされ予報業務の許可が要るため)。
+///   風速の階級は色では塗らない(海域全体を薄い色で塗り地図が読めなくなるため。強風は警報・注意報で伝わる)
 /// 気象庁の予報期間を過ぎた日本周辺は OutOfRange にし、GFS で埋めない。
 /// </summary>
 internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions definitions,IHttpClientFactory httpClientFactory,TimeProvider time,ILogger<MapDataService> logger):IMapDataService{
@@ -69,6 +71,9 @@ internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions defi
         if(japan.Points is not null){
             sources.Add(japan.Points.Source);
         }
+        if(japan.Wind is not null){
+            sources.Add(japan.Wind.U.Source);
+        }
         return new MapFrame{
             Layer=layer,
             Time=at,
@@ -78,6 +83,7 @@ internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions defi
             Tiles=japan.Tiles,
             Arrows=japan.Arrows,
             Points=japan.Points,
+            JapanWind=japan.Wind,
             Japan=japan.Coverage,
             Legend=LegendFor(layer),
             Sources=[..sources.DistinctBy(static x=>(x.Provider,x.ProductName,x.IssuedAt))],
@@ -259,7 +265,7 @@ internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions defi
         return new GridField(wind.U.Geometry,speed,FieldQuantity.WindSpeed,wind.U.ValidTime,wind.U.ReferenceTime,wind.U.Source);
     }
 
-    private sealed record JapanPart(JapanCoverage Coverage,IReadOnlyList<JmaTileLayer> Tiles,WindArrowSet? Arrows,PointValueSet? Points);
+    private sealed record JapanPart(JapanCoverage Coverage,IReadOnlyList<JmaTileLayer> Tiles,WindArrowSet? Arrows,PointValueSet? Points,WindField? Wind=null);
 
     private async Task<JapanPart> GetJapanAsync(FieldLayer layer,Snapshot s,DateTimeOffset at,List<string> issues,CancellationToken cancellationToken){
         var t=s.Tiles;
@@ -294,17 +300,19 @@ internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions defi
                 return new JapanPart(JapanCoverage.Available,tiles,null,points);
             }
             case FieldLayer.Wind:{
+                MarineWind? marine=null;
+                if(JmaMaps.Nearest(t.Marine,at,MarineTolerance) is {} m){
+                    marine=await this.TryMarineWindAsync(m,s,issues,cancellationToken).ConfigureAwait(false);
+                }
                 if(s.AmedasTime is {} amedas&&(amedas-at).Duration()<=AmedasTolerance){
                     var observed=await this.TryAmedasAsync(amedas,issues,cancellationToken).ConfigureAwait(false);
                     if(observed is {} o){
-                        return new JapanPart(JapanCoverage.Available,[],new WindArrowSet(o.Wind,ArrowKind.Observation,amedas,o.Source),null);
+                        //陸上はアメダスの観測の矢印、海上は海上分布予報の流れ
+                        return new JapanPart(JapanCoverage.Available,[],new WindArrowSet(o.Wind,ArrowKind.Observation,amedas,o.Source),null,marine?.Field);
                     }
                 }
-                if(JmaMaps.Nearest(t.Marine,at,MarineTolerance) is {} m){
-                    var arrows=await this.TryMarineWindAsync(m,s,issues,cancellationToken).ConfigureAwait(false);
-                    if(arrows is not null){
-                        return new JapanPart(JapanCoverage.Available,[],arrows,null);
-                    }
+                if(marine is not null){
+                    return new JapanPart(JapanCoverage.Available,[],marine.Arrows,null,marine.Field);
                 }
                 return new JapanPart(Missing(at,t.Marine),[],null,null);
             }
@@ -365,13 +373,33 @@ internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions defi
         }
     }
 
-    private async Task<WindArrowSet?> TryMarineWindAsync(JmaTargetTime t,Snapshot s,List<string> issues,CancellationToken cancellationToken){
+    /// <summary>海上分布予報の風: 風向の矢印(そのまま)と、風向・風速の階級から作った海上の風の格子(加工)。風速が取れなければ格子は null。</summary>
+    private sealed record MarineWind(WindArrowSet Arrows,WindField? Field);
+
+    private async Task<MarineWind?> TryMarineWindAsync(JmaTargetTime t,Snapshot s,List<string> issues,CancellationToken cancellationToken){
         var client=httpClientFactory.CreateClient(JmaProvider.HttpClientName);
-        var uri=new Uri(System.FormattableString.Invariant($"{JmaMaps.Root}umimesh/{t.BaseTime.UtcDateTime:yyyyMMddHHmmss}/none/{t.ValidTime.UtcDateTime:yyyyMMddHHmmss}/surf/wd/data.geojson"));
+        var directionUri=MarineUri(t,"wd");
+        var speedUri=MarineUri(t,"ws");
         try{
-            var fetch=await ProviderHttp.GetAsync(client,ProviderId.Jma,uri,time,cancellationToken).ConfigureAwait(false);
-            var arrows=ProviderHttp.Map(ProviderId.Jma,uri,()=>JmaMaps.ParseMarineWind(fetch.Body));
-            return new WindArrowSet(arrows,ArrowKind.Forecast,t.ValidTime,JmaMaps.Source("海上分布予報(風)",t.BaseTime,fetch.RetrievedAt,fetch.IsStale,JmaMaps.MarinePage));
+            var speedTask=this.TryMarineSpeedAsync(client,speedUri,cancellationToken);
+            var fetch=await ProviderHttp.GetAsync(client,ProviderId.Jma,directionUri,time,cancellationToken).ConfigureAwait(false);
+            var directions=ProviderHttp.Map(ProviderId.Jma,directionUri,()=>JmaMaps.ParseMarineWind(fetch.Body));
+            var source=JmaMaps.Source("海上分布予報(風)",t.BaseTime,fetch.RetrievedAt,fetch.IsStale,JmaMaps.MarinePage);
+            var arrows=new WindArrowSet(directions,ArrowKind.Forecast,t.ValidTime,source);
+            WindField? field=null;
+            if(await speedTask.ConfigureAwait(false) is {} speeds){
+                //風速は階級の代表値を m/s にした見た目の速さ(数値は表示しない)。補間はしない
+                var processed=source with{
+                    ProductName="海上分布予報(風向・風速)",
+                    Processing=DataProcessing.UnitConverted,
+                };
+                field=JmaMaps.MarineWindField(directions,speeds,t.ValidTime,t.BaseTime,processed);
+            }else{
+                lock(issues){
+                    issues.Add("海上分布予報(風速)");
+                }
+            }
+            return new MarineWind(arrows,field);
         }catch(WeatherProviderException ex){
             LogPartFailed(logger,"umimesh",ex.Failure);
             lock(issues){
@@ -379,6 +407,20 @@ internal sealed partial class MapDataService(GfsProvider gfs,JmaDefinitions defi
             }
             return null;
         }
+    }
+
+    private async Task<IReadOnlyList<MarineSpeedArea>?> TryMarineSpeedAsync(HttpClient client,Uri uri,CancellationToken cancellationToken){
+        try{
+            var fetch=await ProviderHttp.GetAsync(client,ProviderId.Jma,uri,time,cancellationToken).ConfigureAwait(false);
+            return ProviderHttp.Map(ProviderId.Jma,uri,()=>JmaMaps.ParseMarineSpeed(fetch.Body));
+        }catch(WeatherProviderException ex){
+            LogPartFailed(logger,"umimesh ws",ex.Failure);
+            return null;
+        }
+    }
+
+    private static Uri MarineUri(JmaTargetTime t,string element){
+        return new Uri(System.FormattableString.Invariant($"{JmaMaps.Root}umimesh/{t.BaseTime.UtcDateTime:yyyyMMddHHmmss}/none/{t.ValidTime.UtcDateTime:yyyyMMddHHmmss}/surf/{element}/data.geojson"));
     }
 
     private static DateTimeOffset? Nearest(IReadOnlyList<DateTimeOffset> times,DateTimeOffset at,TimeSpan tolerance){

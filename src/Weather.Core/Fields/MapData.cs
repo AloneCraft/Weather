@@ -235,7 +235,15 @@ public sealed record MapFrame{
     /// <summary>色で塗る値(風速・降水強度・気温・雲量)。</summary>
     public GridField? Scalar{get;init;}
 
+    /// <summary>GFS の風(日本周辺は NaN)。</summary>
     public WindField? Wind{get;init;}
+
+    /// <summary>
+    /// 日本周辺の海上の風。気象庁の海上分布予報の風向(8 方位)と風速の階級を 0.5° の区画ごとに持つ格子で、陸上と予報の範囲外は NaN。
+    /// 日本周辺(マスクの中)の風の粒子はこれだけで動かし、GFS を使わない(方針 5)。
+    /// 補間せず区画ごとの値をそのまま使う(SampleNearest)。風速は階級に応じた見た目の速さで、数値としては表示しない。
+    /// </summary>
+    public WindField? JapanWind{get;init;}
 
     /// <summary>等圧線の海面気圧(雲・気圧の層)。</summary>
     public GridField? Pressure{get;init;}

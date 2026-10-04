@@ -202,6 +202,7 @@ internal static class Fixtures{
             .Map(root+"wdist/targetTimes.json","jmatile/wdist.json")
             .Map(root+"umimesh/targetTimes.json","jmatile/umimesh.json")
             .Map(root+"umimesh/20261004000000/none/20261004060000/surf/wd/data.geojson","jmatile/umimesh_wd.geojson")
+            .Map(root+"umimesh/20261004000000/none/20261004060000/surf/ws/data.geojson","jmatile/umimesh_ws.geojson")
             .Map(root+"nowc/20261004081500/none/20261004081500/surf/hrpns/4/14/6.png","jmatile/hrpns_4_14_6.png")
             .Map("https://www.jma.go.jp/bosai/amedas/data/latest_time.txt","jmatile/amedas_latest_time.txt")
             .Map("https://www.jma.go.jp/bosai/amedas/data/map/20261004171000.json","jmatile/amedas_map.json");

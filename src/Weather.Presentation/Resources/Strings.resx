@@ -206,4 +206,6 @@
   <data name="RestoreCompleted" xml:space="preserve"><value>購入を復元しました。広告を表示しなくなりました。</value></data>
   <data name="RestoreNotFound" xml:space="preserve"><value>このアカウントでの購入は見つかりませんでした。</value></data>
   <data name="AdBannerDescription" xml:space="preserve"><value>広告</value></data>
+  <data name="JapanNoteMarineFlow" xml:space="preserve"><value>日本周辺の海上: 気象庁の海上分布予報(風向 8 方位・風速の階級を区画ごとに流れで表示)</value></data>
+  <data name="JapanNoteObservationMarineFlow" xml:space="preserve"><value>日本周辺: 陸上は気象庁のアメダスの観測値、海上は海上分布予報(区画ごとに流れで表示)</value></data>
 </root>

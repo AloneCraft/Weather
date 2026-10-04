@@ -45,25 +45,38 @@ public sealed partial class SettingsViewModel:ObservableObject{
     [ObservableProperty]public partial int RetentionIndex{get;set;}
     [ObservableProperty]public partial bool AlertNotifications{get;set;}
 
+    //変更ハンドラーは、値が保存済みの値(未保存なら既定値)と同じなら何もしない。
+    //コンストラクターで画面に初期値を入れるときにも呼ばれるため、比較しないと画面を開いただけで既定値が保存され、
+    //後で端末の地域を変えても単位が追従しなくなる(2026-10-04 にエミュレーターで確認した不具合)
     partial void OnUseImperialChanged(bool value){
+        var units=UnitSystem.Metric;
         if(value){
-            this.settings.Units=UnitSystem.Imperial;
-        }else{
-            this.settings.Units=UnitSystem.Metric;
+            units=UnitSystem.Imperial;
         }
+        if(units==this.settings.Units){
+            return;
+        }
+        this.settings.Units=units;
     }
 
     partial void OnQualityIndexChanged(int value){
-        if(value>=0&&value<QualityOptions.Count){
-            this.settings.Quality=(RenderQuality)value;
+        if(value<0||value>=QualityOptions.Count||(RenderQuality)value==this.settings.Quality){
+            return;
         }
+        this.settings.Quality=(RenderQuality)value;
     }
 
     partial void OnReduceFlashesChanged(bool value){
+        if(value==this.settings.ReduceFlashes){
+            return;
+        }
         this.settings.ReduceFlashes=value;
     }
 
     partial void OnPowerSavingChanged(bool value){
+        if(value==this.settings.PowerSaving){
+            return;
+        }
         this.settings.PowerSaving=value;
     }
 
@@ -84,7 +97,7 @@ public sealed partial class SettingsViewModel:ObservableObject{
     }
 
     async partial void OnRetentionIndexChanged(int value){
-        if(value<0||value>=RetentionDays.Length){
+        if(value<0||value>=RetentionDays.Length||RetentionDays[value]==this.settings.HistoryRetentionDays){
             return;
         }
         this.settings.HistoryRetentionDays=RetentionDays[value];

@@ -206,4 +206,6 @@
   <data name="RestoreCompleted" xml:space="preserve"><value>Your purchase has been restored. Ads are now removed.</value></data>
   <data name="RestoreNotFound" xml:space="preserve"><value>No purchase was found for this account.</value></data>
   <data name="AdBannerDescription" xml:space="preserve"><value>Advertisement</value></data>
+  <data name="JapanNoteMarineFlow" xml:space="preserve"><value>Seas around Japan: JMA marine forecast (8-point direction and speed class shown as flow per cell)</value></data>
+  <data name="JapanNoteObservationMarineFlow" xml:space="preserve"><value>Around Japan: JMA AMeDAS observations on land; JMA marine forecast at sea (shown as flow per cell)</value></data>
 </root>

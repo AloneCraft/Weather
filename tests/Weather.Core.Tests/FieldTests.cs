@@ -63,6 +63,23 @@ public class GridField{
             Assert.Throws<ArgumentException>(()=>new Core.GridField(new Core.GridGeometry(2,2,1,0,1,1),[0,0,0,0],FieldQuantity.TemperatureC,DateTimeOffset.UnixEpoch,DateTimeOffset.UnixEpoch.AddHours(1),Source));
         }
     }
+
+    [Fact,Trait("Category","Unit")]public void SampleNearest(){
+        {
+            //最も近い格子点の値をそのまま返す(補間しない)
+            var f=Field([0,10,20,30,40,50,60,70],4,2);
+            Assert.Equal(0f,f.SampleNearest(0.9,40));
+            Assert.Equal(50f,f.SampleNearest(0.2,80));
+            //経度方向に循環する(最後の列の右半分は最初の列)
+            Assert.Equal(40f,f.SampleNearest(0.2,350));
+        }
+        {
+            //最も近い点が欠けていれば NaN(隣の点の値で埋めない)
+            var f=Field([0,float.NaN,20,30,40,50,60,70],4,2);
+            Assert.True(float.IsNaN(f.SampleNearest(0.9,80)));
+            Assert.Equal(0f,f.SampleNearest(0.9,40));
+        }
+    }
 }
 
 public class Legend{

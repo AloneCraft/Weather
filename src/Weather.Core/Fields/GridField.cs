@@ -133,12 +133,40 @@ public sealed class GridField{
         var bottom=v01+(v11-v01)*fx;
         return (float)(top+(bottom-top)*fy);
     }
+
+    /// <summary>
+    /// 最も近い格子点の値(補間しない)。各格子点はその点を中心とする 1 区画を代表するとみなし、区画の中は同じ値になる。範囲外・欠損は NaN。
+    /// 気象庁の格子(海上分布予報)はこれで描く。気象庁の格子点値を空間内挿すると独自の予報とみなされ予報業務の許可が必要になるため
+    /// (気象庁「予報業務許可に関する Q&A」)、気象庁のデータには Sample(双線形補間)を使わない。
+    /// </summary>
+    public float SampleNearest(double latitude,double longitude){
+        var g=this.Geometry;
+        if(!g.TryGetPosition(latitude,longitude,out var x,out var y)){
+            return float.NaN;
+        }
+        var column=(int)Math.Round(x,MidpointRounding.AwayFromZero);
+        var row=(int)Math.Round(y,MidpointRounding.AwayFromZero);
+        if(column>=g.Columns){
+            if(g.WrapsLongitude){
+                column-=g.Columns;
+            }else{
+                column=g.Columns-1;
+            }
+        }
+        row=Math.Min(row,g.Rows-1);
+        return this[column,row];
+    }
 }
 
 /// <summary>風(東西成分 U・南北成分 V。m/s)。</summary>
 public sealed record WindField(GridField U,GridField V){
     public (float U,float V) Sample(double latitude,double longitude){
         return (this.U.Sample(latitude,longitude),this.V.Sample(latitude,longitude));
+    }
+
+    /// <summary>最も近い格子点の値(補間しない。GridField.SampleNearest)。気象庁の海上分布予報の風に使う。</summary>
+    public (float U,float V) SampleNearest(double latitude,double longitude){
+        return (this.U.SampleNearest(latitude,longitude),this.V.SampleNearest(latitude,longitude));
     }
 }
 

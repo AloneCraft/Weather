@@ -42,6 +42,27 @@ internal static class MapSamples{
 
     public static GridField Pressure()=>Field(FieldQuantity.PressureHpa,static (lat,lon)=>1012+14*Math.Sin(lat*Math.PI/30)*Math.Cos(lon*Math.PI/50));
 
+    /// <summary>気象庁の海上分布予報から作る海上の風の代わり(0.5°、日本の陸上は NaN、海上は一様な西風)。</summary>
+    public static WindField JapanWind(){
+        var geometry=new GridGeometry(81,61,50,120,0.5,0.5);
+        var u=new float[geometry.Count];
+        var v=new float[geometry.Count];
+        for(var r=0;r<geometry.Rows;r++){
+            for(var c=0;c<geometry.Columns;c++){
+                var i=r*geometry.Columns+c;
+                if(Database.FindCountry(geometry.LatitudeOf(r),geometry.LongitudeOf(c)) is not null){
+                    u[i]=float.NaN;
+                    v[i]=float.NaN;
+                }else{
+                    u[i]=8;
+                    v[i]=0;
+                }
+            }
+        }
+        var source=new SourceAttribution{Provider=ProviderId.Jma,AgencyName="気象庁",ProductName="海上分布予報(風向・風速)",RetrievedAt=Time,License=new LicenseInfo("t",null),Processing=DataProcessing.UnitConverted};
+        return new WindField(new GridField(geometry,u,FieldQuantity.WindU,Time,Time,source),new GridField(geometry,v,FieldQuantity.WindV,Time,Time,source));
+    }
+
     /// <summary>描画したビットマップの、緯度経度の位置の画素。</summary>
     public static SKColor PixelAt(SKBitmap bitmap,Map.MapRenderer map,double lat,double lon){
         var p=map.Camera.Snapshot().ToScreen(lat,lon,new SKSize(bitmap.Width,bitmap.Height));
@@ -221,6 +242,52 @@ public class MapRenderer{
         Assert.True(inside>500);
         //地名の文字(白)を除くため、ごく少数は許容する
         Assert.True(bright<inside/50,$"日本周辺の白い画素 {bright}/{inside}");
+    }
+
+    [Fact,Trait("Category","Unit")]public void Render_JapanWind(){
+        //日本周辺の海上の風(気象庁)があれば、マスクの中の海上にも粒子が流れる(GFS は使わない)
+        using var map=new Map.MapRenderer(MapSamples.Database);
+        map.Options.AutoTier=false;
+        map.Camera.CenterOn(new GeoPoint(35,138),4);
+        map.Frame=new MapFrame{Layer=FieldLayer.Wind,Time=MapSamples.Time,Wind=MapSamples.Wind(),JapanWind=MapSamples.JapanWind(),Legend=MapLegends.WindSpeed,Japan=JapanCoverage.Available};
+        Assert.True(map.NeedsAnimation);
+        using var bitmap=MapSamples.Render(map,480,360,frames:60);
+        var view=map.Camera.Snapshot();
+        var size=new SKSize(480,360);
+        var mask=JapanMaskTexture.For(MapSamples.Database);
+        //日本周辺の海上と、日本周辺の外(GFS)の海上で、粒子の軌跡(白い画素)の密度を比べる
+        var japanSea=0;
+        var japanBright=0;
+        var outsideSea=0;
+        var outsideBright=0;
+        for(var y=0;y<360;y+=3){
+            for(var x=0;x<480;x+=3){
+                var g=view.ToGeo(new SKPoint(x,y),size);
+                if(MapSamples.Database.FindCountry(g.Latitude,g.Longitude) is not null){
+                    continue;
+                }
+                var c=bitmap.GetPixel(x,y);
+                var white=c.Red>200&&c.Green>200&&c.Blue>200;
+                if(mask.Contains(g.Latitude,g.Longitude)){
+                    japanSea++;
+                    if(white){
+                        japanBright++;
+                    }
+                }else{
+                    outsideSea++;
+                    if(white){
+                        outsideBright++;
+                    }
+                }
+            }
+        }
+        Assert.True(japanSea>300&&outsideSea>300);
+        var japanDensity=(double)japanBright/japanSea;
+        var outsideDensity=(double)outsideBright/outsideSea;
+        Assert.True(japanDensity>outsideDensity/3,$"日本周辺の海上 {japanBright}/{japanSea}、外 {outsideBright}/{outsideSea}");
+        //GFS がなくても日本周辺の海上の風だけで動く
+        map.Frame=new MapFrame{Layer=FieldLayer.Wind,Time=MapSamples.Time,JapanWind=MapSamples.JapanWind(),Legend=MapLegends.WindSpeed,Japan=JapanCoverage.Available};
+        Assert.True(map.NeedsAnimation);
     }
 
     [Fact,Trait("Category","Unit")]public void Render_Allocation(){

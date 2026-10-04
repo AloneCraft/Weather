@@ -78,6 +78,8 @@ public class MapDataService{
             Assert.NotNull(f.Wind);
             Assert.Equal(FieldQuantity.WindSpeed,f.Scalar!.Quantity);
             Assert.Contains(f.Sources,static s=>s.ProductName=="アメダス");
+            //海上は最も近い時刻(3 時間以内)の海上分布予報の流れ
+            Assert.NotNull(f.JapanWind);
         }
         {
             //風(予報の時刻): 海上分布予報の風向(8 方位の矢印)。風速のタイルは使わない
@@ -86,6 +88,32 @@ public class MapDataService{
             Assert.True(f.Arrows.Arrows.Count>1000);
             Assert.All(f.Arrows.Arrows,static a=>Assert.Equal(0,a.FromDirectionDeg%45));
             Assert.Empty(f.Tiles);
+        }
+        {
+            //風(予報の時刻): 海上の流れは海上分布予報の風向と風速の階級を区画ごとに使う。補間はしない(予報業務の許可)
+            var f=await maps.GetFrameAsync(FieldLayer.Wind,Utc(4,6),ct);
+            var japan=f.JapanWind!;
+            Assert.Equal(ProviderId.Jma,japan.U.Source.Provider);
+            Assert.False(japan.U.Source.Processing.HasFlag(DataProcessing.Interpolated));
+            Assert.True(japan.U.Source.Processing.HasFlag(DataProcessing.UnitConverted));
+            Assert.Contains(f.Sources,static s=>s.ProductName=="海上分布予報(風向・風速)");
+            //矢印の点では、流れの向きが矢印と同じで、速さが階級の代表値
+            var representatives=new[]{12.5,27.5,32.5,37.5,42.5,47.5,57.5,70}.Select(static k=>k*Jma.JmaMaps.KnotMs).ToArray();
+            var matched=0;
+            foreach(var a in f.Arrows!.Arrows){
+                var (u,v)=japan.SampleNearest(a.Point.Latitude,a.Point.Longitude);
+                if(float.IsNaN(u)){
+                    continue;
+                }
+                matched++;
+                var from=(Math.Atan2(-u,-v)*180/Math.PI+360)%360;
+                Assert.Equal(a.FromDirectionDeg,from,3);
+                var speed=Math.Sqrt(u*u+v*v);
+                Assert.Contains(representatives,r=>Math.Abs(r-speed)<1e-3);
+            }
+            Assert.True(matched>1000,$"流れの値がある矢印の点 {matched}");
+            //内陸(長野)は海上分布予報の範囲外で NaN(陸上の風の予報はない)
+            Assert.True(float.IsNaN(japan.SampleNearest(36.65,138.18).U));
         }
         {
             //風(海上分布予報の後): 日本周辺は予報期間外

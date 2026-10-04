@@ -227,7 +227,7 @@ Weather.Providers/
 
 | 層 | 日本周辺(気象庁) | 日本周辺以外(GFS) |
 |---|---|---|
-| 風 | 現在時刻(アメダスの最新観測から 30 分以内): アメダスの風向・風速の矢印。それ以降: 海上分布予報の風向(海域の 8 方位の矢印。前後 3 時間)。陸上の風の予報はないため空白 | 地上 10 m の U・V(粒子)と風速(色) |
+| 風 | 陸上: 現在時刻(アメダスの最新観測から 30 分以内)はアメダスの風向・風速の矢印。陸上の風の予報はないため、それ以降は空白。海上: 海上分布予報(前後 3 時間。現在時刻も最も近い時刻)の風向の矢印と、風向・風速の階級から作った流れ(粒子。下記) | 地上 10 m の U・V(粒子)と風速(色) |
 | 雨・雪 | 1 時間先まで: 雨雲の動き(前後 3 分)。15 時間先まで: 今後の雨(前後 30 分)。その後: 天気分布予報の 3 時間降水量(前後 90 分) | 地上の降水強度(瞬間値、mm/h) |
 | 気温 | 天気分布予報の気温(前後 90 分)。現在時刻はアメダスの気温も重ねる | 地上 2 m の気温 |
 | 雲・気圧 | 天気分布予報の天気(前後 90 分) | 全雲量と海面気圧(等圧線) |
@@ -259,12 +259,17 @@ Weather.Providers/
 | 雨雲の動き(nowc) | `jmatile/data/nowc/targetTimes_N1.json`(解析、過去 3 時間・5 分ごと)と `_N2`(予測、1 時間先まで) | `jmatile/data/nowc/{basetime}/none/{validtime}/surf/hrpns/{z}/{x}/{y}.png` | 偶数 4〜10 |
 | 今後の雨(rasrf) | `jmatile/data/rasrf/targetTimes.json`(有効時刻ごとに最新の初期時刻を使う) | `.../rasrf/{basetime}/none/{validtime}/surf/rasrf/{z}/{x}/{y}.png` | 偶数 4〜10 |
 | 天気分布予報(wdist) | `jmatile/data/wdist/targetTimes.json`(最新の初期時刻の一式。3 時間ごと翌日まで。時刻ごとに要素が違う) | `.../wdist/{basetime}/none/{validtime}/surf/{temp,wm,r3}/{z}/{x}/{y}.png` | 偶数 4〜10 |
-| 海上分布予報(umimesh) | `jmatile/data/umimesh/targetTimes.json`(6 時間ごと 24 時間先まで) | 風向: `.../umimesh/{basetime}/none/{validtime}/surf/wd/data.geojson`(gzip のまま返る。0.5° の点、windDir は 8 方位) | — |
+| 海上分布予報(umimesh) | `jmatile/data/umimesh/targetTimes.json`(6 時間ごと 24 時間先まで) | 風向: `.../umimesh/{basetime}/none/{validtime}/surf/wd/data.geojson`(gzip のまま返ることがある。0.5° の点、windDir は 8 方位。海を含む区画の中心で、海岸近くの陸上の点もある)。風速: 同じ形の `.../surf/ws/data.geojson`(階級の多角形。level は `0<=kt<25`・`25<=kt<30`…`65<=kt`、陸地などは `NoData`。穴のあるリングを含む) | — |
 | アメダス(全地点) | `amedas/data/latest_time.txt` | `amedas/data/map/{yyyyMMddHHmm}00.json`(日本時間。値と品質フラグ。フラグ 0 だけを使う) | — |
 
 - 時刻は UTC の `yyyyMMddHHmmss`。存在しないタイルも 200 で透明な画像(334 バイト)が返る。
 - 凡例の色(`MapLegends`): 降水強度 1/5/10/20/30/50/80 mm/h(F2F2FF・A0D2FF・218CFF・0041FF・FFF500・FF9900・FF2800・B40068)、3 時間降水量 1/5/10/15/20 mm、気温 −25〜40 ℃ の 5 ℃ ごと 15 区分(temp_point のスタイルと同じ)、天気(晴れ FFAA00・くもり AAAAAA・雨 0041FF・雨または雪 A0D2FF・雪 F2F2FF)。タイルの画素と凡例画像で数段階違う色がある(例: 250,245,0)ため、吹き出しでは近い色を許容して区分を引く。
-- 海上分布予報の風速タイル(ws)は 25 kt 未満も淡い色で海域全体を塗り、地図が読めなくなるため使わない。
+- 海上分布予報の風速タイル(ws の PNG)は 25 kt 未満も淡い色で海域全体を塗り、地図が読めなくなるため使わない。
+- 日本周辺の海上の風の流れ(2026-10-04 に利用者が決定。方針 5 により日本周辺では GFS を使えず、海岸から約 200 km の範囲に流れが出なかったため): 海上分布予報の風向(8 方位の点)と風速の階級の GeoJSON から 0.5° の区画ごとの U・V の格子(`MapFrame.JapanWind`)を作り、日本周辺(マスクの中)の粒子はこれだけで動かす。
+  - **補間しない**。粒子は、いる位置に最も近い格子点(区画)の値をそのまま使う(`GridField.SampleNearest`)。気象庁の「予報業務許可に関する Q&A」は、格子点値から特定の地点の値を抜き出して空間内挿・地形補正などをすると独自の予報とみなされ許可が必要としている(2026-10-04 確認。https://www.jma.go.jp/jma/kishou/minkan/q_a_o.html )。区画ごとにそのまま描くのは、気象庁の海上分布予報の図と同じ内容の伝達にとどめるため。
+  - 風速は階級の代表値(下限と上限の中央。上限がない階級は下限 + 5 kt)を m/s にしたもので、粒子の見た目の速さにだけ使い、数値・色としては表示しない。風向・風速の階級が分からない点(`NoData`・範囲外)は NaN。
+  - 出典は「海上分布予報(風向・風速)」・`Processing = UnitConverted`。画面には「区画ごとに流れで表示」と出す。矢印は従来どおりそのまま描く。
+  - 色(風速)は塗らない(上の風速タイルと同じ理由)。
 
 ## 出典の値
 
@@ -274,7 +279,7 @@ Weather.Providers/
 | NWS | National Weather Service | Forecast / Hourly Forecast / Gridpoint / Alerts / Observations | 予報官署(gridId)・senderName | updateTime / sent / timestamp | 米国政府のオープンデータ(表示文言は**要確認**) | weather.gov |
 | MET | MET Norway | Locationforecast 2.0 | — | meta.updated_at | CC BY 4.0 / NLOD 2.0(改変時はその旨を表示) | https://api.met.no/ |
 | GFS | NOAA | GFS 0.5° | — | 実行回の初期時刻 | Public domain (U.S. Government / NOAA) | https://registry.opendata.aws/noaa-gfs-bdp-pds/ |
-| 気象庁(地図) | 気象庁 | 降水ナウキャスト / 今後の雨(降水短時間予報)/ 天気分布予報(気温・天気・降水量)/ 海上分布予報(風)/ アメダス | — | basetime(アメダスは観測時刻) | 公共データ利用規約(第 1.0 版) | 対応する気象庁の地図ページ |
+| 気象庁(地図) | 気象庁 | 降水ナウキャスト / 今後の雨(降水短時間予報)/ 天気分布予報(気温・天気・降水量)/ 海上分布予報(風)/ 海上分布予報(風向・風速。流れの加工データ)/ アメダス | — | basetime(アメダスは観測時刻) | 公共データ利用規約(第 1.0 版) | 対応する気象庁の地図ページ |
 
 ## 要確認事項
 
