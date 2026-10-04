@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "revision": 2,
+  "updated_at": "2026-10-04T15:07:33Z",
+  "workflow_doc": "docs/QA_WORKFLOW.md",
+  "mode": "FOCUSED",
+  "budget": {
+    "note": "初期値。実績に基づく最適値ではない。変更はユーザーの明示指示で行う",
+    "run_window_max_minutes": 240,
+    "per_bug_attempts": 1,
+    "per_bug_attempts_with_new_evidence": 2,
+    "per_bug_time_minutes": 30,
+    "exploratory_total_minutes": 30,
+    "closeout_reserve_minutes": 15,
+    "max_unverified_fixes": 1,
+    "test_consolidation": "candidates_only"
+  },
+  "run": {
+    "status": "NOT_STARTED",
+    "run_id": null,
+    "started_at": null,
+    "deadline": null,
+    "goal": null,
+    "release_scope": null,
+    "allowed_change_scope": null,
+    "code_state": null,
+    "budget_used": null
+  },
+  "baseline_snapshot": {
+    "note": "準備時(実行枠の開始前)に採取した参考値。実行枠の開始時に必ず採り直す",
+    "captured_at": "2026-10-04T15:07:10Z",
+    "repository": "AloneCraft/Weather",
+    "branch": "claude/zen-keller-0fx365",
+    "commit": "62ea11e14f4e38a83e4ad080fcef4a360baf669c",
+    "tree": "6d6a9ac9237fc3c1522f563d433b187b029e1935",
+    "main_commit_at_capture": "62ea11e14f4e38a83e4ad080fcef4a360baf669c",
+    "uncommitted_changes": {
+      "count": 0,
+      "fingerprint_sha256": "48916e3a8eee516db91d0487bcb797cb6b9a4196718ca6808be3eebf30a04a77",
+      "fingerprint_method": "docs/QA_WORKFLOW.md 13.3 の fp(クリーンなら空入力の SHA-256)"
+    }
+  },
+  "environment": {
+    "captured_at": "2026-10-04T15:07:10Z",
+    "os": "Linux 6.18.44-fc-v64 x86_64(Claude Code クラウドコンテナ。使い捨て)",
+    "product": ".NET MAUI(Android / iOS)+ SkiaSharp。Unity は使っていない",
+    "dotnet_sdk_required": "global.json: 10.0.401(rollForward: latestFeature)、テストランナー: Microsoft.Testing.Platform",
+    "dotnet_sdk_installed": null,
+    "maui_workload_required": "10.0.400 のワークロードセット(iOS 26.5.10301 / Android 36.1.69)",
+    "maui_workload_installed": null,
+    "rendering_paths": [
+      "Android: SKGLView",
+      "iOS: SKMetalView",
+      "テスト: オフスクリーン描画"
+    ],
+    "golden_image_platform": "Windows(TestStrategy.md)",
+    "other_tools": {
+      "git": "2.43.0",
+      "python3": "3.11.15",
+      "node": "v22.22.0",
+      "jq": "present",
+      "sha256sum": "present",
+      "java": "present(版は未確認)"
+    }
+  },
+  "capabilities": {
+    "read_edit_files": {
+      "available": true
+    },
+    "git_local": {
+      "available": true
+    },
+    "dotnet_build_test": {
+      "available": false,
+      "reason": "このコンテナに dotnet がない(command -v dotnet が空、~/.dotnet・/usr/share/dotnet・/usr/lib/dotnet もない)。導入は未実施",
+      "effect": "自動テストは NOT_RUN(環境)として記録する。PASS 扱いにしない"
+    },
+    "golden_image_tests": {
+      "available": false,
+      "reason": "Windows 以外の結果はゴールデン画像の証拠にしない(TestStrategy.md)。dotnet もない"
+    },
+    "android_emulator_adb": {
+      "available": false,
+      "reason": "adb・emulator がない"
+    },
+    "ios_build_simulator": {
+      "available": false,
+      "reason": "xcodebuild がない(macOS ではない)"
+    },
+    "ci_github_actions": {
+      "available": "unverified",
+      "note": "ci.yml は main と feature/** への push と Pull Request で動く。claude/** への push では動かない。Pull Request の作成はユーザーの明示指示がある場合だけ。結果の読み取りは GitHub MCP ツール(actions_*)を想定しているが、この準備では実行していない"
+    },
+    "live_api_tests": {
+      "available": false,
+      "reason": "dotnet がない。実 API の契約テストは通常の実行では動かない(Explicit)"
+    },
+    "push": {
+      "available": "limited",
+      "note": "ユーザーが指示した指定ブランチ claude/zen-keller-0fx365 のみ。それ以外への push・Pull Request 作成は行わない"
+    },
+    "instruction_file_G_drive": {
+      "available": false,
+      "reason": "AGENTS.md が参照する G:\\ai\\skills\\ai_rules.md はこの環境にない(読めていない)"
+    }
+  },
+  "running_processes_at_capture": "dotnet / msbuild / testhost / adb / emulator / unity に該当するプロセスなし(準備時に ps で確認)",
+  "bugs": [],
+  "queue": [],
+  "human_questions": [
+    {
+      "id": "Q-0001",
+      "related_bugs": [],
+      "status": "OPEN",
+      "asked_at": "2026-10-04T15:07:33Z",
+      "summary": "次のゴール(リリース対応範囲)と許可する変更範囲",
+      "answer": null
+    },
+    {
+      "id": "Q-0002",
+      "related_bugs": [],
+      "status": "OPEN",
+      "asked_at": "2026-10-04T15:07:33Z",
+      "summary": "テスト実行手段(.NET SDK の導入可否 / CI 用 Pull Request の作成可否 / 手元での実行結果の共有)",
+      "answer": null
+    },
+    {
+      "id": "Q-0003",
+      "related_bugs": [],
+      "status": "OPEN",
+      "asked_at": "2026-10-04T15:07:33Z",
+      "summary": "docs/QA_WORKFLOW.md の置き場所の確認(仮置き: docs/)",
+      "answer": null
+    }
+  ],
+  "consolidation_candidates": [],
+  "decisions": [
+    {
+      "id": "D-0001",
+      "at": "2026-10-04T15:07:10Z",
+      "decision": "QA_WORKFLOW.md の置き場所を docs/QA_WORKFLOW.md とした。リポジトリに「開発用フォルダ」と明示された場所がなく、ドキュメントは docs/ にあるため。qa/ の記録とは分けた。変更したい場合は移動し、state.json の workflow_doc を更新する",
+      "made_by": "AI(仮置き)"
+    },
+    {
+      "id": "D-0002",
+      "at": "2026-10-04T15:07:10Z",
+      "decision": "Unity 前提の表現は docs/QA_WORKFLOW.md 0.1 の表で .NET MAUI に読み替えた。本文の規則は変更していない",
+      "made_by": "AI"
+    }
+  ]
+}
