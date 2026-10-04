@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 110,
-  "updated_at": "2026-10-04T16:47:03Z",
+  "revision": 111,
+  "updated_at": "2026-10-04T16:47:15Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -1786,7 +1786,7 @@
         "unknown": []
       },
       "reproduced": true,
-      "state": "VERIFIED",
+      "state": "FIXED_UNVERIFIED",
       "depends_on": [],
       "affects": [],
       "attempts": [
@@ -1813,9 +1813,9 @@
       "related_tests": [
         "Weather.Rendering.Tests/IsobarLayer.Contour_Saddle"
       ],
-      "retry_when": null,
+      "retry_when": "Windows の CI(ゴールデン画像の比較)または手元の目視で、鞍点のある気圧場の等圧線を確認する",
       "evidence": [],
-      "human_needed": null,
+      "human_needed": "見た目の確認(Q-0002 の検証手段と同じ経路)",
       "found_at": "2026-10-04T16:40:09Z",
       "verified": {
         "commit": "a3c5dbcb6fbd1ba6f9a346866f4504ee68c05b4b",
