@@ -28,7 +28,8 @@ internal sealed record HttpCacheMetadata(
     DateTimeOffset? Expires,
     DateTimeOffset ReceivedAt,
     DateTimeOffset LastAccessedAt,
-    long Length);
+    long Length,
+    string? BodySha256=null);
 
 [JsonSerializable(typeof(HttpCacheMetadata))]
 internal sealed partial class InfrastructureJsonContext:JsonSerializerContext;
@@ -64,6 +65,11 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
             return null;
         }
         var body=await File.ReadAllBytesAsync(bodyPath,cancellationToken).ConfigureAwait(false);
+        //本文とメタは別ファイルで、書き込みと重なると食い違う組を読み得る。照合できなければキャッシュなしとして扱う
+        //(削除はしない: 書き込み中の新しいエントリを消さないため。ハッシュのない古い形式のメタは長さだけ照合する)
+        if(body.Length!=meta.Length||(meta.BodySha256 is not null&&meta.BodySha256!=Hash(body))){
+            return null;
+        }
         return new HttpCacheEntry{
             Key=meta.Key,
             StatusCode=meta.StatusCode,
@@ -83,7 +89,7 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
     public async ValueTask SetAsync(HttpCacheEntry entry,CancellationToken cancellationToken){
         ArgumentNullException.ThrowIfNull(entry);
         var (bodyPath,metaPath)=this.Paths(entry.Key);
-        var meta=new HttpCacheMetadata(entry.Key,entry.StatusCode,entry.ContentType,entry.ETag,entry.LastModified,entry.Date,entry.Age,entry.MaxAge,entry.Expires,entry.ReceivedAt,entry.LastAccessedAt,entry.Body.Length);
+        var meta=new HttpCacheMetadata(entry.Key,entry.StatusCode,entry.ContentType,entry.ETag,entry.LastModified,entry.Date,entry.Age,entry.MaxAge,entry.Expires,entry.ReceivedAt,entry.LastAccessedAt,entry.Body.Length,Hash(entry.Body));
         var tempBody=bodyPath+".tmp";
         var tempMeta=metaPath+".tmp";
         await File.WriteAllBytesAsync(tempBody,entry.Body,cancellationToken).ConfigureAwait(false);
@@ -122,6 +128,10 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
     /// <summary>最終利用時刻の更新は 1 時間に 1 回まで(読み取りのたびに書き込まないため)。規則は HttpCacheAccess。</summary>
     public static bool NeedsAccessUpdate(HttpCacheEntry entry,DateTimeOffset now){
         return HttpCacheAccess.NeedsUpdate(entry,now);
+    }
+
+    private static string Hash(byte[] body){
+        return Convert.ToHexString(SHA256.HashData(body));
     }
 
     private (string Body,string Meta) Paths(string key){

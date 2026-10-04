@@ -46,6 +46,46 @@ public class FileHttpCacheStore{
         }
     }
 
+    [Fact,Trait("Category","Unit")]public async Task GetAsync_Concurrent(){
+        //同じキーの書き込みと読み取りが重なっても、本文とメタ(ETag)の食い違う組は返さない(キャッシュなしとして扱う)
+        using var temp=new TempDirectory();
+        var store=new Infrastructure.FileHttpCacheStore(temp.Options);
+        var ct=TestContext.Current.CancellationToken;
+        static HttpCacheEntry Version(string tag,int length){
+            return new HttpCacheEntry{Key="k",StatusCode=200,Body=Enumerable.Repeat((byte)tag[0],length).ToArray(),ETag="\""+tag+"\"",ReceivedAt=Now};
+        }
+        await store.SetAsync(Version("a",1000),ct);
+        var torn=0;
+        var valid=0;
+        var writer=Task.Run(async ()=>{
+            for(var i=0;i<600;i++){
+                await store.SetAsync(Version(i%2==0?"b":"a",i%2==0?2000:1000),ct);
+            }
+        },ct);
+        var readers=Enumerable.Range(0,3).Select(_=>Task.Run(async ()=>{
+            while(!writer.IsCompleted){
+                var entry=await store.GetAsync("k",ct);
+                if(entry is null){
+                    continue;
+                }
+                var tag=entry.ETag![1];
+                var expectedLength=2000;
+                if(tag=='a'){
+                    expectedLength=1000;
+                }
+                if(entry.Body.Length==expectedLength&&entry.Body.All(b=>b==(byte)tag)){
+                    Interlocked.Increment(ref valid);
+                }else{
+                    Interlocked.Increment(ref torn);
+                }
+            }
+        },ct)).ToArray();
+        await writer;
+        await Task.WhenAll(readers);
+        Assert.Equal(0,torn);
+        Assert.True(valid>0);
+    }
+
     [Fact,Trait("Category","Unit")]public async Task TrimAsync(){
         using var temp=new TempDirectory();
         var store=new Infrastructure.FileHttpCacheStore(temp.Options);
