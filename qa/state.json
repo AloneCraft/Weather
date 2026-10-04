@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 60,
-  "updated_at": "2026-10-04T16:01:14Z",
+  "revision": 63,
+  "updated_at": "2026-10-04T16:04:30Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 50,
+      "run_minutes": 53,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1107,6 +1107,65 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0020",
+      "title": "JMA 時系列予報(補助プロダクト)の時刻が重複・逆順だと ArgumentException が漏れ、日別を含む予報全体が失敗する",
+      "source_ids": [
+        "P-8"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 10,
+      "symptom": "wdist の timeDefines の先頭を複製、または先頭 2 件を入れ替えると GetForecastAsync が ArgumentException(時系列が昇順でないか区間が重なっています)で失敗(実行再現済み。qa/artifacts/RUN-20261004-1510/P-8-probe.log)",
+      "expected": "補助プロダクトの異常で予報全体を失わない(WeatherProviders.md「部分的な失敗」)。NWS の hourly は重なる点を飛ばしている",
+      "cause": {
+        "confirmed": "JmaForecastMapper.MapTimeSeries が重複・逆順・重なりを除かず、検証が走る Forecast コンストラクタは ProviderHttp.Map の外",
+        "hypotheses": [],
+        "unknown": [
+          "実データで起こる頻度(低いと見ている)"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:03:39Z",
+          "reason": "優先: 部分的な失敗の設計に反し、補助プロダクトの異常で主プロダクトも失う。再現済み。NWS と同じ規則で最小に直せる",
+          "code_before": {
+            "commit": "ef4c40e0acffc3edb08c4856583a544fe10f3b2e",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "実行: 時刻の重複・逆順で ArgumentException が漏れる",
+          "hypothesis": "MapTimeSeries で NWS の hourly と同じく、直前の区間と重なる点を飛ばせば Forecast のコンストラクタの検証を満たす",
+          "planned_change": "src/Weather.Providers/Jma/JmaForecastMapper.cs の MapTimeSeries のみ + tests/Weather.Providers.Tests/JmaProvider.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Providers テスト全 PASS、正常な記録データの時系列は変わらない(14 点)",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:04:30Z",
+          "diff_sha256": "6464e3b8cccec40470351f09067c648c8904ee7460ec8b5679b4926a6748e313",
+          "commit": "3b4ef171ded21ad322e4a71f376646a480b39ff8"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/JmaProvider.GetForecastAsync_SecondaryFailure"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/P-8-probe.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:03:39Z",
+      "verified": {
+        "commit": "3b4ef171ded21ad322e4a71f376646a480b39ff8",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 53,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1236,8 +1295,8 @@
     },
     {
       "id": "P-8",
-      "status": "UNREPRODUCED",
-      "note": "JMA 時系列の重複/逆順で ArgumentException が漏れ予報全体が失敗"
+      "status": "PROMOTED_TO_BUG",
+      "note": "JMA 時系列の重複/逆順で ArgumentException が漏れ予報全体が失敗 → BUG-0020"
     },
     {
       "id": "I-3",
