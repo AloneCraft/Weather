@@ -1,30 +1,42 @@
 {
   "schema_version": 1,
-  "revision": 3,
-  "updated_at": "2026-10-04T15:08:59Z",
+  "revision": 9,
+  "updated_at": "2026-10-04T15:17:41Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
-    "note": "初期値。実績に基づく最適値ではない。変更はユーザーの明示指示で行う",
-    "run_window_max_minutes": 240,
+    "note": "初期値から変更: 実行枠をユーザー指示(探索的デバッグ・最大12時間)により 720 分に変更。探索的テスト枠は目的が探索のため 600 分(終了整理 15 分と調査・修正の予算とは別に使う)とした。これは AI の解釈で、違えば変更する。他の予算(1件30分・試行1回・未検証修正1件)は初期値のまま",
+    "run_window_max_minutes": 720,
     "per_bug_attempts": 1,
     "per_bug_attempts_with_new_evidence": 2,
     "per_bug_time_minutes": 30,
-    "exploratory_total_minutes": 30,
+    "exploratory_total_minutes": 600,
     "closeout_reserve_minutes": 15,
     "max_unverified_fixes": 1,
     "test_consolidation": "candidates_only"
   },
   "run": {
-    "status": "NOT_STARTED",
-    "run_id": null,
-    "started_at": null,
-    "deadline": null,
-    "goal": null,
-    "release_scope": null,
-    "allowed_change_scope": null,
-    "code_state": null,
-    "budget_used": null
+    "status": "RUNNING",
+    "run_id": "RUN-20261004-1510",
+    "started_at": "2026-10-04T15:10:58Z",
+    "deadline": "2026-10-05T03:10:58Z",
+    "goal": "探索的デバッグ(最大12時間)",
+    "release_scope": "未指定(Q-0001 未回答)。暫定: 現行 main(62ea11e)の既存機能の不具合。新機能は対象外",
+    "allowed_change_scope": "未指定(Q-0001 未回答)。暫定(AI の解釈): src/ と tests/ の不具合修正と再現テスト追加のみ。生成データ・ゴールデン画像・記録データ・設計書・依存パッケージ版・CI 設定は変更しない",
+    "code_state": {
+      "commit": "9737cbe3f1593b608a51389996f130308a971394",
+      "uncommitted_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "branch": "claude/zen-keller-0fx365"
+    },
+    "budget_used": {
+      "run_minutes": 6,
+      "exploratory_minutes": 0
+    },
+    "survey": {
+      "launched_at": "2026-10-04T15:16:35Z",
+      "agents": 5,
+      "status": "RUNNING"
+    }
   },
   "baseline_snapshot": {
     "note": "準備時(実行枠の開始前)に採取した参考値。実行枠の開始時に必ず採り直す",
@@ -45,7 +57,7 @@
     "os": "Linux 6.18.44-fc-v64 x86_64(Claude Code クラウドコンテナ。使い捨て)",
     "product": ".NET MAUI(Android / iOS)+ SkiaSharp。Unity は使っていない",
     "dotnet_sdk_required": "global.json: 10.0.401(rollForward: latestFeature)、テストランナー: Microsoft.Testing.Platform",
-    "dotnet_sdk_installed": null,
+    "dotnet_sdk_installed": "10.0.401(この実行枠で ~/.dotnet に導入。dotnet-install.sh)",
     "maui_workload_required": "10.0.400 のワークロードセット(iOS 26.5.10301 / Android 36.1.69)",
     "maui_workload_installed": null,
     "rendering_paths": [
@@ -61,7 +73,8 @@
       "jq": "present",
       "sha256sum": "present",
       "java": "present(版は未確認)"
-    }
+    },
+    "dotnet_test_notes": "Rendering.Tests を Linux で動かすには SkiaSharp.NativeAssets.Linux 4.153.1 の libSkiaSharp.so を tests/Weather.Rendering.Tests/bin/Debug/net10.0/ に手動配置(リポジトリ未変更。bin は gitignore)"
   },
   "capabilities": {
     "read_edit_files": {
@@ -71,9 +84,8 @@
       "available": true
     },
     "dotnet_build_test": {
-      "available": false,
-      "reason": "このコンテナに dotnet がない(command -v dotnet が空、~/.dotnet・/usr/share/dotnet・/usr/lib/dotnet もない)。導入は未実施",
-      "effect": "自動テストは NOT_RUN(環境)として記録する。PASS 扱いにしない"
+      "available": true,
+      "note": "この実行枠で導入。MAUI ワークロードは未導入(App の Android/iOS ビルドは不可)。コンテナは使い捨て"
     },
     "golden_image_tests": {
       "available": false,
@@ -93,7 +105,8 @@
     },
     "live_api_tests": {
       "available": false,
-      "reason": "dotnet がない。実 API の契約テストは通常の実行では動かない(Explicit)"
+      "reason": "ネットワーク制限で www.jma.go.jp / api.weather.gov / api.met.no に到達できない(2026-10-04 実測)。GFS の取得先ホストは未確認",
+      "effect": "実 API の契約テストは判定できない(NOT_RUN 扱い)。ユーザーが環境のネットワーク設定(Allowed domains)を変えれば実行できる"
     },
     "push": {
       "available": true,
@@ -137,6 +150,14 @@
       "asked_at": "2026-10-04T15:07:33Z",
       "summary": "docs/QA_WORKFLOW.md の置き場所の確認(仮置き: docs/)",
       "answer": null
+    },
+    {
+      "id": "Q-0004",
+      "related_bugs": [],
+      "status": "OPEN",
+      "asked_at": "2026-10-04T15:17:23Z",
+      "summary": "実 API の契約テストを実行するため、環境の Network access に jma.go.jp・weather.gov・met.no と GFS の取得元(noaa-gfs-bdp-pds.s3.amazonaws.com)を許可できるか。許可しなくても探索は続ける(記録データのテストと scratch 検証が中心)",
+      "answer": null
     }
   ],
   "consolidation_candidates": [],
@@ -159,5 +180,16 @@
       "decision": "push はセッション専用ブランチに限り許可(docs/QA_WORKFLOW.md 0.3)。Pull Request の作成は引き続き明示指示が必要",
       "made_by": "ユーザー"
     }
-  ]
+  ],
+  "smoke": {
+    "at": "2026-10-04T15:15:35Z",
+    "code_state": "9737cbe3f1593b608a51389996f130308a971394",
+    "summary": "Core 14/Geo 9/Scene 8/Infrastructure 8/Providers 44/Presentation 42/Remote 6 すべて成功(Linux, Debug)。Rendering は libSkiaSharp 欠如(環境)で 12 件 ERROR。Linux 用ネイティブを bin にのみ置くと 16/17 成功、MapRenderer.Render_Golden(map-temperature)が平均差 3.53(許容 3)で失敗 — Windows 生成のゴールデンのため Linux では証拠にしない(原因は推定: 文字描画の差。未切り分け)",
+    "not_run": [
+      "Weather.Providers.LiveTests(Explicit・実API)",
+      "Weather.App のビルド(MAUI ワークロード未導入)",
+      "Android/iOS 実機・エミュレーター",
+      "SceneLab(WPF)"
+    ]
+  }
 }
