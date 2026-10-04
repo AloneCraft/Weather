@@ -189,6 +189,31 @@ internal sealed class FakeDialogs:IDialogService{
     }
 }
 
+internal sealed class FakeHistory:IObservationHistoryService{
+    public List<TimeSpan> Retentions{get;}=[];
+
+    public ValueTask<HistorySyncResult> SyncAsync(ObservationStation station,CancellationToken cancellationToken){
+        throw new NotSupportedException();
+    }
+
+    public ValueTask<IReadOnlyList<Observation>> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken){
+        throw new NotSupportedException();
+    }
+
+    public ValueTask<IReadOnlyList<DailyObservationSummary>> GetDailySummariesAsync(ObservationStation station,DateOnly from,DateOnly to,CancellationToken cancellationToken){
+        throw new NotSupportedException();
+    }
+
+    public ValueTask ApplyRetentionAsync(TimeSpan retention,CancellationToken cancellationToken){
+        this.Retentions.Add(retention);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask DeleteAllAsync(CancellationToken cancellationToken){
+        return ValueTask.CompletedTask;
+    }
+}
+
 internal sealed class FakeBackgroundPlatform:IAlertNotifier,IWidgetPublisher,IBackgroundScheduler{
     public bool Permission{get;set;}=true;
     public bool HasWidgets{get;set;}
