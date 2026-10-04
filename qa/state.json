@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 26,
-  "updated_at": "2026-10-04T15:40:29Z",
+  "revision": 27,
+  "updated_at": "2026-10-04T15:41:53Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 29,
+      "run_minutes": 30,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -678,5 +678,112 @@
       "Android/iOS 実機・エミュレーター",
       "SceneLab(WPF)"
     ]
-  }
+  },
+  "candidates": [
+    {
+      "id": "I-2",
+      "status": "REJECTED",
+      "note": "二重防御(MetNorwayProvider の NotAllowed)で不変条件は守られる。回帰テストを追加(コミット f24e5b9)"
+    },
+    {
+      "id": "I-1",
+      "status": "UNREPRODUCED",
+      "note": "Remote: ContractMapper.ToModel の検証例外が WeatherProviderException に変換されず漏れる(RemoteWeatherService.cs の catch が try の外)。高(Remote 使用時)"
+    },
+    {
+      "id": "P-2",
+      "status": "UNREPRODUCED",
+      "note": "JMA 週間予報の区域不一致で先頭区域に黙って置換(伊豆諸島で東京地方の値)。設計書は「要確認」扱い"
+    },
+    {
+      "id": "P-3",
+      "status": "UNREPRODUCED",
+      "note": "未知の警報コードを丸ごと落とす(ガードレール 6 は原文表示を求める)"
+    },
+    {
+      "id": "P-4",
+      "status": "UNREPRODUCED",
+      "note": "HttpCacheHandler: 本文読み込み失敗が stale 切替の外"
+    },
+    {
+      "id": "P-5",
+      "status": "UNREPRODUCED",
+      "note": "NWS 先頭が Overnight のとき Tonight が捨てられる(実データの形は仮説)"
+    },
+    {
+      "id": "P-6/I-4",
+      "status": "UNREPRODUCED",
+      "note": "キャッシュ LastAccessedAt がヒットで更新されない(NeedsAccessUpdate 未使用はコードで確認済み)"
+    },
+    {
+      "id": "P-7",
+      "status": "UNREPRODUCED",
+      "note": "NWS 観測の URL に秒単位の end が入りキャッシュが効かない"
+    },
+    {
+      "id": "P-8",
+      "status": "UNREPRODUCED",
+      "note": "JMA 時系列の重複/逆順で ArgumentException が漏れ予報全体が失敗"
+    },
+    {
+      "id": "I-3",
+      "status": "UNREPRODUCED",
+      "note": "NWS 日最高/最低が UTC 日付集計(設計追加が要る可能性)"
+    },
+    {
+      "id": "I-5",
+      "status": "UNREPRODUCED",
+      "note": "HistoryViewModel の (a) NWS 降水棒が空 (b) 今日が昨日 (c) 古い Message (d) 競合"
+    },
+    {
+      "id": "I-6",
+      "status": "UNREPRODUCED",
+      "note": "お気に入りの重複登録(設計に重複禁止の記述なし)"
+    },
+    {
+      "id": "I-7",
+      "status": "UNREPRODUCED",
+      "note": "地図の時間軸が前面で更新されない"
+    },
+    {
+      "id": "I-8",
+      "status": "UNREPRODUCED",
+      "note": "PlaceWeatherViewModel のキャンセル後 Loading のまま / 同時更新"
+    },
+    {
+      "id": "M-1",
+      "status": "UNREPRODUCED",
+      "note": "TileLayer が失敗タイルを毎回再要求 / キャッシュ上限 192 < 可視タイル"
+    },
+    {
+      "id": "M-2",
+      "status": "UNREPRODUCED",
+      "note": "GfsProvider が応答の物理量・ステータスを検証しない"
+    },
+    {
+      "id": "M-3",
+      "status": "UNREPRODUCED",
+      "note": "japanmask シェーダー失敗時に気象庁タイルが全世界に出る"
+    },
+    {
+      "id": "M-5",
+      "status": "UNREPRODUCED",
+      "note": "等圧線の鞍点が中心値を見ない(見た目のみ)"
+    },
+    {
+      "id": "M-6",
+      "status": "UNREPRODUCED",
+      "note": "走査モード 0x80 で Grid.Lo1 が不一致(GFS は到達しない)"
+    },
+    {
+      "id": "S-2/S-3/S-4/S-6/S-7/S-8",
+      "status": "DEFERRED",
+      "note": "設計意図の可能性または仕様が曖昧(survey-scene.md)。S-2 と S-8 は一部実行確認済み"
+    },
+    {
+      "id": "G-8",
+      "status": "DEFERRED",
+      "note": "Observation の値域検証なし(設計判断)"
+    }
+  ]
 }
