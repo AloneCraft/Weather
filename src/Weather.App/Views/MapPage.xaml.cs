@@ -1,5 +1,6 @@
 using Weather.Core;
 using Weather.Presentation;
+using Weather.Presentation.Monetization;
 using Weather.Presentation.ViewModels;
 
 namespace Weather.App.Views;
@@ -9,14 +10,16 @@ public partial class MapPage:ContentPage{
     private readonly MapViewModel viewModel;
     private readonly AppSettings settings;
     private readonly IMotionPreferences motion;
+    private readonly AdPolicy ads;
     private const double FocusZoom=6.5;
     private bool loaded;
 
-    public MapPage(MapViewModel viewModel,AppSettings settings,IMotionPreferences motion){
+    public MapPage(MapViewModel viewModel,AppSettings settings,IMotionPreferences motion,AdPolicy ads){
         this.InitializeComponent();
         this.viewModel=viewModel;
         this.settings=settings;
         this.motion=motion;
+        this.ads=ads;
         this.BindingContext=viewModel;
         this.Map.PointTapped+=this.OnPointTapped;
         this.Map.PinTapped+=(_,pin)=>viewModel.SelectPinCommand.Execute(pin);
@@ -32,6 +35,8 @@ public partial class MapPage:ContentPage{
         }
         this.viewModel.UpdatePins();
         this.viewModel.Start();
+        //地図を出してから、購入の確認と広告の同意(必要な地域だけフォームを地図の上に出す)。2 回目以降は何もしない
+        await this.ads.StartAsync(CancellationToken.None);
     }
 
     protected override void OnDisappearing(){

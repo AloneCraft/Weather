@@ -13,6 +13,7 @@ public sealed class AppSettings(ISettingsStore store){
     private const string PowerSavingKey="powerSaving";
     private const string HistoryRetentionKey="historyRetentionDays";
     private const string AlertNotificationsKey="alertNotifications";
+    private const string AdFreeKey="adFree";
 
     public event EventHandler? Changed;
 
@@ -63,6 +64,12 @@ public sealed class AppSettings(ISettingsStore store){
     public bool AlertNotifications{
         get=>store.Get(AlertNotificationsKey)=="1";
         set=>this.Set(AlertNotificationsKey,Flag(value));
+    }
+
+    /// <summary>「広告を消す」を購入済みか(ストアの結果のキャッシュ。Monetization.md の AdPolicy が更新する)。</summary>
+    public bool AdFree{
+        get=>store.Get(AdFreeKey)=="1";
+        set=>this.Set(AdFreeKey,Flag(value));
     }
 
     public static UnitSystem DefaultUnits(string regionCode){

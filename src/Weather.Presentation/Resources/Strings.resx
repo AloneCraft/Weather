@@ -61,7 +61,7 @@
   <data name="AboutGeoNamesUsage" xml:space="preserve"><value>世界の地名(地点検索)</value></data>
   <data name="AboutNaturalEarthUsage" xml:space="preserve"><value>国境(国の判定・世界地図)</value></data>
   <data name="AboutPublicDomain" xml:space="preserve"><value>パブリックドメイン</value></data>
-  <data name="Privacy" xml:space="preserve"><value>現在地は予報の取得にのみ使い、MET Norway / NWS へは小数 2 桁(約 1 km)に丸めて送ります。気象庁へは座標を送りません。観測履歴とお気に入りは端末内だけに保存します。</value></data>
+  <data name="Privacy" xml:space="preserve"><value>現在地は予報の取得にのみ使い、MET Norway / NWS へは小数 2 桁(約 1 km)に丸めて送ります。気象庁へは座標を送りません。観測履歴とお気に入りは端末内だけに保存します。広告(Google AdMob)には位置情報を渡しません。利用者の興味に合わせた広告は同意した場合にだけ表示します。</value></data>
   <data name="Law" xml:space="preserve"><value>日本域の予報・警報は気象庁の発表をそのまま表示しています。アプリが独自に予報や警報を作ることはありません。</value></data>
   <data name="HistoryTitleFormat" xml:space="preserve"><value>{0} の観測履歴</value></data>
   <data name="HistoryDefaultTitle" xml:space="preserve"><value>観測履歴</value></data>
@@ -192,4 +192,18 @@
   <data name="Back" xml:space="preserve"><value>戻る</value></data>
   <data name="Observed" xml:space="preserve"><value>観測</value></data>
   <data name="AboutGfsUsage" xml:space="preserve"><value>地図の風・降水・気温・雲・気圧(日本周辺以外。米国海洋大気庁の数値予報モデルの計算結果をアプリで色分けして表示)</value></data>
+  <data name="AdsSection" xml:space="preserve"><value>広告</value></data>
+  <data name="RemoveAds" xml:space="preserve"><value>広告を消す</value></data>
+  <data name="RemoveAdsWithPrice" xml:space="preserve"><value>広告を消す({0})</value></data>
+  <data name="RestorePurchases" xml:space="preserve"><value>購入を復元</value></data>
+  <data name="AdPrivacyOptions" xml:space="preserve"><value>広告のプライバシー設定</value></data>
+  <data name="AdFreeActive" xml:space="preserve"><value>購入済みのため、広告は表示されません</value></data>
+  <data name="AdsNote" xml:space="preserve"><value>広告は地図と地点の詳細の下にだけ表示します。警報の画面には表示しません</value></data>
+  <data name="PurchaseCompleted" xml:space="preserve"><value>ご購入ありがとうございます。広告を表示しなくなりました。</value></data>
+  <data name="PurchasePending" xml:space="preserve"><value>支払いが完了すると広告が消えます。</value></data>
+  <data name="PurchaseFailed" xml:space="preserve"><value>購入できませんでした。時間をおいてもう一度お試しください。</value></data>
+  <data name="StoreUnavailable" xml:space="preserve"><value>ストアに接続できませんでした。</value></data>
+  <data name="RestoreCompleted" xml:space="preserve"><value>購入を復元しました。広告を表示しなくなりました。</value></data>
+  <data name="RestoreNotFound" xml:space="preserve"><value>このアカウントでの購入は見つかりませんでした。</value></data>
+  <data name="AdBannerDescription" xml:space="preserve"><value>広告</value></data>
 </root>

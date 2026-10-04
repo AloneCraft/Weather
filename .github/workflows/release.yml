@@ -31,6 +31,9 @@ jobs:
           }
       - name: AAB の作成
         env:
+          # AdMob の本番の ID(Monetization.md)。未設定なら Weather.App.csproj の CheckAdMobIds でビルドが失敗する
+          WEATHER_ADMOB_ANDROID_APP_ID: ${{ secrets.ADMOB_ANDROID_APP_ID }}
+          WEATHER_ADMOB_ANDROID_BANNER_ID: ${{ secrets.ADMOB_ANDROID_BANNER_ID }}
           WEATHER_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           WEATHER_ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
           WEATHER_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}

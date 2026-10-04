@@ -25,7 +25,7 @@ MVVM(CommunityToolkit.Mvvm)+ MAUI Shell。ViewModel は `Weather.Presentation`(n
 | 警報 | 発表中の警報・注意報 | 一覧と詳細。機関の名称・本文・発表官署・発表時刻をそのまま表示 | ✓ |
 | 地点検索 | 地点を探す | オフライン検索、現在地ボタン。選んだ地点は地図に出して予報シートを開く(お気に入りへの追加はシートから) | ✓ |
 | 地点の管理 | お気に入りの並べ替え・削除 | 一覧、並べ替え、削除 | ✓ |
-| 設定 | 表示と動作の設定 | 単位、描画品質(自動 / 低 / 中 / 高)、稲光の点滅を抑える、省電力(30 fps)、履歴の保持期間(Phase 2)、履歴の全削除(Phase 2)、警報の通知(Phase 3。有効にするときに通知の許可を求める) | ✓ |
+| 設定 | 表示と動作の設定 | 単位、描画品質(自動 / 低 / 中 / 高)、稲光の点滅を抑える、省電力(30 fps)、履歴の保持期間(Phase 2)、履歴の全削除(Phase 2)、警報の通知(Phase 3。有効にするときに通知の許可を求める)、広告(Phase 6: 広告を消す・購入を復元・広告のプライバシー設定。Monetization.md) | ✓ |
 | データと出典 | ライセンス表示 | 気象庁・NWS・MET Norway・GeoNames・Natural Earth の出典とライセンス、加工の説明、プライバシー(位置情報の扱い) | ✓ |
 | 観測履歴 | 観測所の履歴 | 観測所の選択、期間(24 時間 / 7 日 / 30 日 / 1 年)、気温・降水量・風・日照のグラフと表 | Phase 2 |
 
@@ -58,6 +58,7 @@ MVVM(CommunityToolkit.Mvvm)+ MAUI Shell。ViewModel は `Weather.Presentation`(n
 | AlertsViewModel / AlertDetailViewModel | 警報 |
 | SearchViewModel / PlacesViewModel | 検索・現在地・お気に入り管理 |
 | SettingsViewModel / AboutViewModel | 設定・出典 |
+| AdSettingsViewModel | 設定画面の「広告」の欄(広告を消す・購入を復元・広告のプライバシー設定)。SettingsViewModel とは分ける |
 | HistoryViewModel | Phase 2 |
 
 Presentation に定義する抽象(App が実装):
@@ -73,6 +74,7 @@ Presentation に定義する抽象(App が実装):
 | IFavoritesStore | お気に入り。Infrastructure(Core にのみ依存)が実装するため、抽象は Core に置く |
 | IMotionPreferences | 「視差効果を減らす」等の OS 設定 |
 | IMapPixelSampler | 吹き出し用に気象庁のタイルの画素の色を読む(App が Rendering の JmaTileSampler で実装) |
+| IAdPlatform / IPurchasePlatform | 広告と同意(Google Mobile Ads・UMP・iOS の ATT)、「広告を消す」の課金(Play Billing・StoreKit 2)。未対応の環境では広告を出さず購入もできない実装(Monetization.md) |
 
 データ取得は Providers の `IWeatherService`(地点の予報・警報・観測)と `IMapDataService`(地図の層)を使う。
 
@@ -83,7 +85,7 @@ Presentation に定義する抽象(App が実装):
 - **スレッド**: VM のメソッドでは `ConfigureAwait(false)` を使わない(UI スレッドに戻って PropertyChanged を発火させるため)。Providers・Infrastructure では `ConfigureAwait(false)` を使う。
 - **ソース生成**: `[ObservableProperty]` は部分プロパティ(partial property)の形で書き、`[RelayCommand]` は CancellationToken 対応の非同期コマンドにする。
 - **ライフサイクル**: `Window.Stopped` で描画ループを止め、自動更新も止める。`Window.Resumed` で必要なら更新する。
-- **レイアウト**: 地図・シーンのキャンバスを Grid の最背面に置き、上に半透明の部品を重ねる。iOS はセーフエリアを考慮する。
+- **レイアウト**: 地図・シーンのキャンバスを Grid の最背面に置き、上に半透明の部品を重ねる。iOS はセーフエリアを考慮する。地図と地点の詳細は最下部に広告のバナーの行を持ち、キャンバスと部品はその上の行に置く(バナーを地図・出典の帯に重ねない。広告を出さないときは高さ 0。Monetization.md)。
 - **地図の操作**: MAUI のジェスチャー(パン・ピンチ・タップ・ダブルタップ)を地図のビューに付け、座標は端末の密度を掛けて描画の画素に直す。ピン(吹き出しの形)はタップの判定を地点より優先する。
 - **描画ホスト**: 地図は風の粒子があるときだけ連続描画し、それ以外は操作・データの更新のたびに 1 回描く(電池の消費を抑える)。
 - **位置情報の権限**: 初回は説明を表示してから要求する。拒否された場合は検索で使えるようにする。

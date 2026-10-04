@@ -14,7 +14,7 @@
     <ApplicationDisplayVersion>0.1</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">23.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
     <NoWarn>$(NoWarn);XC0103</NoWarn>
   </PropertyGroup>
 
@@ -32,11 +32,65 @@
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <!-- 背景更新(WorkManager。ウィジェット・警報の通知) -->
     <PackageReference Include="Xamarin.AndroidX.Work.Runtime" />
+    <!-- 広告・同意・課金(Monetization.md) -->
+    <PackageReference Include="Xamarin.GooglePlayServices.Ads" />
+    <PackageReference Include="Xamarin.Google.UserMessagingPlatform" />
+    <PackageReference Include="Xamarin.Android.Google.BillingClient" />
+    <!-- 広告 SDK に合わせて AndroidX の版を揃える(Directory.Packages.props) -->
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Service" />
+    <PackageReference Include="Xamarin.AndroidX.Tracing.Tracing.Ktx" />
+    <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" />
+    <PackageReference Include="Xamarin.AndroidX.AppCompat" />
+    <PackageReference Include="Xamarin.AndroidX.Collection.Ktx" />
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
     <!-- SKMetalView(iOS の Metal 描画ホスト。Rendering.md「描画ホスト」) -->
     <PackageReference Include="SkiaSharp.Views" />
   </ItemGroup>
+
+  <!--
+    AdMob の ID(Monetization.md)。本番の ID はリポジトリに置かず環境変数で渡す(AdMob の管理画面で作成する)
+      WEATHER_ADMOB_ANDROID_APP_ID / WEATHER_ADMOB_ANDROID_BANNER_ID   Android のアプリ ID / バナーの広告ユニット ID
+      WEATHER_ADMOB_IOS_APP_ID / WEATHER_ADMOB_IOS_BANNER_ID           iOS の同上
+    Debug は Google のテスト用 ID。Release で未設定(またはテスト用 ID)ならビルドを失敗させる(テスト広告のまま提出しない)。
+    Release をエミュレーターで試すときだけ -p:UseTestAds=true でテスト用 ID を使える
+    同意フォームの試験: -p:AdsDebugGeography=EEA(-p:AdsTestDeviceHashedId=<logcat に出る ID>)。Debug でだけ有効
+  -->
+  <PropertyGroup>
+    <AdMobTestPublisher>ca-app-pub-3940256099942544</AdMobTestPublisher>
+    <UseTestAds Condition="'$(UseTestAds)' == '' And '$(Configuration)' != 'Release'">true</UseTestAds>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <AdMobAppId>$(WEATHER_ADMOB_ANDROID_APP_ID)</AdMobAppId>
+    <AdMobBannerUnitId>$(WEATHER_ADMOB_ANDROID_BANNER_ID)</AdMobBannerUnitId>
+    <AdMobAppId Condition="'$(UseTestAds)' == 'true'">$(AdMobTestPublisher)~3347511713</AdMobAppId>
+    <AdMobBannerUnitId Condition="'$(UseTestAds)' == 'true'">$(AdMobTestPublisher)/9214589741</AdMobBannerUnitId>
+    <!-- AndroidManifest.xml の ${admobAppId} -->
+    <AndroidManifestPlaceholders>admobAppId=$(AdMobAppId)</AndroidManifestPlaceholders>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <AdMobAppId>$(WEATHER_ADMOB_IOS_APP_ID)</AdMobAppId>
+    <AdMobBannerUnitId>$(WEATHER_ADMOB_IOS_BANNER_ID)</AdMobBannerUnitId>
+    <AdMobAppId Condition="'$(UseTestAds)' == 'true'">$(AdMobTestPublisher)~1458002511</AdMobAppId>
+    <AdMobBannerUnitId Condition="'$(UseTestAds)' == 'true'">$(AdMobTestPublisher)/2435281174</AdMobBannerUnitId>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <AdsDebugGeography></AdsDebugGeography>
+    <AdsTestDeviceHashedId></AdsTestDeviceHashedId>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="AdMobBannerUnitId" Value="$(AdMobBannerUnitId)" />
+    <AssemblyMetadata Include="AdsDebugGeography" Value="$(AdsDebugGeography)" />
+    <AssemblyMetadata Include="AdsTestDeviceHashedId" Value="$(AdsTestDeviceHashedId)" />
+  </ItemGroup>
+  <Target Name="CheckAdMobIds" BeforeTargets="CoreCompile" Condition="'$(TargetFramework)' != ''">
+    <Error Condition="'$(AdMobAppId)' == '' Or '$(AdMobBannerUnitId)' == ''" Text="AdMob の ID が未設定です。Release では WEATHER_ADMOB_*(Weather.App.csproj の説明)を設定するか、動作確認だけなら -p:UseTestAds=true を付けてください" />
+    <Error Condition="'$(UseTestAds)' != 'true' And ($(AdMobAppId.StartsWith('$(AdMobTestPublisher)')) Or $(AdMobBannerUnitId.StartsWith('$(AdMobTestPublisher)')))" Text="Release に Google のテスト用 AdMob ID が設定されています" />
+    <Warning Condition="'$(Configuration)' == 'Release' And '$(UseTestAds)' == 'true'" Code="WEATHER0001" Text="テスト用の AdMob ID でビルドしています(ストアには提出しないでください)" />
+  </Target>
 
   <!--
     Android のリリース署名(ストア提出用)。鍵はリポジトリに置かず環境変数で渡す。未設定ならデバッグ鍵で署名される

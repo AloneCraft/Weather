@@ -17,6 +17,7 @@
 | 3. 仕上げ | 英語化、アクセシビリティ、性能、ウィジェット等 | リリース品質 |
 | 4. 発展(任意) | Functions 移行、Web 版の検討 | 個別に判断 |
 | 5. 地図トップ | トップを Windy 型の地図に作り替える(2026-10-04 のユーザーの要望) | 下記の試作が結論を出し、地図・吹き出し・予報シート・詳細がエミュレーターで動く |
+| 6. 広告と課金 | AdMob のバナーと買い切りの「広告を消す」(2026-10-04 のユーザーの要望。Monetization.md) | 試作 A1〜A3 が結論を出し、バナー・同意・課金が Android と iOS で動く |
 
 ## Phase 0: 基盤と試作
 
@@ -86,6 +87,18 @@
 | M5 App | 地図の画面・予報シート・詳細、描画ホストの一般化、旧トップと地図で選ぶ画面の削除 |
 | M6 仕上げ | 設計書・README |
 
+## Phase 6: 広告と課金(2026-10-04)
+
+決定事項は Monetization.md。初回のストア公開に含める。
+
+| マイルストーン | 内容 |
+|---|---|
+| M1 試作 | A1 Android の依存関係(AndroidX の衝突)とバナー・同意・課金の動作、A2 iOS の Swift ラッパー(Native Library Interop)、A3 課金(Play Billing・StoreKit 2) |
+| M2 Presentation | IAdPlatform・IPurchasePlatform・AdPolicy・設定画面の AdSettingsViewModel |
+| M3 App | バナー(AdBannerView)、Android・iOS の実装、Info.plist・AndroidManifest・プライバシーマニフェスト |
+| M4 CI・リリース | ラッパーのビルド、AdMob の ID のシークレット |
+| M5 文書 | プライバシーポリシー等 |
+
 ## 実装の状況(2026-10-04)
 
 リポジトリ: https://github.com/AloneCraft/Weather(公開)。CI(GitHub Actions)で Windows のテスト、Android のビルド、macOS での iOS のビルド(ウィジェット拡張を含む)を PR・push ごとに実行する。
@@ -97,6 +110,7 @@
 | Phase 2 履歴と地図 | 完了。観測履歴(同期・間引き・保持期間・グラフ)、世界地図での地点選択 | 単体テスト(SQLite)・エミュレーターで観測履歴(アメダス東京)を確認 |
 | Phase 3 仕上げ | 完了(iOS の実機確認を除く)。英語 UI、読み上げ用の要約、警報の通知、ウィジェット(Android の AppWidget・iOS の WidgetKit 拡張)、背景更新(WorkManager・BGTaskScheduler)、MET の背景取得の二重防止 | 単体テスト。Android エミュレーターで、ウィジェット・画面なしでの背景起動・警報の通知(小笠原村の波浪警報)を確認。iOS は CI でビルドと拡張の同梱を確認 |
 | Phase 4 発展 | Functions への移行を実装(中継 API・RemoteWeatherService)。Azure への配置はしていない。Web 版は未着手(後で検討) | 単体テスト・記録データでの結合テスト・Functions のビルド |
+| Phase 6 広告と課金 | 実装中。Android: 試作 A1 完了(AndroidX を揃えて Debug・Release のビルドで警告 0)、バナー・同意(UMP)・課金(Play Billing)を実装。iOS: 未着手(試作 A2) | 単体テスト(AdPolicy・設定画面の VM)、Android エミュレーターでテストバナー・EEA の同意フォーム・プライバシー設定の再表示を確認 |
 | Phase 5 地図トップ | 完了(iOS の実機確認を除く)。GFS 0.5° と気象庁の地図タイル・アメダス・海上分布予報、風の粒子・降水・気温・雲と気圧、時間軸と再生、吹き出し・予報シート・空のシーンの詳細 | 単体テスト(GRIB2・地図のデータ・描画の不変条件・ゴールデン画像・VM)、実 API の契約テスト(地図)、Android エミュレーターで各層・タップ・シート・詳細・再生を確認、風の層で約 58.5 fps(エミュレーター) |
 
 試作 S1〜S5 の結果:
@@ -115,13 +129,14 @@
 - 出典が画面下部の暗い地形と同じ色で読めない → 出典をカードに載せた(方針 7)。
 - お気に入りの変更後に全地点を作り直していた(読み込み中のスワイプでカルーセルが途中で止まる) → 既存の地点を使い回し、追加分だけ取得する。
 - グラフの時刻軸で日付と時刻が重なる・左端の目盛りが切れる → 文字幅を測って判定する。
-- WorkManager 2.11 が新しい AndroidX を引き込みクラスが重複 → MAUI と同じ AndroidX に依存する 2.10.3 に固定。
+- WorkManager 2.11 が新しい AndroidX を引き込みクラスが重複 → 当初は 2.10.3 に固定した。Phase 6 で広告 SDK がさらに新しい AndroidX を要求したため、MAUI が引き込む AndroidX を明示的に揃えて 2.11.2.1 に上げた(Monetization.md「Android の依存関係」)。
 
 ### 残作業と理由
 
 - **iOS の実機確認**(SKMetalView の描画性能、BGTaskScheduler、通知、ウィジェット、SQLite のリリースビルド): iPhone と Mac(署名)が必要。
 - **Android の中位機種の実機での性能確認**: エミュレーターは GPU 性能が実機と異なる(地図の風の層・空のシーン)。
 - **地図の規約の確認**(公開前): 気象庁の地図タイルをアプリから取得する条件、GFS を日本以外で表示することの気象業務法上の扱い(日本周辺では表示しない)。
+- **広告と課金の公開前の作業**(Monetization.md「ユーザーの作業」): AdMob の ID、ストアの課金アイテム、app-ads.txt の設置先、UMP の同意メッセージ。広告で商用になるため、各データ源の利用規約(気象庁の地図タイル・bosai、MET Norway、GeoNames)を商用利用の観点でも確認する。App Store のプライバシー表示(トラッキングあり)と Google Play のデータセーフティを広告に合わせて申告する。
 - **公開前の確定事項**: 署名鍵(Android は環境変数・シークレットで渡す仕組みと release ワークフローを用意済み。iOS は Mac で証明書とプロビジョニング)、iOS の App Group の登録(ウィジェットを同梱する場合)。アプリ ID は `io.github.alonecraft.soramoyou`(iOS の App Group は `group.io.github.alonecraft.soramoyou`)、プライバシーポリシーは docs/Store/PrivacyPolicy.md(公開者 AloneCraft、連絡先は GitHub Issues、2026-10-04 施行)、User-Agent の連絡先は公開リポジトリ `github.com/AloneCraft/Weather` に確定した。
 - **Functions の配置**(任意): Azure のサブスクリプションが必要。Azure 側の .NET 10 ランタイム対応は配置時に**要確認**。公開時はレート制限(API Management 等)を前提にする。
 - **Web 版**: 後で検討(SolutionStructure.md)。

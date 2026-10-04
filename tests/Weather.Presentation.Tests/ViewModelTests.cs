@@ -249,6 +249,13 @@ public class ConditionIcons{
 public class ArchitectureRules{
     [Fact,Trait("Category","Unit")]public void NoMauiReference(){
         var names=typeof(Presentation.ViewModels.MainViewModel).Assembly.GetReferencedAssemblies().Select(static a=>a.Name??"");
-        Assert.DoesNotContain(names,static n=>n.StartsWith("Microsoft.Maui",StringComparison.Ordinal));
+        {
+            //MAUI に依存しない
+            Assert.DoesNotContain(names,static n=>n.StartsWith("Microsoft.Maui",StringComparison.Ordinal));
+        }
+        {
+            //広告・課金の SDK(Google Mobile Ads・UMP・Play Billing のバインディング)に依存しない。抽象(IAdPlatform 等)だけを持つ(Monetization.md)
+            Assert.DoesNotContain(names,static n=>n.StartsWith("Xamarin.",StringComparison.Ordinal)||n.StartsWith("Mono.Android",StringComparison.Ordinal)||n.StartsWith("Microsoft.iOS",StringComparison.Ordinal));
+        }
     }
 }
