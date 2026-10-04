@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 95,
-  "updated_at": "2026-10-04T16:26:11Z",
+  "revision": 99,
+  "updated_at": "2026-10-04T16:27:19Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 75,
+      "run_minutes": 76,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1627,6 +1627,63 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0029",
+      "title": "GFS: 取得した応答が要求した要素のメッセージか検証せず、Range を無視した応答で別の物理量を表示し得る",
+      "source_ids": [
+        "M-2"
+      ],
+      "severity": "中(発生は稀)",
+      "fix_priority": 9,
+      "symptom": "GfsProvider.GetFieldAsync は Grib2Decoder.Decode の先頭メッセージをそのまま要求した要素として扱い、Discipline/Category/Number を照合しない。Range を無視して全ファイルを 200 で返す応答では、どの要素を要求しても先頭の要素(例: TMP)の格子が、要求した要素の単位換算で地図に出る(例外なし)",
+      "expected": "InvalidResponse で失敗する(誤った物理量を地図に出さない)",
+      "cause": {
+        "confirmed": "検証コードがない(コード読み)",
+        "hypotheses": [
+          "S3 が Range を無視する/キャッシュ・中継の誤りが起こる頻度は低い"
+        ],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:26:40Z",
+          "reason": "優先: 誤った物理量(風の代わりに気温など)を地図に出す無言の失敗を防ぐ。記録データで決定的に再現できる。局所的に直せる",
+          "code_before": {
+            "commit": "411de4731e27bac0bcd385cf37798bde7419d7c8",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 検証なし",
+          "hypothesis": "復号したメッセージの (Discipline, Category, Number) が要求した要素と一致しなければ InvalidResponse にする",
+          "planned_change": "src/Weather.Providers/Gfs/GfsProvider.cs の GetFieldAsync のみ + tests/Weather.Providers.Tests/GfsProvider.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Providers テスト全 PASS、正常な 6 要素の取得が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:27:19Z",
+          "diff_sha256": "72b26ab5955734243d58bb53f1f561b85e4eb30c259c0a9a6f5740929c4b052b",
+          "commit": "b03d5f64035b1dbaf1726794cb439f35d9b44281"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/GfsProvider.GetFieldAsync_WrongMessage"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:26:40Z",
+      "verified": {
+        "commit": "b03d5f64035b1dbaf1726794cb439f35d9b44281",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 76,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1809,8 +1866,8 @@
     },
     {
       "id": "M-2",
-      "status": "UNREPRODUCED",
-      "note": "GfsProvider が応答の物理量・ステータスを検証しない"
+      "status": "PROMOTED_TO_BUG",
+      "note": "GfsProvider が応答の物理量・ステータスを検証しない → BUG-0029"
     },
     {
       "id": "M-3",
