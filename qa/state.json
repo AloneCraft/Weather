@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 111,
-  "updated_at": "2026-10-04T16:47:15Z",
+  "revision": 115,
+  "updated_at": "2026-10-04T16:48:21Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 96,
+      "run_minutes": 97,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1825,6 +1825,61 @@
         "full_regression": "未実施",
         "note": "見た目の変更(鞍点の等圧線)。Windows のゴールデン画像との比較と目視は未実施 → VERIFIED は線分の幾何(テスト)に限る"
       }
+    },
+    {
+      "id": "BUG-0032",
+      "title": "履歴画面: 範囲を素早く切り替えると、先に始めた読み込みが後で終わって古い範囲の内容が表示される",
+      "source_ids": [
+        "I-5d"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 12,
+      "symptom": "OnRangeChanged は async void で LoadAsync を直接呼び、直列化もキャンセルもない。範囲 Week → Year と素早く切り替え、Year の読み込みが先に終わり Week が後に終わると、Range は Year なのにグラフと行が Week の内容になる(コード読み)",
+      "expected": "最後に選んだ範囲の内容が残る",
+      "cause": {
+        "confirmed": "LoadAsync に世代の確認がない(コード読み)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:47:40Z",
+          "reason": "ほかの READY で実行可能な作業。TaskCompletionSource で完了順を制御して決定的に再現できる。局所的に直せる",
+          "code_before": {
+            "commit": "5f883572b5fb32a99004eb245eff1de1ee5a865c",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 完了順の保証がない",
+          "hypothesis": "LoadAsync に世代番号を持たせ、観測の取得後に自分が最新でなければ結果を捨てれば、最後に選んだ範囲が残る",
+          "planned_change": "src/Weather.Presentation/ViewModels/HistoryViewModel.cs の LoadAsync のみ + tests/Weather.Presentation.Tests/HistoryViewModelTests.cs(StubHistory に完了の制御)",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト全 PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:48:21Z",
+          "diff_sha256": "616b150c9d516965375503a4171c69edc0c541357921976cfaf925179cbe219d",
+          "commit": "177517891b15b073569bd1de54faa3d8d94fb35b"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync_Race"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:47:40Z",
+      "verified": {
+        "commit": "177517891b15b073569bd1de54faa3d8d94fb35b",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 97,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1978,7 +2033,7 @@
     {
       "id": "I-5",
       "status": "PROMOTED_TO_BUG",
-      "note": "HistoryViewModel の (a) NWS 降水棒が空 (b) 今日が昨日 (c) 古い Message (d) 競合 → BUG-0014/0015/0016(d の競合は未対応)"
+      "note": "HistoryViewModel の (a) NWS 降水棒が空 (b) 今日が昨日 (c) 古い Message (d) 競合 → BUG-0014/0015/0016(d の競合は未対応) → I-5d は BUG-0032"
     },
     {
       "id": "I-6",
