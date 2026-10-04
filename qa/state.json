@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 63,
-  "updated_at": "2026-10-04T16:04:30Z",
+  "revision": 64,
+  "updated_at": "2026-10-04T16:05:24Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 53,
+      "run_minutes": 54,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1185,23 +1185,23 @@
       "id": "Q-0001",
       "related_bugs": [],
       "status": "OPEN",
-      "asked_at": "2026-10-04T15:07:33Z",
-      "summary": "次のゴール(リリース対応範囲)と許可する変更範囲",
+      "asked_at": "2026-10-04T15:00:00Z",
+      "summary": "次のゴール(リリース対応範囲)と許可する変更範囲。暫定: src/ と tests/ の不具合修正と再現テスト追加のみ",
       "answer": null
     },
     {
       "id": "Q-0002",
       "related_bugs": [],
       "status": "OPEN",
-      "asked_at": "2026-10-04T15:07:33Z",
-      "summary": "テスト実行手段(.NET SDK の導入可否 / CI 用 Pull Request の作成可否 / 手元での実行結果の共有)",
+      "asked_at": "2026-10-04T15:00:00Z",
+      "summary": "検証手段: (a) Pull Request で CI (b) 手元で dotnet test 結果を共有 (c) Linux のみ。.NET SDK は実行枠でコンテナへ導入済み",
       "answer": null
     },
     {
       "id": "Q-0003",
       "related_bugs": [],
       "status": "OPEN",
-      "asked_at": "2026-10-04T15:07:33Z",
+      "asked_at": "2026-10-04T15:00:00Z",
       "summary": "docs/QA_WORKFLOW.md の置き場所の確認(仮置き: docs/)",
       "answer": null
     },
@@ -1209,8 +1209,20 @@
       "id": "Q-0004",
       "related_bugs": [],
       "status": "OPEN",
-      "asked_at": "2026-10-04T15:17:23Z",
-      "summary": "実 API の契約テストを実行するため、環境の Network access に jma.go.jp・weather.gov・met.no と GFS の取得元(noaa-gfs-bdp-pds.s3.amazonaws.com)を許可できるか。許可しなくても探索は続ける(記録データのテストと scratch 検証が中心)",
+      "asked_at": "2026-10-04T15:00:00Z",
+      "summary": "実 API の契約テストのためのネットワーク許可(jma.go.jp・weather.gov・met.no・noaa-gfs-bdp-pds.s3.amazonaws.com)",
+      "answer": null
+    },
+    {
+      "id": "Q-0005",
+      "related_bugs": [
+        "BUG-0012",
+        "BUG-0017",
+        "BUG-0003"
+      ],
+      "status": "OPEN",
+      "asked_at": "2026-10-04T16:05:24Z",
+      "summary": "設計判断のまとめ: 週間予報の区域対応(BUG-0012)、非循環格子の外周半セル(BUG-0017)、国境付近の表示名・TZ(BUG-0003)、未知の警報コード(P-3)",
       "answer": null
     }
   ],
