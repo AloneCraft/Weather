@@ -87,6 +87,12 @@ public class PlaceSearch{
             Assert.Contains(Search.Search("チヨダ",10),static s=>s.Id=="jma:1310100");
         }
         {
+            //実在の区域名の「ヶ」「ケ」は、どちらの表記で入力しても当たる
+            foreach(var (query,name) in new[]{("茅ケ崎","茅ヶ崎市"),("茅ヶ崎","茅ヶ崎市"),("金ヶ崎","金ケ崎町"),("金ケ崎","金ケ崎町"),("鎌ヶ谷","鎌ケ谷市"),("鎌ケ谷","鎌ケ谷市")}){
+                Assert.Contains(Search.Search(query,10),s=>s.Kind==PlaceKind.JmaArea&&s.Name==name);
+            }
+        }
+        {
             //英語・日本語名で世界の都市
             Assert.Equal("GB",Search.Search("London",5)[0].CountryCode);
             Assert.Contains(Search.Search("ロンドン",5),static s=>s.CountryCode=="GB");
@@ -105,6 +111,13 @@ public class TextNormalizer{
             //NFKC・小文字化・カタカナ→ひらがな・空白除去
             Assert.Equal("とうきょう",Geo.TextNormalizer.Normalize("トウキョウ"));
             Assert.Equal("newyork",Geo.TextNormalizer.Normalize("Ｎｅｗ York"));
+        }
+        {
+            //「ヶ」「ヵ」(小書き)は「ケ」「カ」と同じキーにする(茅ヶ崎市と茅ケ崎の表記ゆれ)
+            Assert.Equal(Geo.TextNormalizer.Normalize("茅ケ崎"),Geo.TextNormalizer.Normalize("茅ヶ崎"));
+            Assert.Equal(Geo.TextNormalizer.Normalize("ケ"),Geo.TextNormalizer.Normalize("ヶ"));
+            Assert.Equal(Geo.TextNormalizer.Normalize("カ"),Geo.TextNormalizer.Normalize("ヵ"));
+            Assert.Equal("けいこ",Geo.TextNormalizer.Normalize("ヶイコ"));
         }
     }
 }

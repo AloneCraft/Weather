@@ -6,7 +6,7 @@ using Weather.Core;
 
 namespace Weather.Geo;
 
-/// <summary>検索用の正規化(NFKC、小文字化、カタカナ → ひらがな、空白除去)。</summary>
+/// <summary>検索用の正規化(NFKC、小文字化、カタカナ → ひらがな、ヶ・ヵ の統合、空白除去)。</summary>
 public static class TextNormalizer{
     public static string Normalize(string? text){
         if(string.IsNullOrWhiteSpace(text)){
@@ -18,7 +18,12 @@ public static class TextNormalizer{
             if(char.IsWhiteSpace(c)){
                 continue;
             }
-            if(c>='ァ'&&c<='ヶ'){
+            //小書きの「ヶ」「ヵ」は「ケ」「カ」と同じ扱いにする(茅ヶ崎市と茅ケ崎のように地名で混在する)
+            if(c=='ヶ'){
+                builder.Append('け');
+            }else if(c=='ヵ'){
+                builder.Append('か');
+            }else if(c>='ァ'&&c<='ヶ'){
                 builder.Append((char)(c-0x60));
             }else{
                 builder.Append(c);
