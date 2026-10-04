@@ -50,6 +50,7 @@ internal static class Scenes{
     }
 }
 
+[Collection("ShaderCache")]
 public class SceneRenderer{
     [Fact,Trait("Category","Unit")]public void Render(){
         {

@@ -2,6 +2,7 @@ using SkiaSharp;
 using Weather.Core;
 using Weather.Geo;
 using Weather.Rendering.Map;
+using Weather.Rendering.Scene;
 
 namespace Weather.Rendering.Tests;
 
@@ -167,6 +168,7 @@ public class MapCamera{
     }
 }
 
+[Collection("ShaderCache")]
 public class MapRenderer{
     [Fact,Trait("Category","Unit")]public void Render_JapanArea(){
         //方針 5: 日本周辺には GFS の色を描かない(格子の NaN とシェーダーのマスクの二重)
@@ -209,6 +211,33 @@ public class MapRenderer{
             //日本周辺の外(朝鮮半島)はタイルに色があっても描かない(このタイルは日本だけ赤なので、海と同じであること)
             var korea=MapSamples.PixelAt(bitmap,map,36.5,127.8);
             Assert.True(korea.Red<120,$"朝鮮半島: {korea}");
+        }
+    }
+
+    [Fact,Trait("Category","Unit")]public async Task Render_TilesWithoutMask(){
+        //日本マスクのシェーダーが使えないときは、気象庁のタイルを日本周辺の外に描かない(失敗時は描かない側に倒す。方針 5)
+        using var solid=new SKBitmap(new SKImageInfo(256,256,SKColorType.Rgba8888,SKAlphaType.Premul));
+        solid.Erase(SKColors.Red);
+        using var image=SKImage.FromBitmap(solid);
+        using var data=image.Encode(SKEncodedImageFormat.Png,100);
+        var tile=data.ToArray();
+        ShaderCache.ForceFailure=static name=>name=="japanmask";
+        try{
+            using var map=new Map.MapRenderer(MapSamples.Database);
+            var loaded=new TaskCompletionSource();
+            map.RedrawRequested+=()=>loaded.TrySetResult();
+            map.TileLoader=(layer,z,x,y,ct)=>Task.FromResult<byte[]?>(tile);
+            map.Camera.CenterOn(new GeoPoint(36,135),4);
+            map.Frame=new MapFrame{Layer=FieldLayer.Precipitation,Time=MapSamples.Time,Tiles=[MapSamples.TileLayer()],Legend=MapLegends.RainRate,Japan=JapanCoverage.Available};
+            using(MapSamples.Render(map,480,360)){
+            }
+            await Task.Delay(500,TestContext.Current.CancellationToken);
+            using var bitmap=MapSamples.Render(map,480,360);
+            //全面が赤のタイルでも、朝鮮半島(日本周辺の外)は赤にならない
+            var korea=MapSamples.PixelAt(bitmap,map,36.5,127.8);
+            Assert.True(korea.Red<120,$"朝鮮半島: {korea}");
+        }finally{
+            ShaderCache.ForceFailure=null;
         }
     }
 

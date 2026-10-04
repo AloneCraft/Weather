@@ -127,6 +127,9 @@ internal sealed class JapanOverlay(JapanMaskTexture mask):IDisposable{
     private readonly ShaderChildren children=new();
     private readonly SKShader maskShader=mask.Image.ToShader(SKShaderTileMode.Decal,SKShaderTileMode.Decal,new SKSamplingOptions(SKFilterMode.Linear));
 
+    /// <summary>日本周辺に限るシェーダーが使えるか。使えないときは、気象庁のタイルを日本周辺の外に出さないよう、描かない側に倒す。</summary>
+    public bool CanClip=>ShaderCache.Get("japanmask") is not null;
+
     /// <summary>直前に描いた内容(SaveLayer の中)を日本周辺だけに残す。</summary>
     public void ClipToJapan(SKCanvas canvas,MapView view,SKSize size){
         using var shader=this.Create(view,size,0);

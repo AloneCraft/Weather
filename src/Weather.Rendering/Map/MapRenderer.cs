@@ -104,8 +104,8 @@ public sealed class MapRenderer:IDisposable{
                 opacity=1f;
             }
             this.field.Draw(canvas,view,size,opacity);
-            if(frame.Tiles.Count>0){
-                //気象庁のタイルは日本周辺だけに描く(GFS との継ぎ目をそろえる)
+            if(frame.Tiles.Count>0&&this.overlay.CanClip){
+                //気象庁のタイルは日本周辺だけに描く(GFS との継ぎ目をそろえる)。日本周辺に限れないとき(シェーダーが使えない)は描かない(方針 5)
                 canvas.SaveLayer(this.layerPaint);
                 foreach(var layer in frame.Tiles){
                     this.tiles.Draw(canvas,view,size,layer);
