@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 83,
-  "updated_at": "2026-10-04T16:22:27Z",
+  "revision": 87,
+  "updated_at": "2026-10-04T16:23:49Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 71,
+      "run_minutes": 72,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1460,6 +1460,63 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0026",
+      "title": "地図: 時間軸(いまの刻み・雨雲の新しいコマ)が、前面で開いたままだと更新されない",
+      "source_ids": [
+        "I-7"
+      ],
+      "severity": "中",
+      "fix_priority": 8,
+      "symptom": "RefreshTimelineAsync(コメント「10 分ごと・前面に戻ったとき」)の呼び出し元は LoadAsync と OnResumed(背景から戻ったとき)だけ。MapViewModel.Start() のループは places の更新とシーンの 1 分更新だけで、時間軸は作り直されない。画面を点けたまま数時間開いていると、「現在」の刻みと降水ナウキャストが開いた時点のまま古くなる(コード読み)",
+      "expected": "コメントのとおり 10 分ごとに時間軸を作り直す(選択していた時刻に近い刻みを保つ)",
+      "cause": {
+        "confirmed": "MapViewModel.Start() が時間軸の更新ループを持たない(コード読み)",
+        "hypotheses": [],
+        "unknown": [
+          "実機での利用で前面のまま放置される頻度"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:23:10Z",
+          "reason": "優先: 地図が主画面で、降水ナウキャストは 5 分ごとに更新される。前面放置で古い雨雲が「現在」に見える。FakeTimeProvider で決定的に再現できる",
+          "code_before": {
+            "commit": "2be128304943c391ad405450a768e0e7a5ead9fc",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 時間軸の更新ループがない",
+          "hypothesis": "Start() で 10 分周期のループ(PeriodicTimer + TimeProvider)を起動し、前面のときだけ時間軸を作り直せば更新される。Stop/Dispose で止める",
+          "planned_change": "src/Weather.Presentation/ViewModels/MapViewModel.cs の Start/Stop/Dispose + tests/Weather.Presentation.Tests/MapTests.cs(Fake に呼び出し回数)",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト全 PASS、Stop 後は更新しない、背景(IsForeground=false)では更新しない",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:23:49Z",
+          "diff_sha256": "b29947bd70cfc4331bf9f7aa64f8cab054cf0a097fdedc1aa7adda258b0c896f",
+          "commit": "2d0852d2a50ec8ec75ecd4385a2250db836515f6"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/MapViewModel.Start"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:23:10Z",
+      "verified": {
+        "commit": "2d0852d2a50ec8ec75ecd4385a2250db836515f6",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 72,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1621,8 +1678,8 @@
     },
     {
       "id": "I-7",
-      "status": "UNREPRODUCED",
-      "note": "地図の時間軸が前面で更新されない"
+      "status": "PROMOTED_TO_BUG",
+      "note": "地図の時間軸が前面で更新されない → BUG-0026"
     },
     {
       "id": "I-8",
