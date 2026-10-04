@@ -1,10 +1,11 @@
 using Weather.Core;
 using Weather.Geo;
+using Weather.Geo.Data;
 
 namespace Weather.Geo.Tests;
 
 internal static class Db{
-    public static readonly GeoDatabase Instance=GeoDatabase.LoadEmbedded();
+    public static readonly Geo.GeoDatabase Instance=Geo.GeoDatabase.LoadEmbedded();
 }
 
 public class LocationResolver{
@@ -104,6 +105,50 @@ public class TextNormalizer{
             //NFKC・小文字化・カタカナ→ひらがな・空白除去
             Assert.Equal("とうきょう",Geo.TextNormalizer.Normalize("トウキョウ"));
             Assert.Equal("newyork",Geo.TextNormalizer.Normalize("Ｎｅｗ York"));
+        }
+    }
+}
+
+public class GeoDatabase{
+    private static int? Expected(double lat,double lon,double maxKm){
+        //総当たり(基準)
+        PlaceRecord? best=null;
+        var bestDistance=maxKm;
+        foreach(var place in Db.Instance.Places){
+            var d=GeoMath.HaversineKm(lat,lon,place.Latitude,place.Longitude);
+            if(d<=bestDistance){
+                bestDistance=d;
+                best=place;
+            }
+        }
+        return best?.Id;
+    }
+
+    [Fact,Trait("Category","Unit")]public void FindNearestPlace(){
+        {
+            //高緯度でも、経度 1° の距離が短くなる分だけ東西に広く探す(イエローナイフ・ヌーク・北大西洋・千島の東)
+            foreach(var (lat,lon) in new[]{(65.0,-124.5),(65.0,-104.5),(60.0,-34.5),(49.82,-20.29),(53.39,171.22),(44.37,155.26)}){
+                Assert.Equal(Expected(lat,lon,800),Db.Instance.FindNearestPlace(lat,lon,800)?.Id);
+            }
+            Assert.Equal("America/Edmonton",Db.Instance.FindNearestPlace(65,-124.5,800)!.TimeZone);
+        }
+        {
+            //経度 ±180 をまたぐ・極に近い地点も総当たりと一致する
+            foreach(var (lat,lon) in new[]{(60.0,179.5),(60.0,-179.5),(0.0,179.99),(-45.0,-179.99),(89.0,10.0),(-89.0,100.0)}){
+                Assert.Equal(Expected(lat,lon,800),Db.Instance.FindNearestPlace(lat,lon,800)?.Id);
+                Assert.Equal(Expected(lat,lon,50),Db.Instance.FindNearestPlace(lat,lon,50)?.Id);
+            }
+        }
+        {
+            //全緯度帯の擬似乱数の点(固定シード)で、50 km と 800 km の探索が総当たりと一致する
+            var random=new Random(20261004);
+            for(var i=0;i<300;i++){
+                var lat=-85+random.NextDouble()*170;
+                var lon=-180+random.NextDouble()*360;
+                foreach(var maxKm in new[]{50.0,800.0}){
+                    Assert.Equal(Expected(lat,lon,maxKm),Db.Instance.FindNearestPlace(lat,lon,maxKm)?.Id);
+                }
+            }
         }
     }
 }
