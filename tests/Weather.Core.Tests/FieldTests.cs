@@ -13,6 +13,13 @@ public class GridGeometry{
             Assert.Equal(180,y,6);
         }
         {
+            //循環の継ぎ目: 経度が 0 のすぐ手前(丸めで 360 ちょうどになる値)でも列は [0, Columns) に収まる
+            Assert.True(global.TryGetPosition(0,-1e-15,out var seam,out _));
+            Assert.InRange(seam,0,719.999999);
+            Assert.True(global.TryGetPosition(0,360,out var full,out _));
+            Assert.Equal(0,full,6);
+        }
+        {
             //緯度の範囲外は false
             Assert.False(global.TryGetPosition(91,0,out _,out _));
         }
@@ -50,6 +57,12 @@ public class GridField{
             //経度方向に循環する(最後の列と最初の列の間)
             var f=Field([0,10,20,30,0,10,20,30],4,2);
             Assert.Equal(15f,f.Sample(1,315));
+        }
+        {
+            //循環の継ぎ目のすぐ手前(丸めで列数ちょうどになる経度)は、経度 0 と同じ値(最南行でも例外にしない)
+            var f=Field([0,10,20,30,40,50,60,70],4,2);
+            Assert.Equal(f.Sample(1,0),f.Sample(1,-1e-15));
+            Assert.Equal(f.Sample(0,0),f.Sample(0,-1e-15));
         }
         {
             //周囲に NaN(欠損・日本周辺)があれば NaN

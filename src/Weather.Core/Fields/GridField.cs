@@ -58,6 +58,10 @@ public readonly record struct GridGeometry{
             if(x<0){
                 x+=this.Columns;
             }
+            if(x>=this.Columns){
+                //x が 0 のすぐ手前の負の値だと、足した結果が丸めで列数ちょうどになる
+                x=0;
+            }
         }
         column=x;
         if(row<0||row>this.Rows-1){
