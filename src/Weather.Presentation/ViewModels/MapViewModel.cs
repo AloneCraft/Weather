@@ -38,7 +38,9 @@ public sealed partial class MapViewModel:ObservableObject,IDisposable{
     private readonly TimeProvider time;
     private CancellationTokenSource? frameLoad;
     private CancellationTokenSource? playLoop;
+    private CancellationTokenSource? timelineLoop;
     private DateTimeOffset availabilityAt;
+    private static readonly TimeSpan TimelineInterval=TimeSpan.FromMinutes(10);
 
     public MapViewModel(IMapDataService maps,IWeatherService weather,IJapanArea japan,IMapPixelSampler sampler,MainViewModel places,FavoritesService favorites,MapFocusService focus,AppSettings settings,IAppLifecycle lifecycle,INavigator navigator,ILocationService location,Func<PlaceData,PlaceWeatherViewModel> createPlace,WeatherSession session,TimeProvider time){
         this.maps=maps;
@@ -496,11 +498,40 @@ public sealed partial class MapViewModel:ObservableObject,IDisposable{
     /// <summary>表示中のループ(お気に入りの予報の 10 分ごとの更新)。地図の表示時に開始し、非表示で止める。</summary>
     public void Start(){
         this.places.Start();
+        this.StopTimelineLoop();
+        this.timelineLoop=new CancellationTokenSource();
+        _=this.RunTimelineAsync(this.timelineLoop.Token);
     }
 
     public void Stop(){
         this.places.Stop();
+        this.StopTimelineLoop();
         this.StopPlaying();
+    }
+
+    /// <summary>前面で開いたままでも、時間軸(いまの刻み・新しい雨雲のコマ)を 10 分ごとに作り直す。背景では作り直さない(復帰時に OnResumed が作り直す)。</summary>
+    private async Task RunTimelineAsync(CancellationToken cancellationToken){
+        using var timer=new PeriodicTimer(TimelineInterval,this.time);
+        try{
+            while(await timer.WaitForNextTickAsync(cancellationToken)){
+                if(!this.lifecycle.IsForeground){
+                    continue;
+                }
+                try{
+                    await this.RefreshTimelineAsync(cancellationToken);
+                }catch(WeatherProviderException){
+                    //取得に失敗したら、次の周期で再試行する(表示中の時間軸はそのまま)
+                }
+            }
+        }catch(OperationCanceledException){
+            //ループの停止(非表示・背景)
+        }
+    }
+
+    private void StopTimelineLoop(){
+        this.timelineLoop?.Cancel();
+        this.timelineLoop?.Dispose();
+        this.timelineLoop=null;
     }
 
     /// <summary>お気に入りの予報が更新されたらピンの気温を更新する。</summary>
@@ -535,6 +566,7 @@ public sealed partial class MapViewModel:ObservableObject,IDisposable{
     }
 
     public void Dispose(){
+        this.StopTimelineLoop();
         this.focus.Requested-=this.OnFocusRequested;
         this.favorites.Changed-=this.OnFavoritesChanged;
         this.lifecycle.Stopped-=this.OnStopped;

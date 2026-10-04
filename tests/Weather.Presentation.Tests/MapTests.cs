@@ -11,8 +11,10 @@ internal sealed class FakeMapData:IMapDataService{
 
     public List<(FieldLayer Layer,DateTimeOffset Time)> Requests{get;}=[];
     public JapanCoverage Japan{get;set;}=JapanCoverage.Available;
+    public int AvailabilityCalls;
 
     public ValueTask<MapAvailability> GetAvailabilityAsync(CancellationToken cancellationToken){
+        Interlocked.Increment(ref this.AvailabilityCalls);
         var nowcast=Enumerable.Range(-36,49).Select(static i=>Sample.Now.AddMinutes(5*i)).ToList();
         var cycle=Sample.Now.AddHours(-6);
         var gfs=Enumerable.Range(1,40).Select(i=>cycle.AddHours(3*i)).ToList();
@@ -142,6 +144,41 @@ public class MapText{
 }
 
 public class MapViewModel{
+    private static async Task<bool> WaitUntilAsync(Func<bool> condition){
+        for(var i=0;i<200&&!condition();i++){
+            await Task.Delay(10,TestContext.Current.CancellationToken);
+        }
+        return condition();
+    }
+
+    [Fact,Trait("Category","Unit")]public async Task Start(){
+        //前面で開いたままでも、10 分ごとに時間軸(いまの刻み・新しい雨雲のコマ)を作り直す。止めたあと・背景では作り直さない
+        var m=new MapHarness();
+        var vm=m.Create();
+        await vm.LoadAsync(TestContext.Current.CancellationToken);
+        var calls=m.Maps.AvailabilityCalls;
+        vm.Start();
+        m.H.Time.Advance(TimeSpan.FromMinutes(10));
+        Assert.True(await WaitUntilAsync(()=>Volatile.Read(ref m.Maps.AvailabilityCalls)>calls));
+        {
+            //背景では作り直さない(復帰時に OnResumed が作り直す)
+            calls=Volatile.Read(ref m.Maps.AvailabilityCalls);
+            m.H.Lifecycle.IsForeground=false;
+            m.H.Time.Advance(TimeSpan.FromMinutes(10));
+            await Task.Delay(200,TestContext.Current.CancellationToken);
+            Assert.Equal(calls,Volatile.Read(ref m.Maps.AvailabilityCalls));
+            m.H.Lifecycle.IsForeground=true;
+        }
+        {
+            //止めたあとは作り直さない
+            vm.Stop();
+            calls=Volatile.Read(ref m.Maps.AvailabilityCalls);
+            m.H.Time.Advance(TimeSpan.FromMinutes(30));
+            await Task.Delay(200,TestContext.Current.CancellationToken);
+            Assert.Equal(calls,Volatile.Read(ref m.Maps.AvailabilityCalls));
+        }
+    }
+
     [Fact,Trait("Category","Unit")]public async Task LoadAsync(){
         var m=new MapHarness();
         var vm=m.Create();
