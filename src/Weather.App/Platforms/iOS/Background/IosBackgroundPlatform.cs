@@ -12,10 +12,10 @@ namespace Weather.App.Background;
 /// </summary>
 public sealed class IosBackgroundPlatform:IAlertNotifier,IWidgetPublisher,IBackgroundScheduler{
     /// <summary>Info.plist の BGTaskSchedulerPermittedIdentifiers と一致させる。</summary>
-    public const string RefreshTaskId="com.weatherapp.soramoyou.refresh";
+    public const string RefreshTaskId="io.github.alonecraft.soramoyou.refresh";
 
     /// <summary>App Group(アプリと WidgetKit 拡張の両方の Entitlements に必要)。</summary>
-    public const string AppGroupId="group.com.weatherapp.soramoyou";
+    public const string AppGroupId="group.io.github.alonecraft.soramoyou";
 
     /// <summary>WidgetKit の再読み込みは Swift の API しかないため、拡張側が 30 分ごとにファイルを読み直す。拡張を同梱していれば常に true とする。</summary>
     public bool HasWidgets=>ContainerDirectory() is not null;

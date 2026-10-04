@@ -17,7 +17,7 @@ targets:
       base:
         PRODUCT_NAME: WeatherWidget
         # アプリの ApplicationId(Weather.App.csproj)の下に置く
-        PRODUCT_BUNDLE_IDENTIFIER: com.weatherapp.soramoyou.WeatherWidget
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.alonecraft.soramoyou.WeatherWidget
         INFOPLIST_FILE: Info.plist
         CODE_SIGN_ENTITLEMENTS: WeatherWidget.entitlements
         # アプリの ApplicationDisplayVersion / ApplicationVersion と一致させる

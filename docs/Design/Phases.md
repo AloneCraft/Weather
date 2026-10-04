@@ -106,7 +106,7 @@
 
 - **iOS の実機確認**(SKMetalView の描画性能、BGTaskScheduler、通知、ウィジェット、SQLite のリリースビルド): iPhone と Mac(署名)が必要。
 - **Android の中位機種の実機での性能確認**: エミュレーターは GPU 性能が実機と異なる。
-- **公開前の確定事項**: アプリ ID(現在は仮の `com.weatherapp.soramoyou`)、署名鍵(Android は環境変数・シークレットで渡す仕組みと release ワークフローを用意済み。iOS は Mac で証明書とプロビジョニング)、iOS の App Group の登録(ウィジェットを同梱する場合)、プライバシーポリシー(草案は docs/Store/PrivacyPolicy.md。公開者名・連絡先・施行日の記入と確認が必要)。User-Agent の連絡先は公開リポジトリ `github.com/AloneCraft/Weather` に確定した。
+- **公開前の確定事項**: 署名鍵(Android は環境変数・シークレットで渡す仕組みと release ワークフローを用意済み。iOS は Mac で証明書とプロビジョニング)、iOS の App Group の登録(ウィジェットを同梱する場合)。アプリ ID は `io.github.alonecraft.soramoyou`(iOS の App Group は `group.io.github.alonecraft.soramoyou`)、プライバシーポリシーは docs/Store/PrivacyPolicy.md(公開者 AloneCraft、連絡先は GitHub Issues、2026-10-04 施行)、User-Agent の連絡先は公開リポジトリ `github.com/AloneCraft/Weather` に確定した。
 - **Functions の配置**(任意): Azure のサブスクリプションが必要。Azure 側の .NET 10 ランタイム対応は配置時に**要確認**。公開時はレート制限(API Management 等)を前提にする。
 - **Web 版**: 後で検討(SolutionStructure.md)。
 - **要確認のまま残る仕様**: 気象庁の時系列予報の天気区分と風速階級、警報の電文種別と状態文字列、氾濫注意報のコード、アメダスの品質フラグと elems、NWS の qualityControl と雲量区分、MET の altitude、VI / AS / MP の NWS 対応。実 API の契約テスト(週 1 回)で変化を検知する。

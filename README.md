@@ -40,7 +40,7 @@ dotnet build src/Weather.App/Weather.App.csproj -f net10.0-android
 ```
 
 - iOS は Windows 上では C# のコンパイルまで。パッケージ作成・署名・実機実行には Mac(Pair to Mac / ローカル)が必要。CI(macOS)ではシミュレーター向けにビルドしている。
-- iOS のウィジェットを同梱する場合は、Mac で拡張をビルドしてから App をビルドする(App Group `group.com.weatherapp.soramoyou` を有効にしたプロビジョニングが必要):
+- iOS のウィジェットを同梱する場合は、Mac で拡張をビルドしてから App をビルドする(App Group `group.io.github.alonecraft.soramoyou` を有効にしたプロビジョニングが必要):
 
 ```bash
 cd src/Weather.Widget.iOS && xcodegen generate && xcodebuild -project WeatherWidget.xcodeproj -target WeatherWidget -configuration Release -sdk iphonesimulator SYMROOT=build CODE_SIGNING_ALLOWED=NO build
@@ -73,9 +73,9 @@ WEATHER_UPDATE_GOLDEN=1 dotnet test --project tests/Weather.Rendering.Tests
 
 ## 公開前に確定すること
 
-- アプリ ID(`ApplicationId`。現在は仮の `com.weatherapp.soramoyou`)と署名。変える場合は iOS の App Group・BGTask の識別子・ウィジェット拡張の Bundle ID も合わせる
+- 署名(アプリ ID は `io.github.alonecraft.soramoyou` に確定。変える場合は iOS の App Group・BGTask の識別子・ウィジェット拡張の Bundle ID も合わせる)
 - 公開時に各 API の利用規約を再確認する(WeatherProviders.md「利用規約・法令」)
-- ストア用のプライバシーポリシー: 草案は [docs/Store/PrivacyPolicy.md](docs/Store/PrivacyPolicy.md)。公開者名・連絡先・施行日を記入して確認する
+- ストア用のプライバシーポリシー: [docs/Store/PrivacyPolicy.md](docs/Store/PrivacyPolicy.md)(ストアに登録する URL は https://github.com/AloneCraft/Weather/blob/main/docs/Store/PrivacyPolicy.md )
 
 ## ライセンス表示
 

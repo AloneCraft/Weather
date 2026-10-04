@@ -34,7 +34,7 @@
 	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>com.weatherapp.soramoyou.refresh</string>
+		<string>io.github.alonecraft.soramoyou.refresh</string>
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>

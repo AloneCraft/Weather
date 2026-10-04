@@ -10,7 +10,7 @@
     <!-- コンパイル済みバインディングを必須にする(Screens.md「MAUI 固有の注意点」) -->
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <ApplicationTitle>空模様</ApplicationTitle>
-    <ApplicationId>com.weatherapp.soramoyou</ApplicationId>
+    <ApplicationId>io.github.alonecraft.soramoyou</ApplicationId>
     <ApplicationDisplayVersion>0.1</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>

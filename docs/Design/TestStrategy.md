@@ -76,7 +76,7 @@ Geo.Tests・Infrastructure.Tests・Providers.LiveTests は SolutionStructure.md 
 - ワークロードは開発機と同じワークロード セット 10.0.400(iOS 26.5.10301 / Android 36.1.69)に `--version` で固定する。固定しないと最新のセット(10.0.401.1 = iOS 27.0)が入り、ランナーにない Xcode 27 を要求して失敗する(2026-10-04 に発生)。上げるときは開発機と CI を同時に上げる。
 - macOS のジョブは `shell: bash`(-eo pipefail)にする。既定の `bash -e` では `dotnet build | tee` の失敗が成功に見える(2026-10-04 に発生)。
 - Xcode はワークロードが要求する版を名前で選ぶ(iOS 26.5.10301 は Xcode 26.6 を要求。ランナーの `Xcode_26.6.app` を使う。`Xcode_26.6.0.app` は macOS SDK・actool が見つからず失敗した)。「いちばん新しい版」を自動で選ばない。
-- 2026-10-04 時点で CI はすべて成功: iOS のシミュレーター向け .app(約 112 MB)にウィジェット拡張(約 308 KB、`com.weatherapp.soramoyou.WeatherWidget`)が同梱されることを成果物の確認で検査している。
+- 2026-10-04 時点で CI はすべて成功: iOS のシミュレーター向け .app(約 112 MB)にウィジェット拡張(約 308 KB、`io.github.alonecraft.soramoyou.WeatherWidget`)が同梱されることを成果物の確認で検査している。
 
 ## エミュレーターでの確認手順(Android)
 
@@ -84,10 +84,10 @@ Geo.Tests・Infrastructure.Tests・Providers.LiveTests は SolutionStructure.md 
 
 1. エミュレーターの位置を設定して起動: `adb emu geo fix 139.7536 35.6940`(東京)。初回起動で位置情報の許可を求めることを確認する。
 2. メイン: 気象庁の天気文・時間別・週間・出典が表示され、空の明るさに関係なくカードと出典が読めること。お気に入りを追加して横スワイプで切り替わること。
-3. 言語: `adb shell cmd locale set-app-locales com.weatherapp.soramoyou --locales ja-JP`(または en-US)で文言が切り替わること。
+3. 言語: `adb shell cmd locale set-app-locales io.github.alonecraft.soramoyou --locales ja-JP`(または en-US)で文言が切り替わること。
 4. 設定: 「警報の通知」を有効にすると通知の許可を求め、WorkManager に定期実行が登録されること(`adb shell dumpsys jobscheduler`)。
 5. ウィジェット: ホーム画面に追加すると背景更新が 1 回実行され、先頭のお気に入りの天気と出典が表示されること。
-6. 背景からの起動: `adb shell run-as com.weatherapp.soramoyou rm files/widget.json` の後に `adb reboot`。画面なしでプロセスが起動し `RefreshWorker` が成功すること(`adb logcat` の `WM-WorkerWrapper`)。
+6. 背景からの起動: `adb shell run-as io.github.alonecraft.soramoyou rm files/widget.json` の後に `adb reboot`。画面なしでプロセスが起動し `RefreshWorker` が成功すること(`adb logcat` の `WM-WorkerWrapper`)。
 7. 通知: 警報が発表中の地点(気象庁 r8 の警報データで level 30 以上)をお気に入りに追加して 6 を行い、機関の名称・見出し・出典表記の通知が出ること(2026-10-04 は小笠原村の波浪警報で確認)。
 
 ## 不変条件をテストへ移す対応表

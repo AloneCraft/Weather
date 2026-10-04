@@ -22,7 +22,7 @@ struct WidgetSnapshot: Codable {
 
 enum SnapshotStore {
     /// アプリ側の IosBackgroundPlatform.AppGroupId と一致させる。
-    static let appGroup = "group.com.weatherapp.soramoyou"
+    static let appGroup = "group.io.github.alonecraft.soramoyou"
 
     static func load() -> WidgetSnapshot? {
         guard let url = FileManager.default
