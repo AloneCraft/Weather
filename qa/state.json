@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 45,
-  "updated_at": "2026-10-04T15:49:06Z",
+  "revision": 49,
+  "updated_at": "2026-10-04T15:50:50Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 38,
+      "run_minutes": 39,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -534,7 +534,7 @@
     },
     {
       "id": "BUG-0008",
-      "title": "不明な TimeZoneId を黙って UTC として日別予報の日付を選ぶ",
+      "title": "端末が解決できないタイムゾーン ID を地点解決が返し、下流(Scene・MET・表示)が黙って UTC にする",
       "source_ids": [
         "S-5a"
       ],
@@ -543,23 +543,53 @@
       "symptom": "TimeZoneId=Not/AZone の日本地点で JST 10/4 08:00 → 10/3 の日別(Rain)を選ぶ。Asia/Tokyo なら 10/4(None)",
       "expected": "不明 ID でも地点の経度から妥当なオフセットを使う等(方針は判断)",
       "cause": {
-        "confirmed": "SceneConverter.cs:379-385 が例外を握りつぶして TimeSpan.Zero",
-        "hypotheses": [],
+        "confirmed": "SceneConverter.ZoneOffset・MetNorway.FindZone・TimeText.Zone が TimeZoneNotFoundException を握りつぶして UTC にする(コード読み+Scene で再現)。LocationResolver は GeoNames の timezone ID をそのまま返すため、tzdata が古い端末(新しい IANA ID: Europe/Kyiv など)で起こり得る",
+        "hypotheses": [
+          "古い Android 等で実際に解決できない ID があるか(未確認。この Linux では全 371 ID が解決できた)"
+        ],
         "unknown": []
       },
       "reproduced": true,
-      "state": "READY",
+      "state": "VERIFIED",
       "depends_on": [],
       "affects": [],
-      "attempts": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:49:58Z",
+          "reason": "優先: 古い端末で現地日付・表示時刻が UTC になる恐れ(日別予報が別の日を選ぶ)。再現済み(Scene)。発生源 1 か所で直せる",
+          "code_before": {
+            "commit": "efe5378f2ddeb4ccc22292d0560acd89080de572",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "Scene: TimeZoneId=Not/AZone の日本地点で JST 10/4 08:00 → 10/3 の Rain を選ぶ。全 371 ID はこの環境で解決可",
+          "hypothesis": "LocationResolver で端末が解決できない ID を経度から決める Etc/GMT± に置き換えれば、下流は UTC に落ちない",
+          "planned_change": "src/Weather.Geo/LocationResolver.cs の ResolveTimeZone のみ + tests/Weather.Geo.Tests に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Geo/Providers/Presentation テスト PASS、解決できる ID は不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:50:50Z",
+          "diff_sha256": "4fa12a66957d3ce37343cdead2ef2c38a38f056f3b65ce2839a90365c597189e",
+          "commit": "883ab3b0185f84b39f9d8b276d469275dcd6368b"
+        }
+      ],
       "rejected_hypotheses": [],
       "related_tests": [
-        "Weather.Scene.Tests/*"
+        "Weather.Scene.Tests/*",
+        "Weather.Geo.Tests/LocationResolver.Resolve"
       ],
       "retry_when": null,
       "evidence": [],
-      "human_needed": "フォールバック方針",
-      "found_at": "2026-10-04T15:30:42Z"
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "883ab3b0185f84b39f9d8b276d469275dcd6368b",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 39,
+        "visual_check_required": false,
+        "full_regression": "未実施",
+        "note": "下流 3 か所(Scene・MET・表示)の UTC フォールバック自体は残る。発生源での対策のみ。Remote 経路のクライアント側 ID は未対策"
+      }
     },
     {
       "id": "BUG-0009",
@@ -918,11 +948,6 @@
       "reason": "国境付近で国はポリゴン由来、表示名/行政区/TZ は他国の最寄り都市になる"
     },
     {
-      "id": "BUG-0008",
-      "priority": 10,
-      "reason": "不明な TimeZoneId を黙って UTC として日別予報の日付を選ぶ"
-    },
-    {
       "id": "BUG-0009",
       "priority": 11,
       "reason": "SceneTimeline.At が「後に雨」の区間前半から雨を返す(Convert は中点まで主天気)"
@@ -981,6 +1006,12 @@
       "at": "2026-10-04T15:08:59Z",
       "decision": "push はセッション専用ブランチに限り許可(docs/QA_WORKFLOW.md 0.3)。Pull Request の作成は引き続き明示指示が必要",
       "made_by": "ユーザー"
+    },
+    {
+      "id": "D-0004",
+      "at": "2026-10-04T15:49:58Z",
+      "decision": "BUG-0008 は下流 3 か所を直さず、発生源の LocationResolver で端末が解決できない ID なら経度から決める Etc/GMT±n に落とす最小修正にした(LocationResolver 自身が海上で使う規則と同じ)。夏時間は失われるが UTC より近似が良い。方針に異論があれば BUG-0008 の差分を見直す",
+      "made_by": "AI(要レビュー)"
     }
   ],
   "smoke": {
