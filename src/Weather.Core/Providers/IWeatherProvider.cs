@@ -20,7 +20,22 @@ public interface IObservationProvider:IWeatherProvider{
     TimeSpan ServerRetention{get;}
 }
 
-public enum ProviderFailure{Network,Timeout,RateLimited,Forbidden,NotFound,ServerError,InvalidResponse}
+/// <summary>NotAllowed: 利用規約により取得しない(MET はアプリの使用中以外に取得しない)。</summary>
+public enum ProviderFailure{Network,Timeout,RateLimited,Forbidden,NotFound,ServerError,InvalidResponse,NotAllowed}
+
+/// <summary>
+/// アプリが使用中か(MET Norway の規約: モバイルアプリは使用中でないときにデータを取得してはいけない)。
+/// アプリは前面/背景から判定する。サーバー側(Functions)やテストでは常に使用中として扱う。
+/// </summary>
+public interface IAppActivity{
+    bool IsInUse{get;}
+}
+
+public sealed class AlwaysInUse:IAppActivity{
+    public static AlwaysInUse Instance{get;}=new();
+
+    public bool IsInUse=>true;
+}
 
 public sealed class WeatherProviderException(ProviderId provider,ProviderFailure failure,string message,Exception? inner=null):Exception(message,inner){
     public ProviderId Provider{get;}=provider;

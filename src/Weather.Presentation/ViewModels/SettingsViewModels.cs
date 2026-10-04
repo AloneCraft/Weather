@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Weather.Core;
+using Weather.Presentation.Background;
 using Weather.Presentation.Resources;
 
 namespace Weather.Presentation.ViewModels;
@@ -12,12 +13,17 @@ public sealed partial class SettingsViewModel:ObservableObject{
     private readonly IObservationHistoryService history;
     private readonly IDialogService dialogs;
     private readonly INavigator navigator;
+    private readonly IAlertNotifier notifier;
+    private readonly IBackgroundScheduler scheduler;
 
-    public SettingsViewModel(AppSettings settings,IObservationHistoryService history,IDialogService dialogs,INavigator navigator){
+    public SettingsViewModel(AppSettings settings,IObservationHistoryService history,IDialogService dialogs,INavigator navigator,IAlertNotifier notifier,IBackgroundScheduler scheduler){
         this.settings=settings;
         this.history=history;
         this.dialogs=dialogs;
         this.navigator=navigator;
+        this.notifier=notifier;
+        this.scheduler=scheduler;
+        this.AlertNotifications=settings.AlertNotifications;
         this.UseImperial=settings.Units==UnitSystem.Imperial;
         this.QualityIndex=(int)settings.Quality;
         this.ReduceFlashes=settings.ReduceFlashes;
@@ -37,6 +43,7 @@ public sealed partial class SettingsViewModel:ObservableObject{
     [ObservableProperty]public partial bool ReduceFlashes{get;set;}
     [ObservableProperty]public partial bool PowerSaving{get;set;}
     [ObservableProperty]public partial int RetentionIndex{get;set;}
+    [ObservableProperty]public partial bool AlertNotifications{get;set;}
 
     partial void OnUseImperialChanged(bool value){
         if(value){
@@ -58,6 +65,22 @@ public sealed partial class SettingsViewModel:ObservableObject{
 
     partial void OnPowerSavingChanged(bool value){
         this.settings.PowerSaving=value;
+    }
+
+    /// <summary>有効にするときに通知の許可を求める。許可されなければ無効に戻す。</summary>
+    async partial void OnAlertNotificationsChanged(bool value){
+        if(value==this.settings.AlertNotifications){
+            return;
+        }
+        if(value&&!await this.notifier.RequestPermissionAsync()){
+            this.AlertNotifications=false;
+            await this.dialogs.AlertAsync(Strings.AlertNotificationsLabel,Strings.NotificationPermissionDenied);
+            return;
+        }
+        this.settings.AlertNotifications=value;
+        if(value){
+            this.scheduler.Schedule();
+        }
     }
 
     async partial void OnRetentionIndexChanged(int value){

@@ -1,6 +1,7 @@
 using Weather.App.Services;
 using Weather.Core;
 using Weather.Presentation;
+using Weather.Presentation.Background;
 using Weather.Providers;
 
 namespace Weather.App;
@@ -19,6 +20,9 @@ public partial class App:Application{
 
     protected override Window CreateWindow(IActivationState? activationState){
         var window=new Window(this.shell){Title="空模様"};
+        this.lifecycle.OnWindowCreated();
+        //背景更新の予約(既に予約済みなら何もしない。通知もウィジェットもなければ実行時に何も取得しない)
+        this.services.GetRequiredService<IBackgroundScheduler>().Schedule();
         window.Resumed+=(_,_)=>this.lifecycle.OnResumed();
         window.Activated+=(_,_)=>this.lifecycle.OnResumed();
         window.Stopped+=(_,_)=>this.lifecycle.OnStopped();

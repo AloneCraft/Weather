@@ -15,6 +15,8 @@
     <PackageVersion Include="SkiaSharp.Views" Version="$(SkiaSharpVersion)" />
     <PackageVersion Include="SkiaSharp.Views.Maui.Controls" Version="$(SkiaSharpVersion)" />
     <PackageVersion Include="SkiaSharp.Views.WPF" Version="$(SkiaSharpVersion)" />
+    <!-- Android の背景更新(ウィジェット・警報の通知)。MAUI が使う AndroidX(Core 1.16.0.3・Lifecycle 2.9.2.1)と同じ版に依存する 2.10.3 に固定する(2.10.4 以降は新しい AndroidX を引き込みクラスが重複する) -->
+    <PackageVersion Include="Xamarin.AndroidX.Work.Runtime" Version="2.10.3" />
 
     <!-- Microsoft.Extensions -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />

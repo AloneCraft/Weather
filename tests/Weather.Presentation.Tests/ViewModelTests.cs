@@ -20,6 +20,12 @@ internal sealed class Harness{
         }
     }
 
+    public FakeBackgroundPlatform Platform{get;}=new();
+
+    public Presentation.Background.WidgetUpdater Widget(){
+        return new Presentation.Background.WidgetUpdater(this.Platform,this.Weather,this.Settings,this.Time);
+    }
+
     public Presentation.ViewModels.PlaceWeatherViewModel Place(string id="p1"){
         var data=new PlaceData{PlaceId=id,Name="テスト",Point=new GeoPoint(35.69,139.75)};
         return new Presentation.ViewModels.PlaceWeatherViewModel(data,this.Weather,this.Session,this.Settings,this.Navigator,this.Lifecycle,this.Time);
@@ -122,7 +128,7 @@ public class MainViewModel{
             h.Weather.Forecast=new ForecastResult(Availability.Available,Sample.JmaForecast());
             var favorites=new FakeFavorites();
             favorites.Items.Add(new FavoritePlace("f1","大阪",new GeoPoint(34.69,135.5),0));
-            var vm=new Presentation.ViewModels.MainViewModel(favorites,new FakeLocationService(LocationStatus.Denied,null),h.Lifecycle,h.Navigator,h.Time,d=>new Presentation.ViewModels.PlaceWeatherViewModel(d,h.Weather,h.Session,h.Settings,h.Navigator,h.Lifecycle,h.Time));
+            var vm=new Presentation.ViewModels.MainViewModel(favorites,new FakeLocationService(LocationStatus.Denied,null),h.Lifecycle,h.Navigator,h.Time,d=>new Presentation.ViewModels.PlaceWeatherViewModel(d,h.Weather,h.Session,h.Settings,h.Navigator,h.Lifecycle,h.Time),h.Widget());
             await vm.LoadAsync(TestContext.Current.CancellationToken);
             Assert.Single(vm.Places);
             Assert.Contains("許可されていません",vm.LocationMessage,StringComparison.Ordinal);
@@ -134,7 +140,7 @@ public class MainViewModel{
             h.Weather.Forecast=new ForecastResult(Availability.Available,Sample.JmaForecast());
             var favorites=new FakeFavorites();
             favorites.Items.Add(new FavoritePlace("f1","大阪",new GeoPoint(34.69,135.5),0));
-            var vm=new Presentation.ViewModels.MainViewModel(favorites,new FakeLocationService(LocationStatus.Granted,new GeoPoint(35.69,139.75)),h.Lifecycle,h.Navigator,h.Time,d=>new Presentation.ViewModels.PlaceWeatherViewModel(d,h.Weather,h.Session,h.Settings,h.Navigator,h.Lifecycle,h.Time));
+            var vm=new Presentation.ViewModels.MainViewModel(favorites,new FakeLocationService(LocationStatus.Granted,new GeoPoint(35.69,139.75)),h.Lifecycle,h.Navigator,h.Time,d=>new Presentation.ViewModels.PlaceWeatherViewModel(d,h.Weather,h.Session,h.Settings,h.Navigator,h.Lifecycle,h.Time),h.Widget());
             await vm.LoadAsync(TestContext.Current.CancellationToken);
             Assert.Equal(2,vm.Places.Count);
             Assert.True(vm.Places[0].Data.IsCurrentLocation);

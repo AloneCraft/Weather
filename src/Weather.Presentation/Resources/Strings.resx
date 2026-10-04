@@ -144,4 +144,17 @@
   <data name="MapTitle" xml:space="preserve"><value>地図で選ぶ</value></data>
   <data name="ZoomIn" xml:space="preserve"><value>拡大</value></data>
   <data name="ZoomOut" xml:space="preserve"><value>縮小</value></data>
+  <data name="WidgetForegroundOnly" xml:space="preserve"><value>MET Norway の地点はアプリを開いたときに更新します</value></data>
+  <data name="WidgetNotAvailable" xml:space="preserve"><value>予報を取得できません</value></data>
+  <data name="WidgetHighLowFormat" xml:space="preserve"><value>最高 {0} / 最低 {1}</value></data>
+  <data name="WidgetPrecipitationFormat" xml:space="preserve"><value>降水 {0}</value></data>
+  <data name="WidgetRetrievedFormat" xml:space="preserve"><value>{0} 取得</value></data>
+  <data name="WidgetNoPlace" xml:space="preserve"><value>お気に入りの地点を追加してください</value></data>
+  <data name="AlertNotificationTitleFormat" xml:space="preserve"><value>{0}({1})</value></data>
+  <data name="AlertNotificationBodyFormat" xml:space="preserve"><value>{0}に発表中</value></data>
+  <data name="AlertNotificationsLabel" xml:space="preserve"><value>警報の通知</value></data>
+  <data name="AlertNotificationsNote" xml:space="preserve"><value>お気に入りの地点(先頭から 5 地点)に警報・特別警報(米国は Warning 以上)が発表されたら通知します。気象庁・NWS の発表をそのまま伝えます。MET Norway の地点は利用規約によりアプリを開いていないときに取得できないため、通知とウィジェットの自動更新の対象外です。通知が届く時刻は OS が決めるため、発表から遅れることがあります。</value></data>
+  <data name="NotificationPermissionDenied" xml:space="preserve"><value>通知が許可されていません。端末の設定で通知を許可してください。</value></data>
+  <data name="WidgetSettingsNote" xml:space="preserve"><value>ウィジェットにはお気に入りの先頭の地点を表示します。</value></data>
+  <data name="WidgetOpenApp" xml:space="preserve"><value>アプリを開くと表示されます</value></data>
 </root>

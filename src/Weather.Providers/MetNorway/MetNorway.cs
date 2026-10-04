@@ -303,7 +303,7 @@ internal static class MetMapper{
 }
 
 /// <summary>MET Norway Locationforecast 2.0 complete の Provider(予報のみ)。</summary>
-public sealed partial class MetNorwayProvider(IHttpClientFactory httpClientFactory,TimeProvider time,ILogger<MetNorwayProvider> logger):IForecastProvider{
+public sealed partial class MetNorwayProvider(IHttpClientFactory httpClientFactory,TimeProvider time,IAppActivity activity,ILogger<MetNorwayProvider> logger):IForecastProvider{
     public const string HttpClientName="met";
 
     public ProviderId Id=>ProviderId.MetNorway;
@@ -313,6 +313,10 @@ public sealed partial class MetNorwayProvider(IHttpClientFactory httpClientFacto
         if(location.IsJapanArea){
             //方針 5: 日本周辺域には MET を使わない(Router と二重に防ぐ)
             throw new InvalidOperationException("日本周辺域で MET Norway を使うことはできません。");
+        }
+        if(!activity.IsInUse){
+            //MET の規約: アプリが使用中でないときは取得しない(背景更新・ウィジェット。WeatherProviders.md)
+            throw new WeatherProviderException(ProviderId.MetNorway,ProviderFailure.NotAllowed,"アプリが使用中でないため MET Norway から取得しません。");
         }
         var client=httpClientFactory.CreateClient(HttpClientName);
         var p=location.Point.RoundForRequest();

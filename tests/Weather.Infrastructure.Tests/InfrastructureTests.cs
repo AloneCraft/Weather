@@ -232,6 +232,10 @@ public class ObservationHistoryService{
             return TimeSpan.FromDays(7);
         }
 
+        public bool AllowsBackgroundFetch(ResolvedLocation location){
+            return true;
+        }
+
         public ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
             throw new NotSupportedException();
         }

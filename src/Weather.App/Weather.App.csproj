@@ -29,9 +29,28 @@
     <PackageReference Include="SkiaSharp.Views.Maui.Controls" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <!-- 背景更新(WorkManager。ウィジェット・警報の通知) -->
+    <PackageReference Include="Xamarin.AndroidX.Work.Runtime" />
+  </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
     <!-- SKMetalView(iOS の Metal 描画ホスト。Rendering.md「描画ホスト」) -->
     <PackageReference Include="SkiaSharp.Views" />
+  </ItemGroup>
+
+  <!--
+    iOS のウィジェット(WidgetKit 拡張。Swift)は任意で同梱する: -p:IncludeWidgetExtension=true
+    事前に Mac で src/Weather.Widget.iOS をビルドしておく(README.md)。App Group を有効にしたプロビジョニングが必要なため既定では含めない
+  -->
+  <PropertyGroup Condition="'$(IncludeWidgetExtension)' == 'true' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <CodesignEntitlements>Platforms\iOS\Entitlements.Widget.plist</CodesignEntitlements>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(IncludeWidgetExtension)' == 'true' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <AdditionalAppExtensions Include="$(MSBuildProjectDirectory)/../Weather.Widget.iOS">
+      <Name>WeatherWidget</Name>
+      <BuildOutput Condition="'$(ComputedPlatform)' == 'iPhone'">build/Release-iphoneos</BuildOutput>
+      <BuildOutput Condition="'$(ComputedPlatform)' == 'iPhoneSimulator'">build/Release-iphonesimulator</BuildOutput>
+    </AdditionalAppExtensions>
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">空模様</string>
+    <string name="widget_description">お気に入りの先頭の地点の天気と出典を表示します</string>
+</resources>

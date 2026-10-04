@@ -144,4 +144,17 @@
   <data name="MapTitle" xml:space="preserve"><value>Pick on map</value></data>
   <data name="ZoomIn" xml:space="preserve"><value>Zoom in</value></data>
   <data name="ZoomOut" xml:space="preserve"><value>Zoom out</value></data>
+  <data name="WidgetForegroundOnly" xml:space="preserve"><value>MET Norway locations update when you open the app</value></data>
+  <data name="WidgetNotAvailable" xml:space="preserve"><value>Forecast unavailable</value></data>
+  <data name="WidgetHighLowFormat" xml:space="preserve"><value>H {0} / L {1}</value></data>
+  <data name="WidgetPrecipitationFormat" xml:space="preserve"><value>Precip {0}</value></data>
+  <data name="WidgetRetrievedFormat" xml:space="preserve"><value>Updated {0}</value></data>
+  <data name="WidgetNoPlace" xml:space="preserve"><value>Add a favorite location</value></data>
+  <data name="AlertNotificationTitleFormat" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="AlertNotificationBodyFormat" xml:space="preserve"><value>In effect for {0}</value></data>
+  <data name="AlertNotificationsLabel" xml:space="preserve"><value>Alert notifications</value></data>
+  <data name="AlertNotificationsNote" xml:space="preserve"><value>Notifies you when a warning or emergency warning (Warning or higher in the US) is issued for your favorite locations (first 5). Alerts are relayed exactly as issued by JMA / NWS. MET Norway locations are excluded from notifications and automatic widget updates because its terms do not allow fetching data while the app is not in use. The OS decides when background updates run, so notifications may arrive later than the issue time.</value></data>
+  <data name="NotificationPermissionDenied" xml:space="preserve"><value>Notifications are not allowed. Please allow notifications in the device settings.</value></data>
+  <data name="WidgetSettingsNote" xml:space="preserve"><value>The widget shows your first favorite location.</value></data>
+  <data name="WidgetOpenApp" xml:space="preserve"><value>Open the app to show the weather</value></data>
 </root>

@@ -23,4 +23,10 @@ public interface IWeatherService{
     ValueTask<IReadOnlyList<ObservationStation>> FindStationsAsync(ResolvedLocation location,int maxCount,CancellationToken cancellationToken);
     ValueTask<ObservationSeries> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken);
     TimeSpan GetObservationServerRetention(ProviderId provider);
+
+    /// <summary>
+    /// 背景(ウィジェット・通知)で取得してよい地点か。気象庁・NWS の地点のみ true。
+    /// MET の地点は規約で背景取得が禁止、日本周辺の対象外地点は取得するデータがない。
+    /// </summary>
+    bool AllowsBackgroundFetch(ResolvedLocation location);
 }

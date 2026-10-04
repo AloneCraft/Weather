@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Weather.Core;
+using Weather.Presentation.Background;
 using Weather.Presentation.ViewModels;
 
 namespace Weather.Presentation;
@@ -12,6 +13,13 @@ public static class PresentationServiceCollectionExtensions{
         services.TryAddSingleton<WeatherSession>();
         services.TryAddSingleton<AppSettings>();
         services.TryAddSingleton<FavoritesService>();
+        //通知・ウィジェット・背景更新(各 OS の実装は App が登録する。未登録なら何もしない)
+        services.TryAddSingleton<NullBackgroundPlatform>();
+        services.TryAddSingleton<IAlertNotifier>(static sp=>sp.GetRequiredService<NullBackgroundPlatform>());
+        services.TryAddSingleton<IWidgetPublisher>(static sp=>sp.GetRequiredService<NullBackgroundPlatform>());
+        services.TryAddSingleton<IBackgroundScheduler>(static sp=>sp.GetRequiredService<NullBackgroundPlatform>());
+        services.TryAddSingleton<WidgetUpdater>();
+        services.TryAddSingleton<BackgroundRefreshService>();
         services.TryAddSingleton<Func<PlaceData,PlaceWeatherViewModel>>(static sp=>data=>new PlaceWeatherViewModel(
             data,
             sp.GetRequiredService<IWeatherService>(),

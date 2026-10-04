@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Weather.Core;
 using Target=Weather.Providers.MetNorway.MetNorwayProvider;
 
@@ -43,5 +44,17 @@ public class MetNorwayProvider{
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=>await host.Get<Target>().GetForecastAsync(Locations.JapanOutOfCoverage,TestContext.Current.CancellationToken));
             Assert.Empty(host.Handler.Requests);
         }
+    }
+
+    [Fact,Trait("Category","Unit")]public async Task GetForecastAsync_NotInUse(){
+        //MET の規約: アプリが使用中でないとき(背景更新・ウィジェット)は通信せずに NotAllowed で失敗する
+        using var host=TestHost.Create(Fixtures.MapMet,static s=>s.AddSingleton<IAppActivity>(new Activity(false)));
+        var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await host.Get<Target>().GetForecastAsync(Locations.Oslo,TestContext.Current.CancellationToken));
+        Assert.Equal(ProviderFailure.NotAllowed,ex.Failure);
+        Assert.Empty(host.Handler.Requests);
+    }
+
+    private sealed class Activity(bool inUse):IAppActivity{
+        public bool IsInUse=>inUse;
     }
 }

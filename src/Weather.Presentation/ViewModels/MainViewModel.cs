@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Weather.Core;
+using Weather.Presentation.Background;
 using Weather.Presentation.Resources;
 
 namespace Weather.Presentation.ViewModels;
@@ -21,16 +22,18 @@ public sealed partial class MainViewModel:ObservableObject,IDisposable{
     private readonly INavigator navigator;
     private readonly TimeProvider time;
     private readonly Func<PlaceData,PlaceWeatherViewModel> createPlace;
+    private readonly WidgetUpdater widget;
     private CancellationTokenSource? loop;
     private DateTimeOffset lastRefresh;
 
-    public MainViewModel(IFavoritesStore favorites,ILocationService location,IAppLifecycle lifecycle,INavigator navigator,TimeProvider time,Func<PlaceData,PlaceWeatherViewModel> createPlace){
+    public MainViewModel(IFavoritesStore favorites,ILocationService location,IAppLifecycle lifecycle,INavigator navigator,TimeProvider time,Func<PlaceData,PlaceWeatherViewModel> createPlace,WidgetUpdater widget){
         this.favorites=favorites;
         this.location=location;
         this.lifecycle=lifecycle;
         this.navigator=navigator;
         this.time=time;
         this.createPlace=createPlace;
+        this.widget=widget;
         lifecycle.Resumed+=this.OnResumed;
         lifecycle.Stopped+=this.OnStopped;
     }
@@ -88,6 +91,8 @@ public sealed partial class MainViewModel:ObservableObject,IDisposable{
         foreach(var place in this.Places.ToList()){
             await place.RefreshAsync(cancellationToken);
         }
+        //前面で取得した内容をウィジェットに反映する(MET の地点のウィジェットはこの経路でだけ更新される)
+        this.widget.Publish(this.Places.Select(static p=>p.Data));
     }
 
     /// <summary>表示中のループ(自動更新とシーンの時刻更新)。View の表示時に開始し、非表示・背景で止める。</summary>

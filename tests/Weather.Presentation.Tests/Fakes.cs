@@ -1,5 +1,6 @@
 using Weather.Core;
 using Weather.Presentation;
+using Weather.Presentation.Background;
 
 namespace Weather.Presentation.Tests;
 
@@ -40,8 +41,13 @@ internal sealed class FakeWeatherService:IWeatherService{
     public AlertResult? Alerts{get;set;}
     public WeatherProviderException? ForecastError{get;set;}
     public int ForecastCalls{get;private set;}
+    public int AlertCalls{get;private set;}
+    public Func<GeoPoint,ResolvedLocation>? Resolver{get;set;}
 
     public ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
+        if(this.Resolver is not null){
+            return ValueTask.FromResult(this.Resolver(point));
+        }
         return ValueTask.FromResult(this.Location);
     }
 
@@ -54,7 +60,16 @@ internal sealed class FakeWeatherService:IWeatherService{
     }
 
     public ValueTask<AlertResult> GetAlertsAsync(ResolvedLocation location,CancellationToken cancellationToken){
+        this.AlertCalls++;
         return ValueTask.FromResult(this.Alerts??AlertResult.NotSupported);
+    }
+
+    /// <summary>実装(WeatherService)と同じ規則: 気象庁の区域内と NWS の国だけ。</summary>
+    public bool AllowsBackgroundFetch(ResolvedLocation location){
+        if(location.IsJapanArea){
+            return location.JmaArea!.IsCovered;
+        }
+        return location.CountryCode=="US";
     }
 
     public Availability GetObservationAvailability(ResolvedLocation location){
@@ -162,12 +177,38 @@ internal sealed class FakeFavorites:IFavoritesStore{
 
 internal sealed class FakeDialogs:IDialogService{
     public bool Confirm{get;set;}=true;
+    public List<string> Messages{get;}=[];
 
     public Task AlertAsync(string title,string message){
+        this.Messages.Add(message);
         return Task.CompletedTask;
     }
 
     public Task<bool> ConfirmAsync(string title,string message,string accept,string cancel){
         return Task.FromResult(this.Confirm);
+    }
+}
+
+internal sealed class FakeBackgroundPlatform:IAlertNotifier,IWidgetPublisher,IBackgroundScheduler{
+    public bool Permission{get;set;}=true;
+    public bool HasWidgets{get;set;}
+    public List<AlertNotification> Shown{get;}=[];
+    public List<WidgetSnapshot> Published{get;}=[];
+    public int ScheduleCount{get;private set;}
+
+    public Task<bool> RequestPermissionAsync(){
+        return Task.FromResult(this.Permission);
+    }
+
+    public void Show(AlertNotification notification){
+        this.Shown.Add(notification);
+    }
+
+    public void Publish(WidgetSnapshot snapshot){
+        this.Published.Add(snapshot);
+    }
+
+    public void Schedule(){
+        this.ScheduleCount++;
     }
 }

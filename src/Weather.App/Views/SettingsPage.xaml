@@ -28,6 +28,12 @@
                 <Label Text="{x:Static res:Strings.RetentionLabel}" />
                 <Picker ItemsSource="{x:Static vm:SettingsViewModel.RetentionOptions}" SelectedIndex="{Binding RetentionIndex}" />
             </VerticalStackLayout>
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{x:Static res:Strings.AlertNotificationsLabel}" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding AlertNotifications}" />
+            </Grid>
+            <Label Text="{x:Static res:Strings.AlertNotificationsNote}" FontSize="12" Opacity="0.7" />
+            <Label Text="{x:Static res:Strings.WidgetSettingsNote}" FontSize="12" Opacity="0.7" />
             <Button Text="{x:Static res:Strings.DeleteHistory}" Command="{Binding DeleteHistoryCommand}" />
             <Button Text="{x:Static res:Strings.DataAndSources}" Command="{Binding OpenAboutCommand}" />
         </VerticalStackLayout>

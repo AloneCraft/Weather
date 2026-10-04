@@ -191,22 +191,11 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
             return;
         }
         var now=this.time.GetUtcNow();
-        var current=forecast.FindPoint(now);
-        var today=forecast.Daily.FirstOrDefault(d=>d.Date==DateOnly.FromDateTime(TimeText.Local(now,zone).DateTime))??forecast.Daily.FirstOrDefault();
-        var night=IsNight(this.Data.Point,now);
-        if(current is not null){
-            this.CurrentTemperature=Units.Temperature(current.TemperatureC,units);
-            this.CurrentIcon=ConditionIcons.For(current.Condition,night);
-            this.CurrentText=current.WeatherText??ConditionIcons.Describe(current.Condition);
-        }else if(today is not null){
-            this.CurrentTemperature=Units.Temperature(today.TempMaxC,units);
-            this.CurrentIcon=ConditionIcons.For(today.Condition,night);
-            this.CurrentText=today.WeatherText??ConditionIcons.Describe(today.Condition);
-        }
-        //日本域の表示は常に気象庁の天気文を優先する(方針 5)
-        if(forecast.Location.IsJapanArea&&today?.WeatherText is {} official){
-            this.CurrentText=official.Replace('　',' ');
-        }
+        //日本域の表示は常に気象庁の天気文を優先する(方針 5。CurrentConditions)
+        var current=CurrentConditions.From(forecast,this.Data.Point,now,zone,units);
+        this.CurrentTemperature=current.Temperature;
+        this.CurrentIcon=current.Icon;
+        this.CurrentText=current.Text;
         foreach(var point in forecast.TimeSeries.Where(p=>p.End>now).Take(48)){
             this.Hours.Add(new HourItem(
                 point.Start,
@@ -217,10 +206,7 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
                 point.WeatherText));
         }
         foreach(var day in forecast.Daily){
-            var pop=day.PrecipitationProbability;
-            if(pop is null&&day.Parts.Count>0){
-                pop=day.Parts.Max(static p=>p.PrecipitationProbability);
-            }
+            var pop=CurrentConditions.DayProbability(day);
             string? reliability=null;
             if(day.Reliability is {} r){
                 reliability=string.Format(System.Globalization.CultureInfo.CurrentCulture,Strings.ReliabilityFormat,r);
@@ -301,7 +287,7 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
     }
 
     internal static bool IsNight(GeoPoint point,DateTimeOffset time){
-        return Weather.Scene.Astronomy.SolarPosition.Compute(point.Latitude,point.Longitude,time).AltitudeDeg<-0.833;
+        return CurrentConditions.IsNight(point,time);
     }
 
     internal static string FailureMessage(ProviderFailure failure){

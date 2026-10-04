@@ -78,11 +78,26 @@ public sealed class MauiLocationService:ILocationService{
     }
 }
 
-/// <summary>アプリの前面/背景。App の Window イベントから更新する。</summary>
-public sealed class AppLifecycle:IAppLifecycle{
-    public bool IsForeground{get;private set;}=true;
+/// <summary>
+/// アプリの前面/背景。App の Window イベントから更新する。
+/// 背景更新だけでプロセスが起動した場合(Android の WorkManager・iOS の BGTaskScheduler)は前面にならないため、
+/// MET の規約(使用中以外は取得しない)を Provider 側でも守れる(IAppActivity)。
+/// </summary>
+public sealed class AppLifecycle:IAppLifecycle,IAppActivity{
+    public bool IsForeground{get;private set;}
+    public bool IsInUse=>this.IsForeground;
     public event EventHandler? Resumed;
     public event EventHandler? Stopped;
+
+    /// <summary>画面の作成時。iOS は背景で起動された場合も Window が作られるため、アプリの状態で判定する。</summary>
+    public void OnWindowCreated(){
+#if IOS
+        if(UIKit.UIApplication.SharedApplication.ApplicationState==UIKit.UIApplicationState.Background){
+            return;
+        }
+#endif
+        this.IsForeground=true;
+    }
 
     public void OnResumed(){
         this.IsForeground=true;

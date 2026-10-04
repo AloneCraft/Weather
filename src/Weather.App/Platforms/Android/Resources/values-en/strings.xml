@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Soramoyou</string>
+    <string name="widget_description">Shows the weather and data source for your first favorite location</string>
+</resources>

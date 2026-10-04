@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions{
         configure?.Invoke(options);
         services.TryAddSingleton(options);
         services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<IAppActivity>(AlwaysInUse.Instance);
         services.TryAddSingleton<IHttpCacheStore,MemoryHttpCacheStore>();
         services.TryAddSingleton<HttpCachePolicy>();
         services.TryAddSingleton<HttpCacheMaintenance>();

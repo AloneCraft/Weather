@@ -56,7 +56,7 @@ internal sealed class TestHost:IDisposable{
     public FixtureHttpMessageHandler Handler{get;}
     public FakeTimeProvider Time{get;}
 
-    public static TestHost Create(Action<FixtureHttpMessageHandler>? map=null){
+    public static TestHost Create(Action<FixtureHttpMessageHandler>? map=null,Action<IServiceCollection>? configure=null){
         var handler=new FixtureHttpMessageHandler();
         map?.Invoke(handler);
         var time=new FakeTimeProvider(Now);
@@ -68,6 +68,7 @@ internal sealed class TestHost:IDisposable{
         foreach(var name in new[]{Jma.JmaProvider.HttpClientName,Nws.NwsProvider.HttpClientName,MetNorway.MetNorwayProvider.HttpClientName}){
             services.AddHttpClient(name).ConfigurePrimaryHttpMessageHandler(()=>handler);
         }
+        configure?.Invoke(services);
         return new TestHost(services.BuildServiceProvider(),handler,time);
     }
 

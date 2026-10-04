@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using Weather.App.Services;
+using Weather.Core;
+using Weather.Presentation.Background;
 using Weather.App.Views;
 using Weather.Geo;
 using Weather.Infrastructure;
@@ -27,6 +29,10 @@ public static class MauiProgram{
             });
 
         var services=builder.Services;
+        //MET の規約(使用中以外は取得しない)の判定に前面/背景を使う。AddWeatherProviders の既定(常に使用中)より先に登録する
+        services.AddSingleton<AppLifecycle>();
+        services.AddSingleton<IAppLifecycle>(static sp=>sp.GetRequiredService<AppLifecycle>());
+        services.AddSingleton<IAppActivity>(static sp=>sp.GetRequiredService<AppLifecycle>());
         services.AddWeatherProviders(static options=>{
             //User-Agent の連絡先は GitHub リポジトリの URL(WeatherProviders.md)。リポジトリ公開時に確定する
             options.UserAgent="WeatherApp/"+AppInfo.Current.VersionString+" github.com/AloneCraft/Weather";
@@ -36,10 +42,20 @@ public static class MauiProgram{
             options.CacheDirectory=FileSystem.Current.CacheDirectory;
             options.DataDirectory=FileSystem.Current.AppDataDirectory;
         });
+        //通知・ウィジェット・背景更新(AddWeatherPresentation の既定 = 何もしない実装より先に登録する)
+#if ANDROID
+        services.AddSingleton<Background.AndroidBackgroundPlatform>();
+        services.AddSingleton<IAlertNotifier>(static sp=>sp.GetRequiredService<Background.AndroidBackgroundPlatform>());
+        services.AddSingleton<IWidgetPublisher>(static sp=>sp.GetRequiredService<Background.AndroidBackgroundPlatform>());
+        services.AddSingleton<IBackgroundScheduler>(static sp=>sp.GetRequiredService<Background.AndroidBackgroundPlatform>());
+#elif IOS
+        services.AddSingleton<Background.IosBackgroundPlatform>();
+        services.AddSingleton<IAlertNotifier>(static sp=>sp.GetRequiredService<Background.IosBackgroundPlatform>());
+        services.AddSingleton<IWidgetPublisher>(static sp=>sp.GetRequiredService<Background.IosBackgroundPlatform>());
+        services.AddSingleton<IBackgroundScheduler>(static sp=>sp.GetRequiredService<Background.IosBackgroundPlatform>());
+#endif
         services.AddWeatherPresentation();
 
-        services.AddSingleton<AppLifecycle>();
-        services.AddSingleton<IAppLifecycle>(static sp=>sp.GetRequiredService<AppLifecycle>());
         services.AddSingleton<INavigator,MauiNavigator>();
         services.AddSingleton<IDialogService,MauiDialogService>();
         services.AddSingleton<ILocationService,MauiLocationService>();

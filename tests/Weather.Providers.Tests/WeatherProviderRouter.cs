@@ -106,4 +106,16 @@ public class WeatherService{
             Assert.Equal(Availability.JapanOutOfCoverage,service.GetObservationAvailability(Locations.JapanOutOfCoverage));
         }
     }
+
+    [Fact,Trait("Category","Unit")]public void AllowsBackgroundFetch(){
+        using var host=TestHost.Create();
+        var service=host.Get<IWeatherService>();
+        {
+            //背景で取得できるのは気象庁・NWS の地点だけ(MET は規約で禁止、対象外地点はデータがない)
+            Assert.True(service.AllowsBackgroundFetch(Locations.Tokyo));
+            Assert.True(service.AllowsBackgroundFetch(Locations.Washington));
+            Assert.False(service.AllowsBackgroundFetch(Locations.Oslo));
+            Assert.False(service.AllowsBackgroundFetch(Locations.JapanOutOfCoverage));
+        }
+    }
 }

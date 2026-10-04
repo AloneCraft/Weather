@@ -12,6 +12,7 @@ public sealed class AppSettings(ISettingsStore store){
     private const string ReduceFlashesKey="reduceFlashes";
     private const string PowerSavingKey="powerSaving";
     private const string HistoryRetentionKey="historyRetentionDays";
+    private const string AlertNotificationsKey="alertNotifications";
 
     public event EventHandler? Changed;
 
@@ -56,6 +57,12 @@ public sealed class AppSettings(ISettingsStore store){
             return 365;
         }
         set=>this.Set(HistoryRetentionKey,value.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>警報の通知(既定は無効。有効にするときに通知の許可を求める)。</summary>
+    public bool AlertNotifications{
+        get=>store.Get(AlertNotificationsKey)=="1";
+        set=>this.Set(AlertNotificationsKey,Flag(value));
     }
 
     public static UnitSystem DefaultUnits(string regionCode){

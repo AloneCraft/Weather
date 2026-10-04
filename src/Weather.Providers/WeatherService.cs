@@ -73,6 +73,11 @@ public sealed class WeatherService(ILocationResolver resolver,WeatherProviderRou
         return provider.GetObservationsAsync(station,from,to,cancellationToken);
     }
 
+    public bool AllowsBackgroundFetch(ResolvedLocation location){
+        var reason=router.RouteForecast(location).Reason;
+        return reason is RouteReason.Jma or RouteReason.Nws;
+    }
+
     public TimeSpan GetObservationServerRetention(ProviderId provider){
         if(router.ObservationProvider(provider) is {} p){
             return p.ServerRetention;

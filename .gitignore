@@ -14,6 +14,10 @@ artifacts/
 *.mobileprovision
 *.p12
 
+## iOS ウィジェット(XcodeGen の生成物とビルド出力)
+src/Weather.Widget.iOS/*.xcodeproj/
+src/Weather.Widget.iOS/build/
+
 ## GeoDataBuilder の作業ディレクトリ(ダウンロードした元データ)
 tools/Weather.GeoDataBuilder/.cache/
 
