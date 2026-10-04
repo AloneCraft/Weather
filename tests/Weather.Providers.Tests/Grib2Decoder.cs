@@ -80,6 +80,47 @@ public class Grib2Decoder{
             Assert.Throws<FormatException>(()=>Target.Decode("NOTGRIB0000000000000"u8));
             Assert.Throws<FormatException>(()=>Target.Decode(messages["TMP"].AsSpan(0,1000)));
         }
+        {
+            //破損した節の記述子(値の数・群の数が巨大・符号付きで負)は、巨大な配列を確保せず FormatException で失敗する
+            var drs=SectionOffset(messages["TMP"],5);
+            foreach(var (offset,value) in new[]{(5,0x7FFFFFFFu),(5,0xFFFFFFFFu),(5,0x40000000u),(31,0x7FFFFFFFu),(31,0xFFFFFFFFu),(31,0x00FFFFFFu)}){
+                var broken=(byte[])messages["TMP"].Clone();
+                BinaryPrimitives.WriteUInt32BigEndian(broken.AsSpan(drs+offset),value);
+                var before=GC.GetAllocatedBytesForCurrentThread();
+                Assert.Throws<FormatException>(()=>Target.Decode(broken));
+                Assert.True(GC.GetAllocatedBytesForCurrentThread()-before<64*1024*1024,$"節 5 の +{offset} を 0x{value:X} にすると巨大な配列を確保する");
+            }
+        }
+        {
+            //壊したバイト列(固定シード)は、ProviderHttp.Map が InvalidResponse にできる例外だけで、小さなメモリ・短時間で失敗する
+            foreach(var (name,original) in messages){
+                for(var i=0;i<400;i++){
+                    var random=new Random(HashCode.Combine(name,i));
+                    var data=(byte[])original.Clone();
+                    for(var k=0;k<1+random.Next(8);k++){
+                        data[random.Next(Math.Min(data.Length,200))]=(byte)random.Next(256);
+                    }
+                    var before=GC.GetAllocatedBytesForCurrentThread();
+                    try{
+                        Target.Decode(data);
+                    }catch(Exception ex) when(ex is FormatException or NotSupportedException or ArgumentException or IndexOutOfRangeException or InvalidDataException){
+                    }
+                    Assert.True(GC.GetAllocatedBytesForCurrentThread()-before<64*1024*1024,$"{name} #{i}: 巨大な配列を確保した");
+                }
+            }
+        }
+    }
+
+    /// <summary>メッセージ内の節(番号)の先頭位置。</summary>
+    private static int SectionOffset(byte[] message,int number){
+        var pos=16;
+        while(pos+5<=message.Length){
+            if(message[pos+4]==number){
+                return pos;
+            }
+            pos+=(int)BinaryPrimitives.ReadUInt32BigEndian(message.AsSpan(pos));
+        }
+        throw new InvalidOperationException($"節 {number} がありません。");
     }
 
     private static void AssertRange(float[] values,float min,float max){

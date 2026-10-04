@@ -22,6 +22,9 @@ public sealed class Grib2Message{
 /// GFS の pgrb2(0.5°・1°)は 5.3(2026-10-04 確認)。アルゴリズムは NCEP g2clib の comunpack に従う。
 /// </summary>
 public static class Grib2Decoder{
+    /// <summary>格子の点数の上限。GFS 0.25°(1440×721 = 約 104 万点)に余裕を持たせた値。破損データで巨大な配列を確保しないための検証。</summary>
+    private const int MaxPoints=1<<22;
+
     public static Grib2Message Decode(ReadOnlySpan<byte> data){
         if(data.Length<16||data[0]!='G'||data[1]!='R'||data[2]!='I'||data[3]!='B'){
             throw new FormatException("GRIB メッセージではありません。");
@@ -85,7 +88,12 @@ public static class Grib2Decoder{
             throw new FormatException("GRIB メッセージに必要な節がありません。");
         }
         var template=BinaryPrimitives.ReadUInt16BigEndian(drs[9..]);
-        var encoded=(int)BinaryPrimitives.ReadUInt32BigEndian(drs[5..]);
+        var encodedCount=BinaryPrimitives.ReadUInt32BigEndian(drs[5..]);
+        if(encodedCount>(uint)points){
+            //ビットマップがなければ点数と同じ、あればそれ以下。破損データで巨大な配列を確保しない
+            throw new FormatException($"値の数 {encodedCount} が格子の点数 {points} を超えています。");
+        }
+        var encoded=(int)encodedCount;
         var packed=new float[encoded];
         switch(template){
             case 0:
@@ -116,13 +124,19 @@ public static class Grib2Decoder{
     }
 
     private static (Grib2LatLonGrid Grid,int Points) ReadGrid(ReadOnlySpan<byte> s){
-        var points=(int)BinaryPrimitives.ReadUInt32BigEndian(s[6..]);
+        var pointCount=BinaryPrimitives.ReadUInt32BigEndian(s[6..]);
         var template=BinaryPrimitives.ReadUInt16BigEndian(s[12..]);
         if(template!=0){
             throw new NotSupportedException($"格子テンプレート 3.{template} には対応していません。");
         }
-        var ni=(int)BinaryPrimitives.ReadUInt32BigEndian(s[30..]);
-        var nj=(int)BinaryPrimitives.ReadUInt32BigEndian(s[34..]);
+        var niCount=BinaryPrimitives.ReadUInt32BigEndian(s[30..]);
+        var njCount=BinaryPrimitives.ReadUInt32BigEndian(s[34..]);
+        if(pointCount>MaxPoints||(long)niCount*njCount!=pointCount){
+            throw new FormatException($"格子の点数が不正です: {niCount}×{njCount} と {pointCount}(上限 {MaxPoints})");
+        }
+        var points=(int)pointCount;
+        var ni=(int)niCount;
+        var nj=(int)njCount;
         var basic=BinaryPrimitives.ReadUInt32BigEndian(s[38..]);
         var subdivisions=BinaryPrimitives.ReadUInt32BigEndian(s[42..]);
         //既定の単位は 10^-6 度。掛け算ではなく割り算にして 90 や 359.5 を誤差なく表す
@@ -145,9 +159,6 @@ public static class Grib2Decoder{
             Angle(63,s),
             Angle(67,s),
             s[71]);
-        if(ni*nj!=points){
-            throw new FormatException($"格子の点数が一致しません: {ni}×{nj} と {points}");
-        }
         return (grid,points);
     }
 
@@ -171,7 +182,11 @@ public static class Grib2Decoder{
     private static void UnpackComplex(ReadOnlySpan<byte> drs,ReadOnlySpan<byte> payload,float[] output,bool spatial){
         var (reference,binary,dec,referenceBits)=Scaling(drs);
         var missingManagement=drs[22];
-        var groups=(int)BinaryPrimitives.ReadUInt32BigEndian(drs[31..]);
+        var groupCount=BinaryPrimitives.ReadUInt32BigEndian(drs[31..]);
+        if(groupCount>(uint)output.Length){
+            throw new FormatException($"群の数 {groupCount} が値の数 {output.Length} を超えています。");
+        }
+        var groups=(int)groupCount;
         var widthReference=(int)drs[35];
         var widthBits=(int)drs[36];
         var lengthReference=(int)BinaryPrimitives.ReadUInt32BigEndian(drs[37..]);
