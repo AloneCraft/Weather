@@ -1,0 +1,13 @@
+[
+  {"basetime": "20261004080000", "validtime": "20261005150000", "member": "none", "elements": ["r3", "r3_nd", "s3", "s3_nd", "temp", "temp_nd", "temp_point", "wm", "wm_nd"]},
+  {"basetime": "20261004080000", "validtime": "20261005120000", "member": "none", "elements": ["r3", "r3_nd", "s3", "s3_nd", "temp", "temp_nd", "temp_point", "wm", "wm_nd"]},
+  {"basetime": "20261004080000", "validtime": "20261005090000", "member": "none", "elements": ["max_temp", "max_temp_nd", "max_temp_point", "r3", "r3_nd", "s3", "s3_nd", "temp", "temp_nd", "temp_point", "wm", "wm_nd"]},
+  {"basetime": "20261004080000", "validtime": "20261005060000", "member": "none", "elements": ["r3", "r3_nd", "s3", "s3_nd", "temp", "temp_nd", "temp_point", "wm", "wm_nd"]},
+  {"basetime": "20261004080000", "validtime": "20261005030000", "member": "none", "elements": ["r3", "r3_nd", "s3", "s3_nd", "temp", "temp_nd", "temp_point", "wm", "wm_nd"]},
+  {"basetime": "20261004080000", "validtime": "20261005000000", "member": "none", "elements": ["min_temp", "min_temp_nd", "min_temp_point", "r3", "r3_nd", "s3", "s3_nd", "temp", "temp_nd", "temp_point", "wm", "wm_nd"]},
+  {"basetime": "20261004080000", "validtime": "20261004210000", "member": "none", "elements": ["r3", "r3_nd", "s3", "s3_nd", "temp", "temp_nd", "temp_point", "wm", "wm_nd"]},
+  {"basetime": "20261004080000", "validtime": "20261004180000", "member": "none", "elements": ["r3", "r3_nd", "s3", "s3_nd", "temp", "temp_nd", "temp_point", "wm", "wm_nd"]},
+  {"basetime": "20261004080000", "validtime": "20261004150000", "member": "none", "elements": ["r3", "r3_nd", "s3", "s3_nd", "temp", "temp_nd", "temp_point", "wm", "wm_nd"]},
+  {"basetime": "20261004080000", "validtime": "20261004120000", "member": "none", "elements": ["r3", "r3_nd", "s3", "s3_nd", "temp", "temp_nd", "temp_point", "wm", "wm_nd"]},
+  {"basetime": "20261004080000", "validtime": "20261004090000", "member": "none", "elements": ["temp", "temp_nd", "temp_point"]}
+]

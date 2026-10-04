@@ -3,8 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Weather.Core;
+using Weather.Providers.Gfs;
 using Weather.Providers.Http;
 using Weather.Providers.Jma;
+using Weather.Providers.Maps;
 using Weather.Providers.MetNorway;
 using Weather.Providers.Nws;
 using Weather.Providers.Routing;
@@ -16,6 +18,7 @@ public static class ServiceCollectionExtensions{
     /// Provider・HTTP(User-Agent・キャッシュ)・振り分け・IWeatherService を登録する。
     /// MAUI と Functions で同じ登録を使う(SolutionStructure.md 不変条件 6)。
     /// ILocationResolver と IHttpCacheStore は呼び出し側で登録する(未登録ならメモリストアを使う)。
+    /// 地図(IMapDataService)は IJapanArea(Geo)が必要。
     /// </summary>
     public static IServiceCollection AddWeatherProviders(this IServiceCollection services,Action<WeatherProviderOptions>? configure=null){
         var options=new WeatherProviderOptions();
@@ -29,7 +32,7 @@ public static class ServiceCollectionExtensions{
         services.AddTransient<UserAgentHandler>();
         services.AddTransient<HttpCacheHandler>();
 
-        foreach(var name in new[]{JmaProvider.HttpClientName,NwsProvider.HttpClientName,MetNorwayProvider.HttpClientName}){
+        foreach(var name in new[]{JmaProvider.HttpClientName,NwsProvider.HttpClientName,MetNorwayProvider.HttpClientName,GfsProvider.HttpClientName}){
             var builder=services.AddHttpClient(name,client=>{
                 //タイムアウトは HttpCacheHandler で扱う(古いキャッシュへの切り替えのため)
                 client.Timeout=options.Timeout+TimeSpan.FromSeconds(10);
@@ -64,6 +67,15 @@ public static class ServiceCollectionExtensions{
 
         services.TryAddSingleton<WeatherProviderRouter>();
         services.TryAddSingleton<IWeatherService,WeatherService>();
+
+        services.TryAddSingleton(new GfsOptions());
+        services.TryAddSingleton<GfsProvider>();
+        services.TryAddSingleton<IMapDataService>(static sp=>new MapDataService(
+            sp.GetRequiredService<GfsProvider>(),
+            sp.GetRequiredService<JmaDefinitions>(),
+            sp.GetRequiredService<IHttpClientFactory>(),
+            sp.GetRequiredService<TimeProvider>(),
+            sp.GetRequiredService<ILogger<MapDataService>>()));
         return services;
     }
 }

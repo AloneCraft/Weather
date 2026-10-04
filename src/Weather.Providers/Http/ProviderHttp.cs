@@ -9,10 +9,14 @@ internal readonly record struct FetchResult(byte[] Body,DateTimeOffset Retrieved
 
 /// <summary>Provider 共通の取得処理。HTTP の失敗を ProviderFailure に変換する。</summary>
 internal static class ProviderHttp{
-    public static async Task<FetchResult> GetAsync(HttpClient client,ProviderId provider,Uri uri,TimeProvider time,CancellationToken cancellationToken){
+    public static async Task<FetchResult> GetAsync(HttpClient client,ProviderId provider,Uri uri,TimeProvider time,CancellationToken cancellationToken,(long From,long? To)? range=null){
         HttpResponseMessage response;
         try{
-            response=await client.GetAsync(uri,HttpCompletionOption.ResponseContentRead,cancellationToken).ConfigureAwait(false);
+            using var request=new HttpRequestMessage(HttpMethod.Get,uri);
+            if(range is {} r){
+                request.Headers.Range=new System.Net.Http.Headers.RangeHeaderValue(r.From,r.To);
+            }
+            response=await client.SendAsync(request,HttpCompletionOption.ResponseContentRead,cancellationToken).ConfigureAwait(false);
         }catch(TimeoutException ex){
             throw new WeatherProviderException(provider,ProviderFailure.Timeout,$"タイムアウト: {uri}",ex);
         }catch(HttpRequestException ex){
@@ -70,7 +74,7 @@ internal static class ProviderHttp{
     public static T Map<T>(ProviderId provider,Uri uri,Func<T> map){
         try{
             return map();
-        }catch(Exception ex) when(ex is InvalidOperationException or KeyNotFoundException or FormatException or IndexOutOfRangeException or ArgumentException or JsonException){
+        }catch(Exception ex) when(ex is InvalidOperationException or KeyNotFoundException or FormatException or IndexOutOfRangeException or ArgumentException or JsonException or NotSupportedException or InvalidDataException){
             throw new WeatherProviderException(provider,ProviderFailure.InvalidResponse,$"応答の構造が想定外です: {uri}",ex);
         }
     }

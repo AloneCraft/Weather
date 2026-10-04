@@ -22,6 +22,23 @@ internal sealed class FixtureHttpMessageHandler:HttpMessageHandler{
         return this;
     }
 
+    /// <summary>記録データで応答する(Range 要求には 206 で該当部分だけを返す)。</summary>
+    public static HttpResponseMessage Respond(HttpRequestMessage request,byte[] body){
+        var status=HttpStatusCode.OK;
+        if(request.Headers.Range?.Ranges.FirstOrDefault() is {} range){
+            var from=(int)(range.From??0);
+            var to=(int)Math.Min(range.To??body.Length-1,body.Length-1);
+            body=body[from..(to+1)];
+            status=HttpStatusCode.PartialContent;
+        }
+        var response=new HttpResponseMessage(status){
+            Content=new ByteArrayContent(body),
+            RequestMessage=request,
+        };
+        response.Headers.TryAddWithoutValidation("Cache-Control","max-age=60");
+        return response;
+    }
+
     public int CountRequests(string urlPrefix){
         return this.Requests.Count(r=>r.RequestUri!.AbsoluteUri.StartsWith(urlPrefix,StringComparison.Ordinal));
     }
@@ -32,12 +49,7 @@ internal sealed class FixtureHttpMessageHandler:HttpMessageHandler{
             return Task.FromResult(overridden);
         }
         if(this.routes.TryGetValue(request.RequestUri!.AbsoluteUri,out var file)){
-            var response=new HttpResponseMessage(HttpStatusCode.OK){
-                Content=new ByteArrayContent(File.ReadAllBytes(FixturePath(file))),
-                RequestMessage=request,
-            };
-            response.Headers.TryAddWithoutValidation("Cache-Control","max-age=60");
-            return Task.FromResult(response);
+            return Task.FromResult(Respond(request,File.ReadAllBytes(FixturePath(file))));
         }
         return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound){RequestMessage=request});
     }
@@ -64,8 +76,11 @@ internal sealed class TestHost:IDisposable{
         services.AddLogging();
         services.AddSingleton<TimeProvider>(time);
         services.AddSingleton<ILocationResolver,StubResolver>();
+        services.AddSingleton<IJapanArea,StubJapanArea>();
+        //GFS は記録データの小さい 1° を使う
+        services.AddSingleton(new Gfs.GfsOptions{Resolution="1p00"});
         services.AddWeatherProviders(static o=>o.UserAgent="WeatherAppTests/1.0 github.com/test/test");
-        foreach(var name in new[]{Jma.JmaProvider.HttpClientName,Nws.NwsProvider.HttpClientName,MetNorway.MetNorwayProvider.HttpClientName}){
+        foreach(var name in new[]{Jma.JmaProvider.HttpClientName,Nws.NwsProvider.HttpClientName,MetNorway.MetNorwayProvider.HttpClientName,Gfs.GfsProvider.HttpClientName}){
             services.AddHttpClient(name).ConfigurePrimaryHttpMessageHandler(()=>handler);
         }
         configure?.Invoke(services);
@@ -78,6 +93,13 @@ internal sealed class TestHost:IDisposable{
 
     public void Dispose(){
         this.Services.Dispose();
+    }
+
+    /// <summary>日本周辺のかわりに、北緯 24〜46 度・東経 122〜146 度の矩形を使う。</summary>
+    internal sealed class StubJapanArea:IJapanArea{
+        public bool Contains(double latitude,double longitude){
+            return latitude is >=24 and <=46&&longitude is >=122 and <=146;
+        }
     }
 
     private sealed class StubResolver:ILocationResolver{
@@ -148,5 +170,40 @@ internal static class Fixtures{
 
     public static void MapMet(FixtureHttpMessageHandler h){
         h.Map("https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=59.91&lon=10.75","met/complete.json");
+    }
+
+    /// <summary>GFS: 実行回・予報時間に関係なく同じ記録データ(1°、6 要素)で応答する。unavailableCycles の実行回は 404。</summary>
+    public static Action<FixtureHttpMessageHandler> MapGfs(params string[] unavailableCycles){
+        return h=>{
+            var data=File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath(GfsFixture.File));
+            var index=File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath(GfsFixture.File+".idx"));
+            h.Override=request=>{
+                var uri=request.RequestUri!;
+                if(uri.Host!=Http.HttpCachePolicy.GfsHost){
+                    return null;
+                }
+                if(unavailableCycles.Any(c=>uri.AbsolutePath.Contains(c,StringComparison.Ordinal))){
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound){RequestMessage=request};
+                }
+                if(uri.AbsolutePath.EndsWith(".idx",StringComparison.Ordinal)){
+                    return FixtureHttpMessageHandler.Respond(request,index);
+                }
+                return FixtureHttpMessageHandler.Respond(request,data);
+            };
+        };
+    }
+
+    /// <summary>気象庁の地図タイルの時刻一覧・アメダスの全地点・海上分布予報の風向(2026-10-04 17 時ごろ)。</summary>
+    public static void MapJmaTiles(FixtureHttpMessageHandler h){
+        const string root="https://www.jma.go.jp/bosai/jmatile/data/";
+        h.Map(root+"nowc/targetTimes_N1.json","jmatile/nowc_N1.json")
+            .Map(root+"nowc/targetTimes_N2.json","jmatile/nowc_N2.json")
+            .Map(root+"rasrf/targetTimes.json","jmatile/rasrf.json")
+            .Map(root+"wdist/targetTimes.json","jmatile/wdist.json")
+            .Map(root+"umimesh/targetTimes.json","jmatile/umimesh.json")
+            .Map(root+"umimesh/20261004000000/none/20261004060000/surf/wd/data.geojson","jmatile/umimesh_wd.geojson")
+            .Map(root+"nowc/20261004081500/none/20261004081500/surf/hrpns/4/14/6.png","jmatile/hrpns_4_14_6.png")
+            .Map("https://www.jma.go.jp/bosai/amedas/data/latest_time.txt","jmatile/amedas_latest_time.txt")
+            .Map("https://www.jma.go.jp/bosai/amedas/data/map/20261004171000.json","jmatile/amedas_map.json");
     }
 }

@@ -128,6 +128,7 @@ public static class GeoServiceCollectionExtensions{
         services.TryAddSingleton<ILocationResolver>(static sp=>sp.GetRequiredService<LocationResolver>());
         services.TryAddSingleton<PlaceSearch>();
         services.TryAddSingleton<IPlaceSearch>(static sp=>sp.GetRequiredService<PlaceSearch>());
+        services.TryAddSingleton<IJapanArea,JapanArea>();
         return services;
     }
 }

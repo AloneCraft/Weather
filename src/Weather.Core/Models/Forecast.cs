@@ -78,8 +78,8 @@ internal static class ForecastRules{
             if(source.Provider!=ProviderId.Jma){
                 throw new InvalidOperationException($"日本域に気象庁以外のデータが含まれています: {source.Provider}");
             }
-            if(source.Processing.HasFlag(DataProcessing.Aggregated)){
-                throw new InvalidOperationException("気象庁データにアプリ側の集計を適用してはいけません。");
+            if(source.Processing.HasFlag(DataProcessing.Aggregated)||source.Processing.HasFlag(DataProcessing.Interpolated)){
+                throw new InvalidOperationException("気象庁データにアプリ側の集計・補間を適用してはいけません。");
             }
         }
     }

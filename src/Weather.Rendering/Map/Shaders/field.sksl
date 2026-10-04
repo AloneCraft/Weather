@@ -1,0 +1,46 @@
+// 格子レイヤー(Rendering.md「地図」)。画面座標 → Web メルカトル → 緯度経度 → 格子座標の順に変換し、値をパレットで着色する。
+// field: RgbaF16。r が 0〜1 に正規化した値、a が有効(欠損・日本周辺は 0)。線形補間で標本化する(乗算済みなので r / a が値)
+// mask: 日本周辺(0.05° 格子)。日本周辺には GFS を描かない(方針 5)
+uniform shader field;
+uniform shader palette;
+uniform shader mask;
+uniform float2 origin;
+uniform float worldSize;
+uniform float2 gridOrigin;
+uniform float2 gridStep;
+uniform float4 maskRect;
+uniform float2 maskSize;
+uniform float opacity;
+
+const float PI = 3.14159265;
+
+float2 lonLat(float2 p) {
+    float2 w = origin + p / worldSize;
+    float lon = fract(w.x) * 360.0 - 180.0;
+    float n = PI * (1.0 - 2.0 * w.y);
+    float lat = degrees(atan((exp(n) - exp(-n)) * 0.5));
+    return float2(lon, lat);
+}
+
+half japan(float2 ll) {
+    float mx = (ll.x - maskRect.x) / maskRect.z;
+    float my = (maskRect.y - ll.y) / maskRect.w;
+    if (mx < 0.0 || my < 0.0 || mx >= maskSize.x || my >= maskSize.y) {
+        return 0.0;
+    }
+    return mask.eval(float2(mx, my)).a;
+}
+
+half4 main(float2 p) {
+    float2 ll = lonLat(p);
+    float gx = (ll.x - gridOrigin.x) / gridStep.x;
+    float gy = (gridOrigin.y - ll.y) / gridStep.y;
+    half4 v = field.eval(float2(gx + 0.5, gy + 0.5));
+    if (v.a < 0.02) {
+        return half4(0.0);
+    }
+    float value = clamp(v.r / v.a, 0.0, 1.0);
+    half4 c = palette.eval(float2(value * 255.0 + 0.5, 0.5));
+    half k = v.a * (1.0 - japan(ll)) * opacity;
+    return c * k;
+}

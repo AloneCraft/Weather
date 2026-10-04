@@ -9,8 +9,8 @@ public sealed class WeatherProviderOptions{
 
     public TimeSpan Timeout{get;set;}=TimeSpan.FromSeconds(15);
 
-    /// <summary>HTTP キャッシュの容量上限(CacheAndRouting.md)。</summary>
-    public long CacheMaxBytes{get;set;}=50L*1024*1024;
+    /// <summary>HTTP キャッシュの容量上限(CacheAndRouting.md)。地図(GFS 0.5° は 1 要素 160〜290KB)を含めて 200MB。</summary>
+    public long CacheMaxBytes{get;set;}=200L*1024*1024;
 
     public TimeSpan CacheMaxUnused{get;set;}=TimeSpan.FromDays(14);
 }

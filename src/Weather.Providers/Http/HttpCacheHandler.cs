@@ -24,12 +24,22 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
         return "GET "+uri.AbsoluteUri;
     }
 
+    /// <summary>範囲要求(GFS の 1 要素の取得)は範囲ごとに別のエントリにする。</summary>
+    public static string CreateKey(HttpRequestMessage request){
+        ArgumentNullException.ThrowIfNull(request);
+        var key=CreateKey(request.RequestUri!);
+        if(request.Headers.Range is {} range){
+            key+=" "+range;
+        }
+        return key;
+    }
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken cancellationToken){
         ArgumentNullException.ThrowIfNull(request);
         if(request.Method!=HttpMethod.Get||request.RequestUri is null){
             return await this.SendWithTimeoutAsync(request,cancellationToken).ConfigureAwait(false);
         }
-        var key=CreateKey(request.RequestUri);
+        var key=CreateKey(request);
         var gate=this.locks.GetOrAdd(key,static _=>new SemaphoreSlim(1,1));
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try{
@@ -74,7 +84,7 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
             response.Dispose();
             return CreateResponse(request,entry!,"stale");
         }
-        if(response.StatusCode==HttpStatusCode.OK&&HttpFreshness.IsStorable(response)){
+        if(response.StatusCode is HttpStatusCode.OK or HttpStatusCode.PartialContent&&HttpFreshness.IsStorable(response)){
             var body=await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
             var stored=HttpFreshness.CreateEntry(key,response,body,now);
             response.Dispose();

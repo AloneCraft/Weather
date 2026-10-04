@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scene\Shaders\*.sksl" LogicalName="Weather.Rendering.Shaders.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Map\Shaders\*.sksl" LogicalName="Weather.Rendering.Shaders.%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Weather.Rendering.Tests" />

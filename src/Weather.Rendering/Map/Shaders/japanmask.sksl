@@ -1,0 +1,39 @@
+// 日本周辺のマスク(Rendering.md「地図」)。
+// mode 0: 被覆率をアルファで返す(気象庁のタイルを日本周辺に限るための DstIn)
+// mode 1: 気象庁の予報期間外を示す斜線(日本周辺だけ。GFS で埋めない)
+uniform shader mask;
+uniform float2 origin;
+uniform float worldSize;
+uniform float4 maskRect;
+uniform float2 maskSize;
+uniform float mode;
+uniform float density;
+
+const float PI = 3.14159265;
+
+float2 lonLat(float2 p) {
+    float2 w = origin + p / worldSize;
+    float lon = fract(w.x) * 360.0 - 180.0;
+    float n = PI * (1.0 - 2.0 * w.y);
+    float lat = degrees(atan((exp(n) - exp(-n)) * 0.5));
+    return float2(lon, lat);
+}
+
+half japan(float2 ll) {
+    float mx = (ll.x - maskRect.x) / maskRect.z;
+    float my = (maskRect.y - ll.y) / maskRect.w;
+    if (mx < 0.0 || my < 0.0 || mx >= maskSize.x || my >= maskSize.y) {
+        return 0.0;
+    }
+    return mask.eval(float2(mx, my)).a;
+}
+
+half4 main(float2 p) {
+    half m = japan(lonLat(p));
+    if (mode < 0.5) {
+        return half4(m);
+    }
+    half stripe = step(0.5, fract((p.x + p.y) / (14.0 * density)));
+    half a = m * (0.10 + stripe * 0.16);
+    return half4(a, a, a, a);
+}
