@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 32,
-  "updated_at": "2026-10-04T15:43:27Z",
+  "revision": 37,
+  "updated_at": "2026-10-04T15:46:38Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 32,
+      "run_minutes": 35,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -644,6 +644,96 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0012",
+      "title": "JMA 週間予報: 区域が一致しないと先頭の区域に黙って置換(伊豆諸島北部・南部で東京地方の値)",
+      "source_ids": [
+        "P-2"
+      ],
+      "severity": "中",
+      "fix_priority": 5,
+      "symptom": "大島町(class10=130020)・八丈町の 10/6 以降の天気コード・降水確率・信頼度が千代田区(東京地方 130010)と同一。気温は週間の気温地点に 44172(大島)がなく先頭の「東京」になる(大島町)。記録データの週間予報には 130100(伊豆諸島)の別の値がある(エージェント報告: コード 202・降水確率 50・信頼度 C)",
+      "expected": "自区域の週間予報、または不一致なら週間を空にして Issues に残す",
+      "cause": {
+        "confirmed": "JmaForecastMapper.FindArea(...,fallbackToFirst:true) が一致しないとき areas[0] を返す(JmaForecastMapper.cs:113,132)。区域データ(area.json)に 130020/130030→130100 の対応がない",
+        "hypotheses": [
+          "気象庁ページの WEEK_AREAS 定数に対応表がある(設計書 WeatherProviders.md:105 が要確認としている)"
+        ],
+        "unknown": [
+          "対応表の正しい内容(通信制限で取得できない)"
+        ]
+      },
+      "reproduced": true,
+      "state": "NEEDS_HUMAN",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [],
+      "rejected_hypotheses": [],
+      "related_tests": [],
+      "retry_when": "WEEK_AREAS の対応表を得る、または方針(不一致のとき週間を出さない / 近い区域で代用)をユーザーが決める",
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/P-2-probe.log"
+      ],
+      "human_needed": "対応表が必要か、不一致時の表示方針の判断",
+      "found_at": "2026-10-04T15:44:27Z"
+    },
+    {
+      "id": "BUG-0013",
+      "title": "HTTP キャッシュ: 本文の読み込み失敗が古いキャッシュへの切り替えとタイムアウトの外にある",
+      "source_ids": [
+        "P-4"
+      ],
+      "severity": "中",
+      "fix_priority": 4,
+      "symptom": "200 応答のヘッダー受信後、本文の途中で通信が切れる(IOException → HttpRequestException)と、許容期間内の古いエントリがあっても stale にならず Network で失敗する。本文読み込みに設計の 15 秒タイムアウトも効かない",
+      "expected": "CacheAndRouting.md「処理」3: 通信失敗・タイムアウト・5xx → 許容期間内の古いエントリを返し印を付ける",
+      "cause": {
+        "confirmed": "HttpCacheHandler.SendCoreAsync の stale 切替の try は SendWithTimeoutAsync だけを囲み、ReadAsByteArrayAsync(88 行)は try の外・呼び出し元トークンのみ(コード読み)",
+        "hypotheses": [],
+        "unknown": [
+          "実ネットワークでの頻度"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:45:06Z",
+          "reason": "優先: オフライン耐性(古いキャッシュの表示)はアプリの主要な振る舞い。モバイル回線では本文の途中切断は起こりやすい。独立して修正できる",
+          "code_before": {
+            "commit": "90cf913d298a0068a8c993da2e7664777a7e4d52",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 本文読み込みが stale 切替の try の外",
+          "hypothesis": "本文読み込みを同じタイムアウトと stale 切替の範囲に入れれば、本文の途中切断・停止でも古いエントリを返す",
+          "planned_change": "src/Weather.Providers/Http/HttpCacheHandler.cs のみ + tests/Weather.Providers.Tests/HttpCacheHandler.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Providers/Remote/Presentation/Geo テスト PASS、キャッシュなしの失敗は従来どおり Network",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:46:38Z",
+          "diff_sha256": "bc6b26800fc21d461b49632f8b44a700f7f9fd9c56b667997b8f0943b232bfc7",
+          "commit": "e2ae5286d882cf543a6e3587748ce61e9f4a2694"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/HttpCacheHandler.SendAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:45:06Z",
+      "verified": {
+        "commit": "e2ae5286d882cf543a6e3587748ce61e9f4a2694",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 35,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -747,8 +837,8 @@
     },
     {
       "id": "P-2",
-      "status": "UNREPRODUCED",
-      "note": "JMA 週間予報の区域不一致で先頭区域に黙って置換(伊豆諸島で東京地方の値)。設計書は「要確認」扱い"
+      "status": "PROMOTED_TO_BUG",
+      "note": "JMA 週間予報の区域不一致で先頭区域に黙って置換(伊豆諸島で東京地方の値)。設計書は「要確認」扱い → BUG-0012(NEEDS_HUMAN)"
     },
     {
       "id": "P-3",
@@ -757,8 +847,8 @@
     },
     {
       "id": "P-4",
-      "status": "UNREPRODUCED",
-      "note": "HttpCacheHandler: 本文読み込み失敗が stale 切替の外"
+      "status": "PROMOTED_TO_BUG",
+      "note": "HttpCacheHandler: 本文読み込み失敗が stale 切替の外 → BUG-0013"
     },
     {
       "id": "P-5",
