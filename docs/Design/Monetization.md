@@ -40,6 +40,9 @@ MAUI 向けの公式 SDK はない。定番の Plugin.MauiMTAdmob(2.4.0、.NET 1
 | App `Controls/AdBannerView` | バナー。`AdPolicy.ShowBanner` を見て OS のバナー(`NativeBanner`)を作る・破棄する |
 | App `Platforms/Android/Monetization/` | `AndroidAdPlatform`(UMP・Mobile Ads)、`AndroidPurchasePlatform`(Play Billing)、`NativeBannerHandler`(AdView) |
 | App `Services/AdUnits` | 広告ユニット ID(csproj が AssemblyMetadata に書き込む) |
+| `src/Weather.Native.iOS` | Swift のラッパー(XcodeGen + `build.sh` で `WeatherNative.xcframework`)。`WNAds`(UMP の同意 → ATT → Mobile Ads の初期化、プライバシー設定、アダプティブ バナー)、`WNStore`(StoreKit 2 の価格・購入・所有・復元)。Google Mobile Ads と UMP は公式の Swift Package を静的にリンク |
+| `src/Weather.Native.iOS.Binding` | 上記のバインディング(Mac でだけビルド。ソリューションのビルド対象外) |
+| App `Platforms/iOS/Monetization/` | `IosAdPlatform`・`IosPurchasePlatform`・`NativeBannerHandler`。`-p:EnableNativeIos=true` のとき(定数 `WEATHER_NATIVE_IOS`)だけ含める。含まないビルド(Windows など)は何もしない実装で、広告・課金なしになる |
 
 ### AdPolicy
 
@@ -64,11 +67,19 @@ MAUI 向けの公式 SDK はない。定番の Plugin.MauiMTAdmob(2.4.0、.NET 1
 - androidx.webkit 1.17(広告 SDK が依存)が minSdk 24 を要求するため、Android の最低対応を 6.0(API 23)から 7.0(API 24)に上げた。
 - MAUI を更新するときは、この揃えた版が MAUI の要求より古くならないか確認する(古くなったら NU1605 のダウングレード警告が出る)。
 
+## iOS の組み込み(試作 A2 の結果、2026-10-04)
+
+- Windows の C# コンパイルを壊さないため、バインディングは App から条件付き(`EnableNativeIos`)で参照し、ソリューションのビルド対象から外した。Windows・既定のビルドでは iOS は広告・課金なしでビルドできる。
+- CI(macOS)で `build.sh` → `-p:EnableNativeIos=true` のアプリのビルド → `.app` に `WeatherNative.framework` と `GADApplicationIdentifier` が入ることを確認する。
+- Info.plist: `GADApplicationIdentifier`(ビルド時に `AdMobAppId` から生成する部分的な Info.plist)、`SKAdNetworkItems`(Google の cstr6suwn9)、`NSUserTrackingUsageDescription`(ATT の説明)。
+- 順序: UMP の同意フォーム(IDFA の説明を含む)→ ATT(未決定のときだけ)→ 広告を要求できるなら初期化。
+
 ## 要確認事項
 
 - Google Mobile Ads SDK が独自に位置情報を使うか(アプリは位置の権限を持つ。プライバシーポリシーに反映する)。
 - Play の静的なテスト用商品(`android.test.purchased`)は廃止されたため、購入の確認には Play Console の内部テストとライセンステスターが必要。
-- iOS の Native Library Interop で、Windows 上の net10.0-ios の C# コンパイルを壊さない方法(試作 A2)。
+- iOS の実機での確認(同意フォーム・ATT・テストバナー・Sandbox での購入と復元)。Mac と iPhone が必要。
+- Google Mobile Ads 12 / UMP 3 の Swift の API 名(2026-10 時点の名前で書いた。CI のビルドで確認する)。
 
 ## ユーザーの作業(公開前)
 
