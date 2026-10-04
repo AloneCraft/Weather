@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 79,
-  "updated_at": "2026-10-04T16:20:48Z",
+  "revision": 83,
+  "updated_at": "2026-10-04T16:22:27Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 69,
+      "run_minutes": 71,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1403,6 +1403,63 @@
         "full_regression": "未実施",
         "note": "Windows では File.Move 中のファイル共有違反(IOException)が別に起こり得る(HttpCacheHandler が IOException を握りつぶす)。未確認"
       }
+    },
+    {
+      "id": "BUG-0025",
+      "title": "NWS 日別: 深夜〜早朝に取得すると先頭が Overnight になり、その日の「Sunday Night」が捨てられ TempMin も誤る",
+      "source_ids": [
+        "P-5"
+      ],
+      "severity": "中",
+      "fix_priority": 7,
+      "symptom": "先頭の period が Overnight(同じ日の 02:00〜06:00。isDaytime=false)だと、同じ日付の夜が 2 つになり、先に来た Overnight だけが残る。Parts が [Sunday, Overnight] と時刻順でなくなり、TempMin が今夜の最低でなく早朝の気温になり、Sunday Night(18:00〜)が日別から消える(実データの形は NWS の仕様の知識による。再現は記録データの加工で行う)",
+      "expected": "WeatherProviders.md「NWS Adapter」: TempMin = その日の夜の period(今夜の最低)。Parts は時刻順",
+      "cause": {
+        "confirmed": "MapDaily が昼夜を 1 つずつ(g.Night??=period)しか持たず、早朝の夜 period と夕方の夜 period を区別しない",
+        "hypotheses": [
+          "NWS が 0〜6 時台の取得で先頭に Overnight を返す(NWS の仕様の知識。この環境では実 API に届かず未確認)"
+        ],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:21:33Z",
+          "reason": "優先: 米国の日別予報が深夜〜早朝の閲覧で欠ける・誤る(閲覧時間帯の約 1/4)。記録データの加工で再現でき、局所的に直せる",
+          "code_before": {
+            "commit": "0362fbdb6d4fb3a0ad8ac2617ae6b1709a46cc52",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 夜の period を 1 つしか持たない",
+          "hypothesis": "夜の period を、同じ日の昼より前の開始(早朝)と昼より後の開始(夕方以降)に分ければ、今夜の period が残る",
+          "planned_change": "src/Weather.Providers/Nws/NwsMapper.cs の MapDaily のみ + tests/Weather.Providers.Tests/NwsProvider.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Providers テスト全 PASS、既存の記録データ(先頭 Tonight)の結果が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:22:27Z",
+          "diff_sha256": "1cb80db9bbc586573e94736cdf3224abdd818bb0e568785d4eb1fa1acb9df2ae",
+          "commit": "cc8ead6438cc475b71fd5a7805a7b4ba5bf74e3d"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/NwsProvider.GetForecastAsync_Overnight"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:21:33Z",
+      "verified": {
+        "commit": "cc8ead6438cc475b71fd5a7805a7b4ba5bf74e3d",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 71,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1529,8 +1586,8 @@
     },
     {
       "id": "P-5",
-      "status": "UNREPRODUCED",
-      "note": "NWS 先頭が Overnight のとき Tonight が捨てられる(実データの形は仮説)"
+      "status": "PROMOTED_TO_BUG",
+      "note": "NWS 先頭が Overnight のとき Tonight が捨てられる(実データの形は仮説) → BUG-0025"
     },
     {
       "id": "P-6/I-4",
