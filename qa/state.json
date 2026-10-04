@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 91,
-  "updated_at": "2026-10-04T16:25:09Z",
+  "revision": 95,
+  "updated_at": "2026-10-04T16:26:11Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 74,
+      "run_minutes": 75,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1572,6 +1572,61 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0028",
+      "title": "自動更新: 初回の取得が取り消されると、その地点が次の 10 分周期まで「読み込み中」のまま残る",
+      "source_ids": [
+        "I-8a"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 12,
+      "symptom": "MainViewModel.RefreshAllAsync は先に lastRefresh を更新してから取得する。アプリを背景に回す(Stop → ループ取り消し)などで初回の取得が OperationCanceledException になると、予報のない地点の State が Loading のまま、lastRefresh は更新済みなので次の自動更新は 10 分後(コード読み)",
+      "expected": "取り消されたら更新時刻を戻し、次の周期(1 分)ですぐ再取得する",
+      "cause": {
+        "confirmed": "RefreshAllAsync が取り消しの扱いを持たない(コード読み)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:25:36Z",
+          "reason": "優先: 起動直後に背景へ回すなど、モバイルでは現実的な操作で、地点が 10 分間「読み込み中」のまま。FakeTimeProvider で決定的に再現できる",
+          "code_before": {
+            "commit": "4803d314257be54aca0e6256195c51c90b9a5cec",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 取り消しで lastRefresh が戻らない",
+          "hypothesis": "取り消されたら lastRefresh を MinValue に戻して再スローすれば、次の周期の最初のティックで再取得される",
+          "planned_change": "src/Weather.Presentation/ViewModels/MainViewModel.cs の RefreshAllAsync のみ + tests/Weather.Presentation.Tests/ViewModelTests.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト全 PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:26:11Z",
+          "diff_sha256": "b2a7afc6451d51d7f65187e3588882952261bb96a4ce2ef5c35f914611ab73ac",
+          "commit": "6e40c1121b790e07a6bb2e2d8ef77611ee854787"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/MainViewModel.RefreshAllAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:25:36Z",
+      "verified": {
+        "commit": "6e40c1121b790e07a6bb2e2d8ef77611ee854787",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 75,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -1744,8 +1799,8 @@
     },
     {
       "id": "I-8",
-      "status": "UNREPRODUCED",
-      "note": "PlaceWeatherViewModel のキャンセル後 Loading のまま / 同時更新"
+      "status": "PARTIAL",
+      "note": "PlaceWeatherViewModel のキャンセル後 Loading のまま / 同時更新 → I-8a は BUG-0028。I-8b(同時更新で古い応答が最後に反映)・I-8c(alertsTask の取り残し)は未対応"
     },
     {
       "id": "M-1",
