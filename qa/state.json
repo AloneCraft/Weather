@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 106,
-  "updated_at": "2026-10-04T16:39:20Z",
+  "revision": 110,
+  "updated_at": "2026-10-04T16:47:03Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 88,
+      "run_minutes": 96,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1769,6 +1769,62 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0031",
+      "title": "等圧線: 鞍点(曖昧な 2 隅が高い/低いセル)で、中心の値を見ずに常に同じ位相の線を引く",
+      "source_ids": [
+        "M-5"
+      ],
+      "severity": "低(見た目)",
+      "fix_priority": 12,
+      "symptom": "マーチングスクエアのケース 5・10 は、常に高い角を孤立させる線分を引く。4 隅の平均がレベル以上なら高い角はつながっているので、低い角を孤立させる線が正しい。2 つの高気圧の間(鞍点)の等圧線の位相が誤る(コード読み。2×2 の格子で確認)",
+      "expected": "曖昧なセルは 4 隅の平均で接続を決める(標準的なマーチングスクエアの曖昧さ解消)",
+      "cause": {
+        "confirmed": "MapLayers.cs の Cell のケース 5・default が固定",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:40:09Z",
+          "reason": "ほかの READY で実行可能な作業。2×2 の格子で決定的に再現でき、局所的に直せる(見た目のみ)",
+          "code_before": {
+            "commit": "842660c3599ad7801372f63ab656946e9461af76",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: ケース 5 と default が中心を見ない",
+          "hypothesis": "4 隅の平均がレベル以上なら高い角を連結(低い角を孤立)、未満なら高い角を孤立させる",
+          "planned_change": "src/Weather.Rendering/Map/MapLayers.cs の Cell のケース 5・default のみ + tests/Weather.Rendering.Tests/MapTests.cs",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Rendering(ゴールデン以外)PASS、曖昧でないセルは不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:47:03Z",
+          "diff_sha256": "de04fcfd56838d2dad23ae0ff828a8d3cb498e0e91aa5cfedecb0f4e60719f27",
+          "commit": "a3c5dbcb6fbd1ba6f9a346866f4504ee68c05b4b"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Rendering.Tests/IsobarLayer.Contour_Saddle"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:40:09Z",
+      "verified": {
+        "commit": "a3c5dbcb6fbd1ba6f9a346866f4504ee68c05b4b",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 96,
+        "visual_check_required": true,
+        "full_regression": "未実施",
+        "note": "見た目の変更(鞍点の等圧線)。Windows のゴールデン画像との比較と目視は未実施 → VERIFIED は線分の幾何(テスト)に限る"
+      }
     }
   ],
   "queue": [
@@ -1956,8 +2012,8 @@
     },
     {
       "id": "M-5",
-      "status": "UNREPRODUCED",
-      "note": "等圧線の鞍点が中心値を見ない(見た目のみ)"
+      "status": "PROMOTED_TO_BUG",
+      "note": "等圧線の鞍点が中心値を見ない(見た目のみ) → BUG-0031"
     },
     {
       "id": "M-6",
