@@ -124,6 +124,16 @@ public class MapText{
         }
     }
 
+    [Fact,Trait("Category","Unit")]public void Attribution(){
+        //同じ文言になる出典(海上分布予報の矢印と流れ)は 1 回だけ。違う出典は「 | 」でつなぐ
+        var arrows=new SourceAttribution{Provider=ProviderId.Jma,AgencyName="気象庁",ProductName="海上分布予報(風)",IssuedAt=Sample.Now,RetrievedAt=Sample.Now,License=new LicenseInfo("t",null)};
+        var flow=arrows with{ProductName="海上分布予報(風向・風速)",Processing=DataProcessing.UnitConverted};
+        var text=Presentation.MapText.Attribution(new MapFrame{Layer=FieldLayer.Wind,Time=Sample.Now,Japan=JapanCoverage.Available,Sources=[FakeMapData.Gfs,arrows,flow]},TimeZoneInfo.Utc);
+        Assert.Equal(2,text.Split(" | ").Length);
+        Assert.Contains("NOAA",text,StringComparison.Ordinal);
+        Assert.Contains("気象庁",text,StringComparison.Ordinal);
+    }
+
     [Fact,Trait("Category","Unit")]public void Relative(){
         Assert.Equal("現在",Presentation.MapText.Relative(Sample.Now.AddMinutes(10),Sample.Now));
         Assert.Equal("+3 時間",Presentation.MapText.Relative(Sample.Now.AddHours(3),Sample.Now));
