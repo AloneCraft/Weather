@@ -38,10 +38,14 @@ internal static class JmaAlertMapper{
                 if(item.Str("areaCode")!=area.Class20Code){
                     continue;
                 }
-                matched=true;
                 foreach(var kind in item.Items("kinds")){
                     var code=kind.Str("code");
-                    if(code is null||alerts.ContainsKey(code)){
+                    if(code is null){
+                        //「発表警報・注意報はなし」は code を持たない。この区域に関する発表ではないので見出しも採用しない
+                        continue;
+                    }
+                    matched=true;
+                    if(alerts.ContainsKey(code)){
                         continue;
                     }
                     var definition=JmaWarningCodes.Find(code);

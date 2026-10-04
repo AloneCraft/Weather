@@ -96,11 +96,18 @@ public class JmaProvider{
             Assert.Equal(AlertTier.Advisory,alert.Tier);
             Assert.Null(alert.WarningLevel);
             Assert.Equal("気象警報・注意報",alert.Source.ProductName);
+            //警報がある区域では、その電文の見出しを付ける
+            Assert.False(string.IsNullOrEmpty(alerts.Headline));
         }
         {
             //千代田区: 発表中の警報・注意報はない(空の一覧 = 警報なし)
             var alerts=await provider.GetAlertsAsync(Locations.Tokyo,TestContext.Current.CancellationToken);
             Assert.Empty(alerts.Active);
+        }
+        {
+            //警報のない地点には、他の区域の電文の見出し(伊豆諸島・小笠原諸島の注意喚起など)を付けない
+            var alerts=await provider.GetAlertsAsync(Locations.Tokyo,TestContext.Current.CancellationToken);
+            Assert.Null(alerts.Headline);
         }
     }
 
