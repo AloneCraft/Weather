@@ -212,6 +212,33 @@ public class MapRenderer{
         }
     }
 
+    [Fact,Trait("Category","Unit")]public async Task Render_TileFailure(){
+        //読み込みに失敗したタイルは、連続描画の間は毎フレーム再要求しない(気象庁サーバーへの負荷・電池)。一定時間後に再び要求する
+        var requests=new System.Collections.Concurrent.ConcurrentDictionary<(int,int,int),int>();
+        using var map=new Map.MapRenderer(MapSamples.Database);
+        map.TileLoader=(layer,z,x,y,ct)=>{
+            requests.AddOrUpdate((z,x,y),1,static (_,count)=>count+1);
+            throw new WeatherProviderException(ProviderId.Jma,ProviderFailure.ServerError,"503");
+        };
+        map.Camera.CenterOn(new GeoPoint(36,138),5);
+        map.Frame=new MapFrame{Layer=FieldLayer.Precipitation,Time=MapSamples.Time,Tiles=[MapSamples.TileLayer()],Legend=MapLegends.RainRate,Japan=JapanCoverage.Available};
+        for(var i=0;i<30;i++){
+            using(MapSamples.Render(map,480,360)){
+            }
+            await Task.Delay(20,TestContext.Current.CancellationToken);
+        }
+        Assert.NotEmpty(requests);
+        Assert.All(requests,static pair=>Assert.Equal(1,pair.Value));
+        //再試行の間隔が過ぎたら、もう一度だけ要求する(間隔を 2 秒にすると、失敗から 2 秒以上たっている最初のフレームで 1 回だけ再要求し、続くフレームでは待つ)
+        map.TileRetryAfter=TimeSpan.FromSeconds(2);
+        for(var i=0;i<4;i++){
+            using(MapSamples.Render(map,480,360)){
+            }
+            await Task.Delay(20,TestContext.Current.CancellationToken);
+        }
+        Assert.All(requests,static pair=>Assert.Equal(2,pair.Value));
+    }
+
     [Fact,Trait("Category","Unit")]public void Render_Wind(){
         //風の粒子は日本周辺に入らない(粒子の軌跡も描かれない)
         using var map=new Map.MapRenderer(MapSamples.Database);

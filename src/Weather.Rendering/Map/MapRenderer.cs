@@ -65,6 +65,12 @@ public sealed class MapRenderer:IDisposable{
         set=>this.tiles.Loader=value;
     }
 
+    /// <summary>読み込みに失敗したタイルを再び要求するまでの待ち時間(既定 30 秒)。</summary>
+    internal TimeSpan TileRetryAfter{
+        get=>this.tiles.RetryAfter;
+        set=>this.tiles.RetryAfter=value;
+    }
+
     /// <summary>表示するコマ。次の描画で切り替える。</summary>
     public MapFrame? Frame{
         get=>Volatile.Read(ref this.pending)??this.current;
