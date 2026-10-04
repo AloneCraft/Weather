@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 119,
-  "updated_at": "2026-10-04T16:49:37Z",
+  "revision": 121,
+  "updated_at": "2026-10-04T16:53:19Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -16,7 +16,7 @@
     "test_consolidation": "candidates_only"
   },
   "run": {
-    "status": "RUNNING",
+    "status": "ENDED",
     "run_id": "RUN-20261004-1510",
     "started_at": "2026-10-04T15:10:58Z",
     "deadline": "2026-10-05T03:10:58Z",
@@ -29,8 +29,9 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 98,
-      "exploratory_minutes": 0
+      "run_minutes": 102,
+      "exploratory_minutes": null,
+      "note": "run_minutes は開始・終了時刻の差(実測、サンドボックスの時計)。exploratory_minutes は測定していない(推定: 変異・不変条件・実測の探索で約 45 分、静的調査エージェントは並行で約 14 分)"
     },
     "survey": {
       "launched_at": "2026-10-04T15:16:35Z",
@@ -42,6 +43,36 @@
         "infra-presentation",
         "map",
         "providers"
+      ]
+    },
+    "ended_at": "2026-10-04T16:53:19Z",
+    "end_reason": "予算(実行枠 12 時間)は約 8% しか使っていないが、優先度の高い実行可能な既知の作業を処理し、残りは人間判断待ち(BUG-0003・0012・0017)・目視/Windows 確認待ち(BUG-0031)・低優先度の未再現候補だけになった。ルール 12「今回対象の実行可能な作業を処理した」「残りが人間判断待ちだけになった」に近い終了。低優先度の未再現候補(candidates)は次の実行枠で再開する",
+    "final_test": {
+      "code_state": {
+        "commit": "978a8f3728211cf213f704721538909cee5c0942",
+        "worktree": "製品コードの未コミット差分なし(qa/ の記録のみ)"
+      },
+      "environment": "Linux x64 / .NET SDK 10.0.401 / Debug(Rendering は libSkiaSharp.so を bin に手動配置)",
+      "results": {
+        "Weather.Core.Tests": "14/14 PASS",
+        "Weather.Geo.Tests": "10/10 PASS",
+        "Weather.Scene.Tests": "8/8 PASS",
+        "Weather.Infrastructure.Tests": "9/9 PASS",
+        "Weather.Providers.Tests": "46/46 PASS",
+        "Weather.Presentation.Tests": "48/48 PASS",
+        "Weather.Remote.Tests": "7/7 PASS",
+        "Weather.Rendering.Tests": "19/20(MapRenderer.Render_Golden の map-temperature 平均差 3.53 のみ失敗。Windows 生成のゴールデンの Linux 比較で、開始時のベースラインと同値。判定対象外=環境)",
+        "Functions ビルド(-warnaserror)": "成功"
+      },
+      "not_run": [
+        "Weather.Providers.LiveTests(通信制限)",
+        "Weather.App の Android/iOS ビルド・実機",
+        "SceneLab(WPF)",
+        "Windows のゴールデン画像",
+        "Full Regression(CI)"
+      ],
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/final2-*.log"
       ]
     }
   },
@@ -546,7 +577,7 @@
         "unknown": []
       },
       "reproduced": true,
-      "state": "READY",
+      "state": "NEEDS_HUMAN",
       "depends_on": [],
       "affects": [],
       "attempts": [],
@@ -554,7 +585,7 @@
       "related_tests": [
         "Weather.Geo.Tests/*"
       ],
-      "retry_when": null,
+      "retry_when": "Q-0005 の回答(国境付近で同じ国の都市を優先するか)",
       "evidence": [],
       "human_needed": "既知の制約の範囲か仕様判断",
       "found_at": "2026-10-04T15:30:42Z"
@@ -1959,7 +1990,7 @@
       "related_bugs": [],
       "status": "OPEN",
       "asked_at": "2026-10-04T15:00:00Z",
-      "summary": "検証手段: (a) Pull Request で CI (b) 手元で dotnet test 結果を共有 (c) Linux のみ。.NET SDK は実行枠でコンテナへ導入済み",
+      "summary": "検証手段: (a) Pull Request で CI(Windows・Android・iOS)(b) 手元で dotnet test を実行して結果を共有 (c) Linux のみ。.NET SDK は実行枠でコンテナへ導入済み。BUG-0031(等圧線の見た目)の確認と Render_Golden の判定も、この経路で行う",
       "answer": null
     },
     {
@@ -1987,7 +2018,7 @@
       ],
       "status": "OPEN",
       "asked_at": "2026-10-04T16:05:24Z",
-      "summary": "設計判断のまとめ: 週間予報の区域対応(BUG-0012)、非循環格子の外周半セル(BUG-0017)、国境付近の表示名・TZ(BUG-0003)、未知の警報コード(P-3)",
+      "summary": "設計判断のまとめ: 週間予報の区域対応(BUG-0012)、非循環格子の外周半セル(BUG-0017)、国境付近の表示名・TZ(BUG-0003)、未知の警報コード(P-3)、NWS 日最高/最低の現地日付(I-3。観測所のタイムゾーンの保存が必要)",
       "answer": null
     }
   ],
@@ -2053,7 +2084,7 @@
     },
     {
       "id": "P-3",
-      "status": "UNREPRODUCED",
+      "status": "NEEDS_HUMAN",
       "note": "未知の警報コードを丸ごと落とす(ガードレール 6 は原文表示を求める)"
     },
     {
@@ -2140,6 +2171,36 @@
       "id": "G-8",
       "status": "DEFERRED",
       "note": "Observation の値域検証なし(設計判断)"
+    },
+    {
+      "id": "P-7",
+      "status": "UNREPRODUCED",
+      "note": "NWS 観測の URL に秒単位の end が入り、呼び出しごとにキーが変わる(キャッシュが効かず、エントリが増える)。低優先度。対応案: end を丸める/省略"
+    },
+    {
+      "id": "I-3",
+      "status": "NEEDS_HUMAN",
+      "note": "NWS の日最高/最低が UTC 日付で集計される。直すには観測所のタイムゾーンの保存が必要(設計の追加)。Q-0005 に追加"
+    },
+    {
+      "id": "M-6",
+      "status": "UNREPRODUCED",
+      "note": "走査モード 0x80 で Grid.Lo1 が不一致(GFS は常にモード 0 で到達しない)。低優先度"
+    },
+    {
+      "id": "M-7/M-8",
+      "status": "UNREPRODUCED",
+      "note": "タイル層ありの 1 フレーム割り当て 16 KB 超の可能性(低)、経度複製が -1〜1 までで大きな画面の両端が欠ける(ほぼ到達しない)"
+    },
+    {
+      "id": "G-5b",
+      "status": "DEFERRED",
+      "note": "半角カナで ContainsJapanese が外れ並び順が変わる(実測では結果の先頭が同じで影響なし)"
+    },
+    {
+      "id": "MET-FindZone",
+      "status": "UNREPRODUCED",
+      "note": "MetNorway.FindZone が未知の IANA ID で UTC に落ちる(BUG-0008 の発生源対策で多くは防げるが、MET 側の経路は未対応)"
     }
   ]
 }

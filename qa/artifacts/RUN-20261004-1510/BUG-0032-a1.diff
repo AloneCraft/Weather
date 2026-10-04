@@ -1,0 +1,107 @@
+diff --git a/src/Weather.Presentation/ViewModels/HistoryViewModel.cs b/src/Weather.Presentation/ViewModels/HistoryViewModel.cs
+index 6255b2b..1cbf59d 100644
+--- a/src/Weather.Presentation/ViewModels/HistoryViewModel.cs
++++ b/src/Weather.Presentation/ViewModels/HistoryViewModel.cs
+@@ -17,6 +17,7 @@ public sealed record ObservationRow(string Time,string Temperature,string Precip
+ /// </summary>
+ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherService weather,IObservationHistoryService history,IFavoritesStore favorites,AppSettings settings,TimeProvider time):ObservableObject,INavigationAware{
+     private PlaceData? data;
++    private int loadVersion;
+ 
+     public ObservableCollection<ObservationStation> Stations{get;}=[];
+     public ObservableCollection<ObservationRow> Rows{get;}=[];
+@@ -103,7 +104,12 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
+         var units=settings.Units;
+         var now=time.GetUtcNow();
+         var from=now-Span(this.Range);
++        //範囲を素早く切り替えると読み込みが重なる。後から始めた読み込みだけを反映する(先に始めた読み込みが後で終わっても、最後に選んだ範囲を残す)
++        var version=Interlocked.Increment(ref this.loadVersion);
+         var observations=await history.GetObservationsAsync(station,from,now,CancellationToken.None);
++        if(version!=Volatile.Read(ref this.loadVersion)){
++            return;
++        }
+         var points=new List<ChartPoint>(observations.Count);
+         for(var i=0;i<observations.Count;i++){
+             var o=observations[i];
+@@ -137,6 +143,9 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
+         }
+         var localToday=DateOnly.FromDateTime(TimeText.Local(now,this.Zone).DateTime);
+         var summaries=await history.GetDailySummariesAsync(station,localToday,localToday,CancellationToken.None);
++        if(version!=Volatile.Read(ref this.loadVersion)){
++            return;
++        }
+         if(summaries.LastOrDefault(s=>s.LocalDate==localToday) is {} today){
+             var text=string.Format(System.Globalization.CultureInfo.CurrentCulture,Strings.TodaySummaryFormat,Units.Temperature(today.MaxTempC,units),Units.Temperature(today.MinTempC,units));
+             if(today.IsDerived){
+diff --git a/tests/Weather.Presentation.Tests/HistoryViewModelTests.cs b/tests/Weather.Presentation.Tests/HistoryViewModelTests.cs
+index 78bf74d..fff6dfe 100644
+--- a/tests/Weather.Presentation.Tests/HistoryViewModelTests.cs
++++ b/tests/Weather.Presentation.Tests/HistoryViewModelTests.cs
+@@ -8,14 +8,20 @@ namespace Weather.Presentation.Tests;
+ /// <summary>期間ごとに観測と日別の要約を返す(同期で完了する)。</summary>
+ internal sealed class StubHistory:IObservationHistoryService{
+     public Func<DateTimeOffset,DateTimeOffset,IReadOnlyList<Observation>> Observations{get;set;}=static (_,_)=>[];
++
++    /// <summary>設定すると、観測の取得はこの完了を待つ(完了順の制御用)。</summary>
++    public Func<DateTimeOffset,DateTimeOffset,Task>? Gate{get;set;}
+     public List<DailyObservationSummary> Summaries{get;}=[];
+ 
+     public ValueTask<HistorySyncResult> SyncAsync(ObservationStation station,CancellationToken cancellationToken){
+         return ValueTask.FromResult(new HistorySyncResult(0,null,false));
+     }
+ 
+-    public ValueTask<IReadOnlyList<Observation>> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken){
+-        return ValueTask.FromResult(this.Observations(from,to));
++    public async ValueTask<IReadOnlyList<Observation>> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken){
++        if(this.Gate is not null){
++            await this.Gate(from,to);
++        }
++        return this.Observations(from,to);
+     }
+ 
+     public ValueTask<IReadOnlyList<DailyObservationSummary>> GetDailySummariesAsync(ObservationStation station,DateOnly from,DateOnly to,CancellationToken cancellationToken){
+@@ -41,6 +47,44 @@ public class HistoryViewModel{
+         return new Presentation.ViewModels.HistoryViewModel(new WeatherSession(),new FakeWeatherService(),history,new FakeFavorites(),settings,new FakeTimeProvider(Sample.Now));
+     }
+ 
++    [Fact,Trait("Category","Unit")]public async Task LoadAsync_Race(){
++        //範囲を素早く切り替えて、先に始めた読み込みが後で終わっても、最後に選んだ範囲の内容が残る
++        var history=new StubHistory();
++        history.Observations=static (from,to)=>{
++            //期間の長さで中身を区別する(週は 1 件・年は 2 件)
++            if(to-from>TimeSpan.FromDays(100)){
++                return [new Observation(Sample.Now.AddDays(-200)){TemperatureC=new Measurement(1)},new Observation(Sample.Now.AddDays(-100)){TemperatureC=new Measurement(2)}];
++            }
++            return [new Observation(Sample.Now.AddDays(-3)){TemperatureC=new Measurement(30)}];
++        };
++        var week=new TaskCompletionSource();
++        var year=new TaskCompletionSource();
++        var armed=false;
++        history.Gate=(from,to)=>{
++            if(!armed){
++                return Task.CompletedTask;
++            }
++            if(to-from>TimeSpan.FromDays(100)){
++                return year.Task;
++            }
++            return week.Task;
++        };
++        var vm=Create(history);
++        vm.Station=Jma;
++        await vm.LoadAsync();
++        armed=true;
++        vm.Range=HistoryRange.Week;
++        vm.Range=HistoryRange.Year;
++        //年が先に終わり、週が後に終わる
++        year.SetResult();
++        await Task.Delay(100,TestContext.Current.CancellationToken);
++        week.SetResult();
++        await Task.Delay(100,TestContext.Current.CancellationToken);
++        Assert.Equal(HistoryRange.Year,vm.Range);
++        Assert.Equal(2,vm.Chart.Count);
++        Assert.Equal(2,vm.Rows.Count);
++    }
++
+     [Fact,Trait("Category","Unit")]public async Task LoadAsync(){
+         {
+             //今日の要約がまだなければ、昨日の値を「今日の最高/最低」として表示しない

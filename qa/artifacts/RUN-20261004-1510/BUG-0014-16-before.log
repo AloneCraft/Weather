@@ -1,0 +1,18 @@
+Running tests from /home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64)
+failed Weather.Presentation.Tests.HistoryViewModel.LoadAsync (29ms)
+  from /home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64)
+  Assert.Null() Failure: Value is not null
+  Expected: null
+  Actual:   "今日の最高 25° / 最低 15°"
+    at Weather.Presentation.Tests.HistoryViewModel.LoadAsync() in /home/user/Weather/tests/Weather.Presentation.Tests/HistoryViewModelTests.cs:52
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64) failed with 1 error(s) (796ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 43
+  failed: 1
+  succeeded: 42
+  skipped: 0
+  duration: 1s 069ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

@@ -1,0 +1,159 @@
+diff --git a/src/Weather.Presentation/ViewModels/PlaceWeatherViewModel.cs b/src/Weather.Presentation/ViewModels/PlaceWeatherViewModel.cs
+index d4f04da..2b5987d 100644
+--- a/src/Weather.Presentation/ViewModels/PlaceWeatherViewModel.cs
++++ b/src/Weather.Presentation/ViewModels/PlaceWeatherViewModel.cs
+@@ -24,6 +24,7 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
+     private readonly INavigator navigator;
+     private readonly IAppLifecycle lifecycle;
+     private readonly TimeProvider time;
++    private int refreshVersion;
+     private readonly SceneConverter converter=new();
+ 
+     public PlaceWeatherViewModel(PlaceData data,IWeatherService weather,WeatherSession session,AppSettings settings,INavigator navigator,IAppLifecycle lifecycle,TimeProvider time){
+@@ -73,6 +74,9 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
+         if(!this.lifecycle.IsForeground){
+             return;
+         }
++        //更新が重なる(定期更新・地図からの更新・手動更新)と、先に始めた更新が後で終わることがある。最後に始めた更新の結果だけを反映する
++        var version=Interlocked.Increment(ref this.refreshVersion);
++        bool IsLatest()=>version==Volatile.Read(ref this.refreshVersion);
+         this.IsBusy=true;
+         if(this.Data.Forecast is null){
+             this.State=PlaceState.Loading;
+@@ -83,13 +87,23 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
+             this.AreaNote=AreaNoteFor(location);
+             this.ObservationsAvailable=this.weather.GetObservationAvailability(location)==Availability.Available;
+             var forecastTask=this.weather.GetForecastAsync(location,cancellationToken).AsTask();
+-            var alertsTask=this.LoadAlertsAsync(location,cancellationToken);
++            var alertsTask=this.LoadAlertsAsync(location,IsLatest,cancellationToken);
+             var forecast=await forecastTask;
++            if(!IsLatest()){
++                await alertsTask;
++                return;
++            }
+             this.Data.Forecast=forecast;
+             await alertsTask;
++            if(!IsLatest()){
++                return;
++            }
+             this.LastUpdated=this.time.GetUtcNow();
+             this.Apply();
+         }catch(WeatherProviderException ex){
++            if(!IsLatest()){
++                return;
++            }
+             this.StatusMessage=FailureMessage(ex.Failure);
+             if(this.Data.Forecast?.Forecast is not null){
+                 this.State=PlaceState.Stale;
+@@ -98,7 +112,9 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
+                 this.Scene=this.converter.ConvertSkyOnly(this.Data.Point,this.time.GetUtcNow(),SceneOriginKind.None);
+             }
+         }finally{
+-            this.IsBusy=false;
++            if(IsLatest()){
++                this.IsBusy=false;
++            }
+             this.session.NotifyUpdated(this.Data.PlaceId);
+         }
+     }
+@@ -152,15 +168,23 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
+         return new Dictionary<string,string>{["place"]=this.Data.PlaceId};
+     }
+ 
+-    private async Task LoadAlertsAsync(ResolvedLocation location,CancellationToken cancellationToken){
++    private async Task LoadAlertsAsync(ResolvedLocation location,Func<bool> isLatest,CancellationToken cancellationToken){
++        AlertResult alerts;
+         try{
+-            this.Data.Alerts=await this.weather.GetAlertsAsync(location,cancellationToken);
++            alerts=await this.weather.GetAlertsAsync(location,cancellationToken);
+         }catch(WeatherProviderException){
++            if(!isLatest()){
++                return;
++            }
+             this.Data.Alerts=null;
+             this.AlertSummary=Strings.AlertsFetchFailed;
+             this.HasActiveAlerts=false;
+             return;
+         }
++        if(!isLatest()){
++            return;
++        }
++        this.Data.Alerts=alerts;
+         this.ApplyAlerts();
+     }
+ 
+diff --git a/tests/Weather.Presentation.Tests/Fakes.cs b/tests/Weather.Presentation.Tests/Fakes.cs
+index aeee822..9b8e48a 100644
+--- a/tests/Weather.Presentation.Tests/Fakes.cs
++++ b/tests/Weather.Presentation.Tests/Fakes.cs
+@@ -44,6 +44,9 @@ internal sealed class FakeWeatherService:IWeatherService{
+     public int AlertCalls{get;private set;}
+     public Func<GeoPoint,ResolvedLocation>? Resolver{get;set;}
+ 
++    /// <summary>設定すると、予報の取得はこの関数(引数は何回目の呼び出しか)の完了を待つ(完了順の制御用)。</summary>
++    public Func<int,Task<ForecastResult>>? ForecastFactory{get;set;}
++
+     public ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
+         if(this.Resolver is not null){
+             return ValueTask.FromResult(this.Resolver(point));
+@@ -56,6 +59,9 @@ internal sealed class FakeWeatherService:IWeatherService{
+         if(this.ForecastError is not null){
+             throw this.ForecastError;
+         }
++        if(this.ForecastFactory is not null){
++            return new ValueTask<ForecastResult>(this.ForecastFactory(this.ForecastCalls));
++        }
+         return ValueTask.FromResult(this.Forecast!);
+     }
+ 
+diff --git a/tests/Weather.Presentation.Tests/ViewModelTests.cs b/tests/Weather.Presentation.Tests/ViewModelTests.cs
+index 9b4b621..9af9dee 100644
+--- a/tests/Weather.Presentation.Tests/ViewModelTests.cs
++++ b/tests/Weather.Presentation.Tests/ViewModelTests.cs
+@@ -33,6 +33,46 @@ internal sealed class Harness{
+ }
+ 
+ public class PlaceWeatherViewModel{
++    [Fact,Trait("Category","Unit")]public async Task RefreshAsync_Race(){
++        //同じ地点の更新が重なり、先に始めた更新が後で終わっても、最後に始めた更新の結果を残す(古い予報・失敗で上書きしない)
++        var h=new Harness();
++        var older=new ForecastResult(Availability.Available,Sample.JmaForecast());
++        var newer=new ForecastResult(Availability.Available,Sample.JmaForecast());
++        var first=new TaskCompletionSource<ForecastResult>();
++        var second=new TaskCompletionSource<ForecastResult>();
++        h.Weather.ForecastFactory=n=>n==1?first.Task:second.Task;
++        var vm=h.Place();
++        var ct=TestContext.Current.CancellationToken;
++        var t1=vm.RefreshAsync(ct);
++        var t2=vm.RefreshAsync(ct);
++        second.SetResult(newer);
++        await t2;
++        Assert.Same(newer,vm.Data.Forecast);
++        {
++            //古い更新が成功して終わっても、新しい結果を上書きしない
++            first.SetResult(older);
++            await t1;
++            Assert.Same(newer,vm.Data.Forecast);
++            Assert.Equal(PlaceState.Ready,vm.State);
++        }
++        {
++            //古い更新が失敗して終わっても、新しい結果の状態を Error / Stale にしない
++            var h2=new Harness();
++            var fail=new TaskCompletionSource<ForecastResult>();
++            var ok=new TaskCompletionSource<ForecastResult>();
++            h2.Weather.ForecastFactory=n=>n==1?fail.Task:ok.Task;
++            var vm2=h2.Place();
++            var a=vm2.RefreshAsync(ct);
++            var b=vm2.RefreshAsync(ct);
++            ok.SetResult(newer);
++            await b;
++            fail.SetException(new WeatherProviderException(ProviderId.Jma,ProviderFailure.Network,"offline"));
++            await a;
++            Assert.Equal(PlaceState.Ready,vm2.State);
++            Assert.Same(newer,vm2.Data.Forecast);
++        }
++    }
++
+     [Fact,Trait("Category","Unit")]public async Task RefreshAsync(){
+         {
+             //日本域は気象庁の天気文を優先し、出典は「気象庁 hh:mm 発表」

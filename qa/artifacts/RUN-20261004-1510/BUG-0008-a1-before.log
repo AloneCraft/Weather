@@ -1,0 +1,21 @@
+Running tests from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+failed Weather.Geo.Tests.LocationResolver.Resolve (95ms)
+  from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+  Assert.Equal() Failure: Strings differ
+             ↓ (pos 0)
+  Expected: "Etc/GMT-2"
+  Actual:   "Not/AZone"
+             ↑ (pos 0)
+    at Weather.Geo.Tests.LocationResolver.Resolve() in /home/user/Weather/tests/Weather.Geo.Tests/GeoTests.cs:62
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64) failed with 1 error(s) (7s 125ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 10
+  failed: 1
+  succeeded: 9
+  skipped: 0
+  duration: 7s 393ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

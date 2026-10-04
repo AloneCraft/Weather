@@ -1,0 +1,17 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.GfsProvider.GetFieldAsync_WrongMessage (22ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  Assert.Throws() Failure: No exception was thrown
+  Expected: typeof(Weather.Core.WeatherProviderException)
+    at Weather.Providers.Tests.GfsProvider.GetFieldAsync_WrongMessage() in /home/user/Weather/tests/Weather.Providers.Tests/GfsProvider.cs:53
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (3s 257ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 46
+  failed: 1
+  succeeded: 45
+  skipped: 0
+  duration: 3s 537ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

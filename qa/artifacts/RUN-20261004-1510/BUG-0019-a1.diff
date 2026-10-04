@@ -1,0 +1,111 @@
+diff --git a/src/Weather.Rendering/Map/MapRenderer.cs b/src/Weather.Rendering/Map/MapRenderer.cs
+index 89b0875..41ab5cb 100644
+--- a/src/Weather.Rendering/Map/MapRenderer.cs
++++ b/src/Weather.Rendering/Map/MapRenderer.cs
+@@ -65,6 +65,12 @@ public sealed class MapRenderer:IDisposable{
+         set=>this.tiles.Loader=value;
+     }
+ 
++    /// <summary>読み込みに失敗したタイルを再び要求するまでの待ち時間(既定 30 秒)。</summary>
++    internal TimeSpan TileRetryAfter{
++        get=>this.tiles.RetryAfter;
++        set=>this.tiles.RetryAfter=value;
++    }
++
+     /// <summary>表示するコマ。次の描画で切り替える。</summary>
+     public MapFrame? Frame{
+         get=>Volatile.Read(ref this.pending)??this.current;
+diff --git a/src/Weather.Rendering/Map/TileLayer.cs b/src/Weather.Rendering/Map/TileLayer.cs
+index 2dd0054..001c905 100644
+--- a/src/Weather.Rendering/Map/TileLayer.cs
++++ b/src/Weather.Rendering/Map/TileLayer.cs
+@@ -1,4 +1,5 @@
+ using System.Collections.Concurrent;
++using System.Diagnostics;
+ using SkiaSharp;
+ using Weather.Core;
+ 
+@@ -16,11 +17,15 @@ internal sealed class TileLayer:IDisposable{
+     private readonly ConcurrentDictionary<string,SKImage?> cache=new(StringComparer.Ordinal);
+     private readonly ConcurrentQueue<string> order=new();
+     private readonly ConcurrentDictionary<string,byte> pending=new(StringComparer.Ordinal);
++    private readonly ConcurrentDictionary<string,long> failed=new(StringComparer.Ordinal);
+     private readonly SKPaint paint=new(){IsAntialias=false};
+     private CancellationTokenSource cancel=new();
+ 
+     public MapTileLoader? Loader{get;set;}
+ 
++    /// <summary>読み込みに失敗したタイルを再び要求するまでの待ち時間。</summary>
++    public TimeSpan RetryAfter{get;set;}=TimeSpan.FromSeconds(30);
++
+     /// <summary>タイルを読み終えたとき(描画スレッド以外から呼ばれる)。</summary>
+     public event Action? TileLoaded;
+ 
+@@ -105,6 +110,13 @@ internal sealed class TileLayer:IDisposable{
+             return;
+         }
+         var key=Key(layer,z,x,y);
++        if(this.failed.TryGetValue(key,out var failedAt)){
++            //読めなかったタイルは待ち時間の間は要求しない(連続描画の間、毎フレーム要求しないため)
++            if(Stopwatch.GetElapsedTime(failedAt)<this.RetryAfter){
++                return;
++            }
++            this.failed.TryRemove(key,out _);
++        }
+         if(!this.pending.TryAdd(key,0)){
+             return;
+         }
+@@ -116,12 +128,14 @@ internal sealed class TileLayer:IDisposable{
+                 if(bytes is not null){
+                     image=SKImage.FromEncodedData(bytes);
+                 }
++                this.failed.TryRemove(key,out _);
+                 this.Store(key,image);
+                 this.TileLoaded?.Invoke();
+             }catch(OperationCanceledException){
+                 //層の切り替えで取り消した
+             }catch(Exception ex) when(ex is HttpRequestException or IOException or WeatherProviderException){
+-                //読めないタイルは描かない(次の再描画で再び要求する)
++                //読めないタイルは描かない(待ち時間が過ぎた後の再描画で再び要求する)
++                this.failed[key]=Stopwatch.GetTimestamp();
+             }finally{
+                 this.pending.TryRemove(key,out _);
+             }
+diff --git a/tests/Weather.Rendering.Tests/MapTests.cs b/tests/Weather.Rendering.Tests/MapTests.cs
+index a946079..576535b 100644
+--- a/tests/Weather.Rendering.Tests/MapTests.cs
++++ b/tests/Weather.Rendering.Tests/MapTests.cs
+@@ -212,6 +212,33 @@ public class MapRenderer{
+         }
+     }
+ 
++    [Fact,Trait("Category","Unit")]public async Task Render_TileFailure(){
++        //読み込みに失敗したタイルは、連続描画の間は毎フレーム再要求しない(気象庁サーバーへの負荷・電池)。一定時間後に再び要求する
++        var requests=new System.Collections.Concurrent.ConcurrentDictionary<(int,int,int),int>();
++        using var map=new Map.MapRenderer(MapSamples.Database);
++        map.TileLoader=(layer,z,x,y,ct)=>{
++            requests.AddOrUpdate((z,x,y),1,static (_,count)=>count+1);
++            throw new WeatherProviderException(ProviderId.Jma,ProviderFailure.ServerError,"503");
++        };
++        map.Camera.CenterOn(new GeoPoint(36,138),5);
++        map.Frame=new MapFrame{Layer=FieldLayer.Precipitation,Time=MapSamples.Time,Tiles=[MapSamples.TileLayer()],Legend=MapLegends.RainRate,Japan=JapanCoverage.Available};
++        for(var i=0;i<30;i++){
++            using(MapSamples.Render(map,480,360)){
++            }
++            await Task.Delay(20,TestContext.Current.CancellationToken);
++        }
++        Assert.NotEmpty(requests);
++        Assert.All(requests,static pair=>Assert.Equal(1,pair.Value));
++        //再試行の間隔が過ぎたら、もう一度だけ要求する(間隔を 2 秒にすると、失敗から 2 秒以上たっている最初のフレームで 1 回だけ再要求し、続くフレームでは待つ)
++        map.TileRetryAfter=TimeSpan.FromSeconds(2);
++        for(var i=0;i<4;i++){
++            using(MapSamples.Render(map,480,360)){
++            }
++            await Task.Delay(20,TestContext.Current.CancellationToken);
++        }
++        Assert.All(requests,static pair=>Assert.Equal(2,pair.Value));
++    }
++
+     [Fact,Trait("Category","Unit")]public void Render_Wind(){
+         //風の粒子は日本周辺に入らない(粒子の軌跡も描かれない)
+         using var map=new Map.MapRenderer(MapSamples.Database);

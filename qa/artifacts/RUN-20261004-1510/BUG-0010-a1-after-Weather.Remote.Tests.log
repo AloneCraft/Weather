@@ -1,0 +1,9 @@
+Running tests from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+/home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64) passed (829ms)
+
+Test run summary: Passed!
+  total: 6
+  failed: 0
+  succeeded: 6
+  skipped: 0
+  duration: 1s 128ms

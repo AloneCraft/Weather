@@ -1,0 +1,18 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.JmaProvider.GetAlertsAsync (26ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  Assert.Null() Failure: Value is not null
+  Expected: null
+  Actual:   "伊豆諸島南部では、強風に注意してください。\n伊豆諸島北部、伊豆諸島南部、小笠原諸島では、高波に注意し"···
+    at Weather.Providers.Tests.JmaProvider.GetAlertsAsync() in /home/user/Weather/tests/Weather.Providers.Tests/JmaProvider.cs:108
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (1s 695ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 44
+  failed: 1
+  succeeded: 43
+  skipped: 0
+  duration: 1s 987ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

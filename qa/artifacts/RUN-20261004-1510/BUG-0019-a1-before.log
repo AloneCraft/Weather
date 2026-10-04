@@ -1,0 +1,39 @@
+Running tests from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+failed Weather.Rendering.Tests.MapRenderer.Render_TileFailure (3s 146ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Assert.All() Failure: 4 out of 4 items in the collection did not pass.
+  [0]: Item:  [Tuple (4, 13, 6)] = 30
+       Error: Assert.Equal() Failure: Values differ
+              Expected: 1
+              Actual:   30
+  [1]: Item:  [Tuple (4, 13, 5)] = 30
+       Error: Assert.Equal() Failure: Values differ
+              Expected: 1
+              Actual:   30
+  [2]: Item:  [Tuple (4, 14, 6)] = 30
+       Error: Assert.Equal() Failure: Values differ
+              Expected: 1
+              Actual:   30
+  [3]: Item:  [Tuple (4, 14, 5)] = 30
+       Error: Assert.Equal() Failure: Values differ
+              Expected: 1
+              Actual:   30
+    at Weather.Rendering.Tests.MapRenderer.Render_TileFailure() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:231
+    --- End of stack trace from previous location ---
+failed Weather.Rendering.Tests.MapRenderer.Render_Golden (6s 179ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  map-temperature: 平均差 3.53
+    at Weather.Rendering.Tests.Golden.Check(String name, SKBitmap bitmap) in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:430
+    at Weather.Rendering.Tests.MapRenderer.Render_Golden() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:349
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64) failed with 2 error(s) (1m 31s 424ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 18
+  failed: 2
+  succeeded: 16
+  skipped: 0
+  duration: 1m 31s 665ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

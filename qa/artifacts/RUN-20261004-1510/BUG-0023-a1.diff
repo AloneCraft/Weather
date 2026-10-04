@@ -1,0 +1,39 @@
+diff --git a/src/Weather.Presentation/Formatting.cs b/src/Weather.Presentation/Formatting.cs
+index e212c3a..7563e56 100644
+--- a/src/Weather.Presentation/Formatting.cs
++++ b/src/Weather.Presentation/Formatting.cs
+@@ -10,7 +10,12 @@ public static class Units{
+         if(celsius is not {} c){
+             return "--";
+         }
+-        return string.Create(CultureInfo.InvariantCulture,$"{ToTemperature(c,units):0}°");
++        var rounded=Math.Round(ToTemperature(c,units),MidpointRounding.AwayFromZero);
++        if(rounded==0){
++            //丸めて 0 になる負の値(-0.3 など)を「-0°」と表示しない
++            rounded=0;
++        }
++        return string.Create(CultureInfo.InvariantCulture,$"{rounded:0}°");
+     }
+ 
+     public static double ToTemperature(double celsius,UnitSystem units){
+diff --git a/tests/Weather.Presentation.Tests/ViewModelTests.cs b/tests/Weather.Presentation.Tests/ViewModelTests.cs
+index 47d7b13..f8ed1f9 100644
+--- a/tests/Weather.Presentation.Tests/ViewModelTests.cs
++++ b/tests/Weather.Presentation.Tests/ViewModelTests.cs
+@@ -206,6 +206,16 @@ public class Units{
+             Assert.Equal("68°",Presentation.Units.Temperature(20,UnitSystem.Imperial));
+             Assert.Equal("--",Presentation.Units.Temperature(null,UnitSystem.Metric));
+         }
++        {
++            //丸めて 0 になる値に負号を付けない(「-0°」と表示しない)。0 でない負の値は負号を付ける
++            Assert.Equal("0°",Presentation.Units.Temperature(-0.3,UnitSystem.Metric));
++            Assert.Equal("0°",Presentation.Units.Temperature(-0.49,UnitSystem.Metric));
++            Assert.Equal("0°",Presentation.Units.Temperature(-0.0,UnitSystem.Metric));
++            Assert.Equal("0°",Presentation.Units.Temperature(-17.9,UnitSystem.Imperial));
++            Assert.Equal("-1°",Presentation.Units.Temperature(-0.5,UnitSystem.Metric));
++            Assert.Equal("-1°",Presentation.Units.Temperature(-0.6,UnitSystem.Metric));
++            Assert.Equal("-5°",Presentation.Units.Temperature(-5,UnitSystem.Metric));
++        }
+     }
+ 
+     [Fact,Trait("Category","Unit")]public void Wind(){

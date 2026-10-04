@@ -1,0 +1,19 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.JmaProvider.GetForecastAsync_SecondaryFailure (84ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.ArgumentException : 時系列が昇順でないか区間が重なっています: 2026-10-04T06:00:00.0000000+09:00 / 2026-10-04T06:00:00.0000000+09:00 (Parameter 'points')
+    at Weather.Core.ForecastRules.EnsureAscendingAndNonOverlapping(IReadOnlyList`1 points) in /home/user/Weather/src/Weather.Core/Models/Forecast.cs:57
+    at Weather.Core.Forecast..ctor(ResolvedLocation location, IReadOnlyList`1 timeSeries, IReadOnlyList`1 daily, String areaName, IReadOnlyList`1 issues) in /home/user/Weather/src/Weather.Core/Models/Forecast.cs:12
+    at Weather.Providers.Jma.JmaProvider.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Jma/JmaProvider.cs:60
+    at Weather.Providers.Tests.JmaProvider.GetForecastAsync_SecondaryFailure() in /home/user/Weather/tests/Weather.Providers.Tests/JmaProvider.cs:116
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (1s 341ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 44
+  failed: 1
+  succeeded: 43
+  skipped: 0
+  duration: 1s 634ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

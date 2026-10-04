@@ -1,0 +1,16 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Weather.Core -> /home/user/Weather/src/Weather.Core/bin/Debug/net10.0/Weather.Core.dll
+  Weather.Providers -> /home/user/Weather/src/Weather.Providers/bin/Debug/net10.0/Weather.Providers.dll
+  Weather.Geo -> /home/user/Weather/src/Weather.Geo/bin/Debug/net10.0/Weather.Geo.dll
+  Weather.Remote -> /home/user/Weather/src/Weather.Remote/bin/Debug/net10.0/Weather.Remote.dll
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  WorkerExtensions -> /home/user/Weather/src/Weather.Functions/obj/Debug/net10.0/WorkerExtensions/bin/Release/net8.0/Microsoft.Azure.Functions.Worker.Extensions.dll
+  Weather.Functions -> /home/user/Weather/src/Weather.Functions/bin/Debug/net10.0/Weather.Functions.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.11

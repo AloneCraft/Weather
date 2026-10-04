@@ -1,0 +1,97 @@
+diff --git a/src/Weather.Infrastructure/FileHttpCacheStore.cs b/src/Weather.Infrastructure/FileHttpCacheStore.cs
+index c0494b7..45e08b0 100644
+--- a/src/Weather.Infrastructure/FileHttpCacheStore.cs
++++ b/src/Weather.Infrastructure/FileHttpCacheStore.cs
+@@ -28,7 +28,8 @@ internal sealed record HttpCacheMetadata(
+     DateTimeOffset? Expires,
+     DateTimeOffset ReceivedAt,
+     DateTimeOffset LastAccessedAt,
+-    long Length);
++    long Length,
++    string? BodySha256=null);
+ 
+ [JsonSerializable(typeof(HttpCacheMetadata))]
+ internal sealed partial class InfrastructureJsonContext:JsonSerializerContext;
+@@ -64,6 +65,11 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
+             return null;
+         }
+         var body=await File.ReadAllBytesAsync(bodyPath,cancellationToken).ConfigureAwait(false);
++        //本文とメタは別ファイルで、書き込みと重なると食い違う組を読み得る。照合できなければキャッシュなしとして扱う
++        //(削除はしない: 書き込み中の新しいエントリを消さないため。ハッシュのない古い形式のメタは長さだけ照合する)
++        if(body.Length!=meta.Length||(meta.BodySha256 is not null&&meta.BodySha256!=Hash(body))){
++            return null;
++        }
+         return new HttpCacheEntry{
+             Key=meta.Key,
+             StatusCode=meta.StatusCode,
+@@ -83,7 +89,7 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
+     public async ValueTask SetAsync(HttpCacheEntry entry,CancellationToken cancellationToken){
+         ArgumentNullException.ThrowIfNull(entry);
+         var (bodyPath,metaPath)=this.Paths(entry.Key);
+-        var meta=new HttpCacheMetadata(entry.Key,entry.StatusCode,entry.ContentType,entry.ETag,entry.LastModified,entry.Date,entry.Age,entry.MaxAge,entry.Expires,entry.ReceivedAt,entry.LastAccessedAt,entry.Body.Length);
++        var meta=new HttpCacheMetadata(entry.Key,entry.StatusCode,entry.ContentType,entry.ETag,entry.LastModified,entry.Date,entry.Age,entry.MaxAge,entry.Expires,entry.ReceivedAt,entry.LastAccessedAt,entry.Body.Length,Hash(entry.Body));
+         var tempBody=bodyPath+".tmp";
+         var tempMeta=metaPath+".tmp";
+         await File.WriteAllBytesAsync(tempBody,entry.Body,cancellationToken).ConfigureAwait(false);
+@@ -124,6 +130,10 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
+         return HttpCacheAccess.NeedsUpdate(entry,now);
+     }
+ 
++    private static string Hash(byte[] body){
++        return Convert.ToHexString(SHA256.HashData(body));
++    }
++
+     private (string Body,string Meta) Paths(string key){
+         var hash=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key)));
+         return (Path.Combine(this.directory,hash+".body"),Path.Combine(this.directory,hash+".meta"));
+diff --git a/tests/Weather.Infrastructure.Tests/InfrastructureTests.cs b/tests/Weather.Infrastructure.Tests/InfrastructureTests.cs
+index f70849c..cc61457 100644
+--- a/tests/Weather.Infrastructure.Tests/InfrastructureTests.cs
++++ b/tests/Weather.Infrastructure.Tests/InfrastructureTests.cs
+@@ -46,6 +46,46 @@ public class FileHttpCacheStore{
+         }
+     }
+ 
++    [Fact,Trait("Category","Unit")]public async Task GetAsync_Concurrent(){
++        //同じキーの書き込みと読み取りが重なっても、本文とメタ(ETag)の食い違う組は返さない(キャッシュなしとして扱う)
++        using var temp=new TempDirectory();
++        var store=new Infrastructure.FileHttpCacheStore(temp.Options);
++        var ct=TestContext.Current.CancellationToken;
++        static HttpCacheEntry Version(string tag,int length){
++            return new HttpCacheEntry{Key="k",StatusCode=200,Body=Enumerable.Repeat((byte)tag[0],length).ToArray(),ETag="\""+tag+"\"",ReceivedAt=Now};
++        }
++        await store.SetAsync(Version("a",1000),ct);
++        var torn=0;
++        var valid=0;
++        var writer=Task.Run(async ()=>{
++            for(var i=0;i<600;i++){
++                await store.SetAsync(Version(i%2==0?"b":"a",i%2==0?2000:1000),ct);
++            }
++        },ct);
++        var readers=Enumerable.Range(0,3).Select(_=>Task.Run(async ()=>{
++            while(!writer.IsCompleted){
++                var entry=await store.GetAsync("k",ct);
++                if(entry is null){
++                    continue;
++                }
++                var tag=entry.ETag![1];
++                var expectedLength=2000;
++                if(tag=='a'){
++                    expectedLength=1000;
++                }
++                if(entry.Body.Length==expectedLength&&entry.Body.All(b=>b==(byte)tag)){
++                    Interlocked.Increment(ref valid);
++                }else{
++                    Interlocked.Increment(ref torn);
++                }
++            }
++        },ct)).ToArray();
++        await writer;
++        await Task.WhenAll(readers);
++        Assert.Equal(0,torn);
++        Assert.True(valid>0);
++    }
++
+     [Fact,Trait("Category","Unit")]public async Task TrimAsync(){
+         using var temp=new TempDirectory();
+         var store=new Infrastructure.FileHttpCacheStore(temp.Options);

@@ -1,0 +1,45 @@
+diff --git a/src/Weather.Providers/Jma/JmaAlertMapper.cs b/src/Weather.Providers/Jma/JmaAlertMapper.cs
+index 9b693b3..e933d8a 100644
+--- a/src/Weather.Providers/Jma/JmaAlertMapper.cs
++++ b/src/Weather.Providers/Jma/JmaAlertMapper.cs
+@@ -38,10 +38,14 @@ internal static class JmaAlertMapper{
+                 if(item.Str("areaCode")!=area.Class20Code){
+                     continue;
+                 }
+-                matched=true;
+                 foreach(var kind in item.Items("kinds")){
+                     var code=kind.Str("code");
+-                    if(code is null||alerts.ContainsKey(code)){
++                    if(code is null){
++                        //「発表警報・注意報はなし」は code を持たない。この区域に関する発表ではないので見出しも採用しない
++                        continue;
++                    }
++                    matched=true;
++                    if(alerts.ContainsKey(code)){
+                         continue;
+                     }
+                     var definition=JmaWarningCodes.Find(code);
+diff --git a/tests/Weather.Providers.Tests/JmaProvider.cs b/tests/Weather.Providers.Tests/JmaProvider.cs
+index 7e22aa2..7898a45 100644
+--- a/tests/Weather.Providers.Tests/JmaProvider.cs
++++ b/tests/Weather.Providers.Tests/JmaProvider.cs
+@@ -96,12 +96,19 @@ public class JmaProvider{
+             Assert.Equal(AlertTier.Advisory,alert.Tier);
+             Assert.Null(alert.WarningLevel);
+             Assert.Equal("気象警報・注意報",alert.Source.ProductName);
++            //警報がある区域では、その電文の見出しを付ける
++            Assert.False(string.IsNullOrEmpty(alerts.Headline));
+         }
+         {
+             //千代田区: 発表中の警報・注意報はない(空の一覧 = 警報なし)
+             var alerts=await provider.GetAlertsAsync(Locations.Tokyo,TestContext.Current.CancellationToken);
+             Assert.Empty(alerts.Active);
+         }
++        {
++            //警報のない地点には、他の区域の電文の見出し(伊豆諸島・小笠原諸島の注意喚起など)を付けない
++            var alerts=await provider.GetAlertsAsync(Locations.Tokyo,TestContext.Current.CancellationToken);
++            Assert.Null(alerts.Headline);
++        }
+     }
+ 
+     [Fact,Trait("Category","Unit")]public async Task FindStationsAsync(){

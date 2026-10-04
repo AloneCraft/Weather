@@ -1,0 +1,110 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.HttpCacheHandler.SendAsync (94ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://api.weather.gov/points/38.89,-77.04
+  ---- System.Net.Http.HttpRequestException : Error while copying content to a stream.
+  -------- System.IO.IOException : connection reset
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.Nws.NwsProvider.GetPointAsync(HttpClient client, GeoPoint location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:112
+    at Weather.Providers.Nws.NwsProvider.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:21
+    at Weather.Providers.Tests.HttpCacheHandler.SendAsync() in /home/user/Weather/tests/Weather.Providers.Tests/HttpCacheHandler.cs:64
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpContent.LoadIntoBufferAsync(Int64 maxBufferSize, CancellationToken cancellationToken)
+    at System.Net.Http.HttpContent.ReadAsByteArrayAsync(CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:88
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Weather.Providers.Http.UserAgentHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/UserAgentHandler.cs:8
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<>n__0(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.SendCoreAsync(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at System.Net.Http.HttpClient.SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range)
+    at Weather.Providers.Nws.NwsProvider.GetPointAsync(HttpClient client, GeoPoint location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:112
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at Weather.Providers.Nws.NwsProvider.GetPointAsync(HttpClient client, GeoPoint location, CancellationToken cancellationToken)
+    at Weather.Providers.Nws.NwsProvider.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:21
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at Weather.Providers.Nws.NwsProvider.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken)
+    at Weather.Providers.Tests.HttpCacheHandler.SendAsync() in /home/user/Weather/tests/Weather.Providers.Tests/HttpCacheHandler.cs:64
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at Weather.Providers.Tests.HttpCacheHandler.SendAsync()
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+    at System.Threading.Tasks.Task`1.InnerInvoke()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+    at System.Threading.ThreadPoolWorkQueue.Dispatch()
+    at System.Threading.PortableThreadPool.WorkerThread.WorkerThreadStart()
+    at System.Threading.Thread.StartCallback()
+    --- End of stack trace from previous location ---
+    at System.Net.Http.HttpContent.WaitAndReturnAsync[TState,TResult](Task waitTask, TState state, Func`2 returnFunc)
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:88
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+    ----- Inner Stack Trace -----
+    at Weather.Providers.Tests.BrokenContent.SerializeToStreamAsync(Stream stream, TransportContext context) in /home/user/Weather/tests/Weather.Providers.Tests/HttpCacheHandler.cs:114
+    at System.Net.Http.HttpContent.LoadIntoBufferAsync(Int64 maxBufferSize, CancellationToken cancellationToken)
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (1s 326ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 44
+  failed: 1
+  succeeded: 43
+  skipped: 0
+  duration: 1s 569ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

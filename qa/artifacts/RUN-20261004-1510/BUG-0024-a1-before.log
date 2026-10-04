@@ -1,0 +1,18 @@
+Running tests from /home/user/Weather/tests/Weather.Infrastructure.Tests/bin/Debug/net10.0/Weather.Infrastructure.Tests.dll (net10.0|x64)
+failed Weather.Infrastructure.Tests.FileHttpCacheStore.GetAsync_Concurrent (326ms)
+  from /home/user/Weather/tests/Weather.Infrastructure.Tests/bin/Debug/net10.0/Weather.Infrastructure.Tests.dll (net10.0|x64)
+  Assert.Equal() Failure: Values differ
+  Expected: 0
+  Actual:   6811
+    at Weather.Infrastructure.Tests.FileHttpCacheStore.GetAsync_Concurrent() in /home/user/Weather/tests/Weather.Infrastructure.Tests/InfrastructureTests.cs:85
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Infrastructure.Tests/bin/Debug/net10.0/Weather.Infrastructure.Tests.dll (net10.0|x64) failed with 1 error(s) (972ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 9
+  failed: 1
+  succeeded: 8
+  skipped: 0
+  duration: 1s 235ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

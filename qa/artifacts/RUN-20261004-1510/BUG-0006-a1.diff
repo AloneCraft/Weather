@@ -1,0 +1,46 @@
+diff --git a/src/Weather.Core/Fields/GridField.cs b/src/Weather.Core/Fields/GridField.cs
+index dc32433..75721db 100644
+--- a/src/Weather.Core/Fields/GridField.cs
++++ b/src/Weather.Core/Fields/GridField.cs
+@@ -58,6 +58,10 @@ public readonly record struct GridGeometry{
+             if(x<0){
+                 x+=this.Columns;
+             }
++            if(x>=this.Columns){
++                //x が 0 のすぐ手前の負の値だと、足した結果が丸めで列数ちょうどになる
++                x=0;
++            }
+         }
+         column=x;
+         if(row<0||row>this.Rows-1){
+diff --git a/tests/Weather.Core.Tests/FieldTests.cs b/tests/Weather.Core.Tests/FieldTests.cs
+index 6f7ce1c..46b20f5 100644
+--- a/tests/Weather.Core.Tests/FieldTests.cs
++++ b/tests/Weather.Core.Tests/FieldTests.cs
+@@ -12,6 +12,13 @@ public class GridGeometry{
+             Assert.Equal(719.5,x,6);
+             Assert.Equal(180,y,6);
+         }
++        {
++            //循環の継ぎ目: 経度が 0 のすぐ手前(丸めで 360 ちょうどになる値)でも列は [0, Columns) に収まる
++            Assert.True(global.TryGetPosition(0,-1e-15,out var seam,out _));
++            Assert.InRange(seam,0,719.999999);
++            Assert.True(global.TryGetPosition(0,360,out var full,out _));
++            Assert.Equal(0,full,6);
++        }
+         {
+             //緯度の範囲外は false
+             Assert.False(global.TryGetPosition(91,0,out _,out _));
+@@ -51,6 +58,12 @@ public class GridField{
+             var f=Field([0,10,20,30,0,10,20,30],4,2);
+             Assert.Equal(15f,f.Sample(1,315));
+         }
++        {
++            //循環の継ぎ目のすぐ手前(丸めで列数ちょうどになる経度)は、経度 0 と同じ値(最南行でも例外にしない)
++            var f=Field([0,10,20,30,40,50,60,70],4,2);
++            Assert.Equal(f.Sample(1,0),f.Sample(1,-1e-15));
++            Assert.Equal(f.Sample(0,0),f.Sample(0,-1e-15));
++        }
+         {
+             //周囲に NaN(欠損・日本周辺)があれば NaN
+             var f=Field([0,float.NaN,20,30,40,50,60,70],4,2);

@@ -1,0 +1,119 @@
+diff --git a/src/Weather.Providers/Http/HttpCacheHandler.cs b/src/Weather.Providers/Http/HttpCacheHandler.cs
+index ac4f9ac..f4a22a1 100644
+--- a/src/Weather.Providers/Http/HttpCacheHandler.cs
++++ b/src/Weather.Providers/Http/HttpCacheHandler.cs
+@@ -85,7 +85,15 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
+             return CreateResponse(request,entry!,"stale");
+         }
+         if(response.StatusCode is HttpStatusCode.OK or HttpStatusCode.PartialContent&&HttpFreshness.IsStorable(response)){
+-            var body=await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
++            byte[] body;
++            try{
++                body=await this.ReadBodyWithTimeoutAsync(response,cancellationToken).ConfigureAwait(false);
++            }catch(Exception ex) when((ex is HttpRequestException or TimeoutException)&&HttpFreshness.CanServeStale(entry,now,rule.MaxStale)){
++                //ヘッダーの後、本文の途中で切れた / 止まった場合も、通信失敗と同じく古いエントリを返す
++                LogServingStale(logger,request.RequestUri!,ex.GetType().Name);
++                response.Dispose();
++                return CreateResponse(request,entry!,"stale");
++            }
+             var stored=HttpFreshness.CreateEntry(key,response,body,now);
+             response.Dispose();
+             await this.TrySetAsync(stored,cancellationToken).ConfigureAwait(false);
+@@ -104,6 +112,17 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
+         }
+     }
+ 
++    /// <summary>本文の読み込みにも、ヘッダー受信と同じタイムアウトを適用する(CacheAndRouting.md「構成」: タイムアウトもここで扱う)。</summary>
++    private async Task<byte[]> ReadBodyWithTimeoutAsync(HttpResponseMessage response,CancellationToken cancellationToken){
++        using var timeout=new CancellationTokenSource(options.Timeout,time);
++        using var linked=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,timeout.Token);
++        try{
++            return await response.Content.ReadAsByteArrayAsync(linked.Token).ConfigureAwait(false);
++        }catch(OperationCanceledException ex) when(!cancellationToken.IsCancellationRequested&&timeout.IsCancellationRequested){
++            throw new TimeoutException($"本文の読み込みがタイムアウトしました: {response.RequestMessage?.RequestUri}",ex);
++        }
++    }
++
+     private async ValueTask<HttpCacheEntry?> TryGetAsync(string key,CancellationToken cancellationToken){
+         try{
+             return await store.GetAsync(key,cancellationToken).ConfigureAwait(false);
+diff --git a/tests/Weather.Providers.Tests/HttpCacheHandler.cs b/tests/Weather.Providers.Tests/HttpCacheHandler.cs
+index 147b6ec..57cb25f 100644
+--- a/tests/Weather.Providers.Tests/HttpCacheHandler.cs
++++ b/tests/Weather.Providers.Tests/HttpCacheHandler.cs
+@@ -54,6 +54,40 @@ public class HttpCacheHandler{
+             Assert.True(stale.IsStale);
+             Assert.Equal(TestHost.Now,stale.Daily[0].Source.RetrievedAt);
+         }
++        {
++            //ヘッダーを受け取った後、本文の途中で通信が切れたときも、許容期間内の古いエントリを返す
++            using var host=TestHost.Create(Fixtures.MapNws);
++            var provider=host.Get<Target>();
++            await provider.GetForecastAsync(Locations.Washington,TestContext.Current.CancellationToken);
++            host.Time.Advance(TimeSpan.FromDays(2));
++            host.Handler.Override=static _=>new HttpResponseMessage(HttpStatusCode.OK){Content=new BrokenContent()};
++            var stale=await provider.GetForecastAsync(Locations.Washington,TestContext.Current.CancellationToken);
++            Assert.True(stale.IsStale);
++            Assert.Equal(TestHost.Now,stale.Daily[0].Source.RetrievedAt);
++        }
++        {
++            //本文が止まったままでもタイムアウトで打ち切り、古いエントリを返す
++            using var host=TestHost.Create(Fixtures.MapNws);
++            var provider=host.Get<Target>();
++            await provider.GetForecastAsync(Locations.Washington,TestContext.Current.CancellationToken);
++            host.Time.Advance(TimeSpan.FromDays(2));
++            host.Handler.Override=static _=>new HttpResponseMessage(HttpStatusCode.OK){Content=new StalledContent()};
++            var task=provider.GetForecastAsync(Locations.Washington,TestContext.Current.CancellationToken);
++            for(var i=0;i<500&&!task.IsCompleted;i++){
++                host.Time.Advance(TimeSpan.FromSeconds(5));
++                await Task.Delay(10,TestContext.Current.CancellationToken);
++            }
++            Assert.True(task.IsCompleted);
++            var stale=await task;
++            Assert.True(stale.IsStale);
++        }
++        {
++            //本文の途中で切れて古いエントリもなければ Network
++            using var host=TestHost.Create();
++            host.Handler.Override=static _=>new HttpResponseMessage(HttpStatusCode.OK){Content=new BrokenContent()};
++            var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await host.Get<Target>().GetAlertsAsync(Locations.Washington,TestContext.Current.CancellationToken));
++            Assert.Equal(ProviderFailure.Network,ex.Failure);
++        }
+         {
+             //警報は 6 時間を超えた古いキャッシュを返さない
+             using var host=TestHost.Create(Fixtures.MapNws);
+@@ -74,6 +108,34 @@ public class HttpCacheHandler{
+     }
+ }
+ 
++/// <summary>ヘッダーは届くが、本文の途中で接続が切れる応答の再現用。</summary>
++internal sealed class BrokenContent:HttpContent{
++    protected override Task SerializeToStreamAsync(Stream stream,TransportContext? context){
++        throw new IOException("connection reset");
++    }
++
++    protected override bool TryComputeLength(out long length){
++        length=0;
++        return false;
++    }
++}
++
++/// <summary>ヘッダーは届くが、本文が止まったまま進まない応答の再現用(取り消されるまで待つ)。</summary>
++internal sealed class StalledContent:HttpContent{
++    protected override Task SerializeToStreamAsync(Stream stream,TransportContext? context){
++        return Task.Delay(Timeout.Infinite);
++    }
++
++    protected override Task SerializeToStreamAsync(Stream stream,TransportContext? context,CancellationToken cancellationToken){
++        return Task.Delay(Timeout.Infinite,cancellationToken);
++    }
++
++    protected override bool TryComputeLength(out long length){
++        length=0;
++        return false;
++    }
++}
++
+ public class HttpFreshness{
+     [Fact,Trait("Category","Unit")]public void IsFresh(){
+         var now=TestHost.Now;

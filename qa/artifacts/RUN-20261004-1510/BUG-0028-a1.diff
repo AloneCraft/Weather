@@ -1,0 +1,52 @@
+diff --git a/src/Weather.Presentation/ViewModels/MainViewModel.cs b/src/Weather.Presentation/ViewModels/MainViewModel.cs
+index 2658727..e5662e6 100644
+--- a/src/Weather.Presentation/ViewModels/MainViewModel.cs
++++ b/src/Weather.Presentation/ViewModels/MainViewModel.cs
+@@ -128,8 +128,14 @@ public sealed partial class MainViewModel:ObservableObject,IDisposable{
+             return;
+         }
+         this.lastRefresh=this.time.GetUtcNow();
+-        foreach(var place in this.Places.ToList()){
+-            await place.RefreshAsync(cancellationToken);
++        try{
++            foreach(var place in this.Places.ToList()){
++                await place.RefreshAsync(cancellationToken);
++            }
++        }catch(OperationCanceledException){
++            //取り消された(背景に回した・非表示にした)ときは更新時刻を戻し、次の周期ですぐ再取得する(予報のない地点が 10 分間「読み込み中」のままにならない)
++            this.lastRefresh=DateTimeOffset.MinValue;
++            throw;
+         }
+         //前面で取得した内容をウィジェットに反映する(MET の地点のウィジェットはこの経路でだけ更新される)
+         this.widget.Publish(this.Places.Select(static p=>p.Data));
+diff --git a/tests/Weather.Presentation.Tests/ViewModelTests.cs b/tests/Weather.Presentation.Tests/ViewModelTests.cs
+index f8ed1f9..9b4b621 100644
+--- a/tests/Weather.Presentation.Tests/ViewModelTests.cs
++++ b/tests/Weather.Presentation.Tests/ViewModelTests.cs
+@@ -172,6 +172,26 @@ public class MainViewModel{
+             Assert.Equal(3,h.Weather.ForecastCalls);
+         }
+     }
++
++    [Fact,Trait("Category","Unit")]public async Task RefreshAllAsync(){
++        //初回の取得が取り消されたら(背景に回したときなど)、次の周期(1 分)ですぐ再取得する。10 分間「読み込み中」のままにしない
++        var h=new Harness();
++        h.Weather.Forecast=new ForecastResult(Availability.Available,Sample.JmaForecast());
++        h.Weather.Resolver=static _=>throw new OperationCanceledException();
++        var favorites=new FakeFavorites();
++        favorites.Items.Add(new FavoritePlace("f1","大阪",new GeoPoint(34.69,135.5),0));
++        var vm=new Presentation.ViewModels.MainViewModel(favorites,new FakeLocationService(LocationStatus.Denied,null),h.Lifecycle,h.Navigator,h.Time,d=>new Presentation.ViewModels.PlaceWeatherViewModel(d,h.Weather,h.Session,h.Settings,h.Navigator,h.Lifecycle,h.Time),h.Widget());
++        await Assert.ThrowsAnyAsync<OperationCanceledException>(async ()=>await vm.LoadAsync(TestContext.Current.CancellationToken));
++        Assert.Equal(PlaceState.Loading,vm.Places[0].State);
++        h.Weather.Resolver=null;
++        vm.Start();
++        h.Time.Advance(TimeSpan.FromMinutes(1));
++        for(var i=0;i<300&&vm.Places[0].State!=PlaceState.Ready;i++){
++            await Task.Delay(10,TestContext.Current.CancellationToken);
++        }
++        vm.Stop();
++        Assert.Equal(PlaceState.Ready,vm.Places[0].State);
++    }
+ }
+ 
+ public class AlertsViewModel{

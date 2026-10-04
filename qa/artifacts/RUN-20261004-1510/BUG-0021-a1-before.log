@@ -1,0 +1,23 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.Grib2Decoder.Decode (197ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  Assert.Throws() Failure: Exception type was not an exact match
+  Expected: typeof(System.FormatException)
+  Actual:   typeof(System.OutOfMemoryException)
+  ---- System.OutOfMemoryException : Array dimensions exceeded supported range.
+    at Weather.Providers.Tests.Grib2Decoder.Decode() in /home/user/Weather/tests/Weather.Providers.Tests/Grib2Decoder.cs:90
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:89
+    at Weather.Providers.Tests.Grib2Decoder.<>c__DisplayClass0_2.<Decode>b__4() in /home/user/Weather/tests/Weather.Providers.Tests/Grib2Decoder.cs:90
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (1s 382ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 44
+  failed: 1
+  succeeded: 43
+  skipped: 0
+  duration: 1s 654ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

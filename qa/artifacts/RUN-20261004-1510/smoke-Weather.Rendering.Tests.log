@@ -1,0 +1,429 @@
+Running tests from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+failed Weather.Rendering.Tests.SceneRenderer.Render_Lightning (29ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Map.TileLayer..ctor() in /home/user/Weather/src/Weather.Rendering/Map/TileLayer.cs:19
+    at Weather.Rendering.Map.MapRenderer..ctor(GeoDatabase database) in /home/user/Weather/src/Weather.Rendering/Map/MapRenderer.cs:29
+    at Weather.Rendering.Tests.MapRenderer.Render_JapanArea() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:173
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.SceneRenderer.Render_Allocation (0ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Scene.SkyLayer..ctor() in /home/user/Weather/src/Weather.Rendering/Scene/Layers.cs:21
+    at Weather.Rendering.Scene.SceneRenderer..ctor(SceneRenderOptions options) in /home/user/Weather/src/Weather.Rendering/Scene/SceneRenderer.cs:13
+    at Weather.Rendering.Tests.SceneRenderer.Render_Allocation() in /home/user/Weather/tests/Weather.Rendering.Tests/RenderingTests.cs:115
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.MapRenderer.Render_JapanArea (29ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Map.TileLayer..ctor() in /home/user/Weather/src/Weather.Rendering/Map/TileLayer.cs:19
+    at Weather.Rendering.Map.MapRenderer..ctor(GeoDatabase database) in /home/user/Weather/src/Weather.Rendering/Map/MapRenderer.cs:29
+    at Weather.Rendering.Tests.MapRenderer.Render_JapanArea() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:173
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.MapRenderer.Render_Wind (1ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Map.TileLayer..ctor() in /home/user/Weather/src/Weather.Rendering/Map/TileLayer.cs:19
+    at Weather.Rendering.Map.MapRenderer..ctor(GeoDatabase database) in /home/user/Weather/src/Weather.Rendering/Map/MapRenderer.cs:29
+    at Weather.Rendering.Tests.MapRenderer.Render_Wind() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:217
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.SceneRenderer.Render_Golden (8ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Scene.SkyLayer..ctor() in /home/user/Weather/src/Weather.Rendering/Scene/Layers.cs:21
+    at Weather.Rendering.Scene.SceneRenderer..ctor(SceneRenderOptions options) in /home/user/Weather/src/Weather.Rendering/Scene/SceneRenderer.cs:13
+    at Weather.Rendering.Tests.Scenes.Render(SceneState state, QualityTier tier, Int32 width, Int32 height, Int32 frames) in /home/user/Weather/tests/Weather.Rendering.Tests/RenderingTests.cs:42
+    at Weather.Rendering.Tests.SceneRenderer.Render_Golden() in /home/user/Weather/tests/Weather.Rendering.Tests/RenderingTests.cs:135
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.SceneRenderer.Render (1ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Scene.SkyLayer..ctor() in /home/user/Weather/src/Weather.Rendering/Scene/Layers.cs:21
+    at Weather.Rendering.Scene.SceneRenderer..ctor(SceneRenderOptions options) in /home/user/Weather/src/Weather.Rendering/Scene/SceneRenderer.cs:13
+    at Weather.Rendering.Tests.Scenes.Render(SceneState state, QualityTier tier, Int32 width, Int32 height, Int32 frames) in /home/user/Weather/tests/Weather.Rendering.Tests/RenderingTests.cs:42
+    at Weather.Rendering.Tests.SceneRenderer.Render() in /home/user/Weather/tests/Weather.Rendering.Tests/RenderingTests.cs:59
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.SceneRenderer.Render_ShaderFailure (1ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Scene.SkyLayer..ctor() in /home/user/Weather/src/Weather.Rendering/Scene/Layers.cs:21
+    at Weather.Rendering.Scene.SceneRenderer..ctor(SceneRenderOptions options) in /home/user/Weather/src/Weather.Rendering/Scene/SceneRenderer.cs:13
+    at Weather.Rendering.Tests.Scenes.Render(SceneState state, QualityTier tier, Int32 width, Int32 height, Int32 frames) in /home/user/Weather/tests/Weather.Rendering.Tests/RenderingTests.cs:42
+    at Weather.Rendering.Tests.SceneRenderer.Render_ShaderFailure() in /home/user/Weather/tests/Weather.Rendering.Tests/RenderingTests.cs:87
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.TimeSeriesChart.Draw (5ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Charts.TimeSeriesChart..ctor() in /home/user/Weather/src/Weather.Rendering/Charts/TimeSeriesChart.cs:37
+    at Weather.Rendering.Tests.TimeSeriesChart.Draw() in /home/user/Weather/tests/Weather.Rendering.Tests/RenderingTests.cs:196
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.MapRenderer.Render_Golden (152ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Map.TileLayer..ctor() in /home/user/Weather/src/Weather.Rendering/Map/TileLayer.cs:19
+    at Weather.Rendering.Map.MapRenderer..ctor(GeoDatabase database) in /home/user/Weather/src/Weather.Rendering/Map/MapRenderer.cs:29
+    at Weather.Rendering.Tests.MapRenderer.Render_Golden() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:315
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.MapRenderer.Render_Allocation (0ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Map.TileLayer..ctor() in /home/user/Weather/src/Weather.Rendering/Map/TileLayer.cs:19
+    at Weather.Rendering.Map.MapRenderer..ctor(GeoDatabase database) in /home/user/Weather/src/Weather.Rendering/Map/MapRenderer.cs:29
+    at Weather.Rendering.Tests.MapRenderer.Render_Allocation() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:295
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.MapRenderer.Render_Tiles (3ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SKImageInfo' threw an exception.
+  ---- System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  -------- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at SkiaSharp.SKImageInfo..ctor(Int32 width, Int32 height, SKColorType colorType, SKAlphaType alphaType)
+    at Weather.Rendering.Tests.MapSamples.JapanLandTile() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:83
+    at Weather.Rendering.Tests.MapRenderer.Render_Tiles() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:184
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_colortype_get_default_8888()
+    at SkiaSharp.SkiaApi.sk_colortype_get_default_8888()
+    at SkiaSharp.SKImageInfo..cctor()
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+failed Weather.Rendering.Tests.MapRenderer.Render_JapanWind (1ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.TypeInitializationException : The type initializer for 'SkiaSharp.SkiaApi' threw an exception.
+  ---- System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider using a tool like strace. If you're using glibc, consider setting the LD_DEBUG environment variable: 
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp.so: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/libSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/libSkiaSharp: cannot open shared object file: No such file or directory
+  /root/.dotnet/shared/Microsoft.NETCore.App/10.0.12/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/liblibSkiaSharp: cannot open shared object file: No such file or directory
+  
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SkiaApi.sk_fontmgr_create_default()
+    at SkiaSharp.SKFontManager.<>c.<get_Default>b__6_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKFontManager.get_Default()
+    at SkiaSharp.SKTypeface.<>c.<get_Default>b__10_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKTypeface.get_Default()
+    at SkiaSharp.SKPaint.<>c.<get_DefaultFont>b__5_0()
+    at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+    at SkiaSharp.SKPaint.get_DefaultFont()
+    at SkiaSharp.SKPaint..ctor()
+    at Weather.Rendering.Map.TileLayer..ctor() in /home/user/Weather/src/Weather.Rendering/Map/TileLayer.cs:19
+    at Weather.Rendering.Map.MapRenderer..ctor(GeoDatabase database) in /home/user/Weather/src/Weather.Rendering/Map/MapRenderer.cs:29
+    at Weather.Rendering.Tests.MapRenderer.Render_JapanWind() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:249
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ----- Inner Stack Trace -----
+    at SkiaSharp.SkiaApi.sk_version_get_milestone()
+    at SkiaSharp.SkiaSharpVersion.get_Native()
+    at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+    at SkiaSharp.SkiaApi..cctor()
+/home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64) failed with 12 error(s) (826ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 17
+  failed: 12
+  succeeded: 5
+  skipped: 0
+  duration: 1s 154ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

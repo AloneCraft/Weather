@@ -1,0 +1,18 @@
+Running tests from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+failed Weather.Rendering.Tests.MapRenderer.Render_Golden (5s 948ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  map-temperature: 平均差 3.53
+    at Weather.Rendering.Tests.Golden.Check(String name, SKBitmap bitmap) in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:458
+    at Weather.Rendering.Tests.MapRenderer.Render_Golden() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:377
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64) failed with 1 error(s) (2m 05s 705ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 19
+  failed: 1
+  succeeded: 18
+  skipped: 0
+  duration: 2m 05s 969ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

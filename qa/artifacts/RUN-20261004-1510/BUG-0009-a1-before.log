@@ -1,0 +1,19 @@
+Running tests from /home/user/Weather/tests/Weather.Scene.Tests/bin/Debug/net10.0/Weather.Scene.Tests.dll (net10.0|x64)
+failed Weather.Scene.Tests.SceneTimeline.At (14ms)
+  from /home/user/Weather/tests/Weather.Scene.Tests/bin/Debug/net10.0/Weather.Scene.Tests.dll (net10.0|x64)
+  Assert.Equal() Failure: Values differ
+  Expected: None
+  Actual:   Rain
+    at Weather.Scene.Tests.SceneTimeline.At() in /home/user/Weather/tests/Weather.Scene.Tests/SceneTests.cs:211
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Scene.Tests/bin/Debug/net10.0/Weather.Scene.Tests.dll (net10.0|x64) failed with 1 error(s) (647ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 8
+  failed: 1
+  succeeded: 7
+  skipped: 0
+  duration: 901ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

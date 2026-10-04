@@ -1,0 +1,114 @@
+diff --git a/src/Weather.Remote/RemoteWeatherService.cs b/src/Weather.Remote/RemoteWeatherService.cs
+index e7d44e2..4147869 100644
+--- a/src/Weather.Remote/RemoteWeatherService.cs
++++ b/src/Weather.Remote/RemoteWeatherService.cs
+@@ -22,8 +22,7 @@ public sealed class RemoteWeatherService(HttpClient http):IWeatherService{
+     private readonly ConcurrentDictionary<ProviderId,TimeSpan> retention=new();
+ 
+     public async ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
+-        var response=await this.GetAsync<ResolveResponse>(WeatherApi.ResolveRoute,PointQuery(point),null,cancellationToken).ConfigureAwait(false);
+-        var location=ContractMapper.ToModel(response.Location);
++        var (response,location)=await this.GetAsync<ResolveResponse,(ResolveResponse Response,ResolvedLocation Location)>(WeatherApi.ResolveRoute,PointQuery(point),null,static r=>(r,ContractMapper.ToModel(r.Location)),cancellationToken).ConfigureAwait(false);
+         this.resolved[location.Point.RoundForRequest()]=response;
+         foreach(var item in response.Retention){
+             this.retention[item.Provider]=TimeSpan.FromDays(item.Days);
+@@ -33,14 +32,12 @@ public sealed class RemoteWeatherService(HttpClient http):IWeatherService{
+ 
+     public async ValueTask<ForecastResult> GetForecastAsync(ResolvedLocation location,CancellationToken cancellationToken){
+         ArgumentNullException.ThrowIfNull(location);
+-        var response=await this.GetAsync<ForecastResponse>(WeatherApi.ForecastRoute,PointQuery(location.Point),location,cancellationToken).ConfigureAwait(false);
+-        return ContractMapper.ToModel(response);
++        return await this.GetAsync<ForecastResponse,ForecastResult>(WeatherApi.ForecastRoute,PointQuery(location.Point),location,static r=>ContractMapper.ToModel(r),cancellationToken).ConfigureAwait(false);
+     }
+ 
+     public async ValueTask<AlertResult> GetAlertsAsync(ResolvedLocation location,CancellationToken cancellationToken){
+         ArgumentNullException.ThrowIfNull(location);
+-        var response=await this.GetAsync<AlertResponse>(WeatherApi.AlertsRoute,PointQuery(location.Point),location,cancellationToken).ConfigureAwait(false);
+-        return ContractMapper.ToModel(response);
++        return await this.GetAsync<AlertResponse,AlertResult>(WeatherApi.AlertsRoute,PointQuery(location.Point),location,static r=>ContractMapper.ToModel(r),cancellationToken).ConfigureAwait(false);
+     }
+ 
+     public Availability GetObservationAvailability(ResolvedLocation location){
+@@ -54,16 +51,14 @@ public sealed class RemoteWeatherService(HttpClient http):IWeatherService{
+     public async ValueTask<IReadOnlyList<ObservationStation>> FindStationsAsync(ResolvedLocation location,int maxCount,CancellationToken cancellationToken){
+         ArgumentNullException.ThrowIfNull(location);
+         var query=PointQuery(location.Point)+"&max="+maxCount.ToString(CultureInfo.InvariantCulture);
+-        var response=await this.GetAsync<StationsResponse>(WeatherApi.StationsRoute,query,location,cancellationToken).ConfigureAwait(false);
+-        return [..response.Stations.Select(ContractMapper.ToModel)];
++        return await this.GetAsync<StationsResponse,IReadOnlyList<ObservationStation>>(WeatherApi.StationsRoute,query,location,static r=>[..r.Stations.Select(ContractMapper.ToModel)],cancellationToken).ConfigureAwait(false);
+     }
+ 
+     public async ValueTask<ObservationSeries> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken){
+         ArgumentNullException.ThrowIfNull(station);
+         var query=string.Create(CultureInfo.InvariantCulture,
+             $"provider={station.Provider}&station={Uri.EscapeDataString(station.Id)}&name={Uri.EscapeDataString(station.Name)}&lat={station.Location.Latitude}&lon={station.Location.Longitude}&from={Uri.EscapeDataString(from.ToString("o",CultureInfo.InvariantCulture))}&to={Uri.EscapeDataString(to.ToString("o",CultureInfo.InvariantCulture))}");
+-        var response=await this.GetAsync<ObservationSeriesDto>(WeatherApi.ObservationsRoute,query,null,cancellationToken,station.Provider).ConfigureAwait(false);
+-        return ContractMapper.ToModel(response,station);
++        return await this.GetAsync<ObservationSeriesDto,ObservationSeries>(WeatherApi.ObservationsRoute,query,null,r=>ContractMapper.ToModel(r,station),cancellationToken,station.Provider).ConfigureAwait(false);
+     }
+ 
+     public TimeSpan GetObservationServerRetention(ProviderId provider){
+@@ -81,7 +76,8 @@ public sealed class RemoteWeatherService(HttpClient http):IWeatherService{
+         return false;
+     }
+ 
+-    private async Task<T> GetAsync<T>(string route,string query,ResolvedLocation? location,CancellationToken cancellationToken,ProviderId? provider=null){
++    /// <summary>GET して T に読み取り、map でモデルへ変換する。変換の検証例外(範囲・昇順・日本域は気象庁のみ)も InvalidResponse にするため、変換まで try の中で行う。</summary>
++    private async Task<TResult> GetAsync<T,TResult>(string route,string query,ResolvedLocation? location,Func<T,TResult> map,CancellationToken cancellationToken,ProviderId? provider=null){
+         var label=provider??LabelFor(location);
+         HttpResponseMessage response;
+         try{
+@@ -97,7 +93,7 @@ public sealed class RemoteWeatherService(HttpClient http):IWeatherService{
+                 throw ToException(response.StatusCode,json,label,route);
+             }
+             try{
+-                return RemoteJson.Deserialize<T>(json);
++                return map(RemoteJson.Deserialize<T>(json));
+             }catch(Exception ex) when(ex is JsonException or NotSupportedException){
+                 throw new WeatherProviderException(label,ProviderFailure.InvalidResponse,$"サーバーの応答を読み取れません: {route}",ex);
+             }catch(Exception ex) when(ex is ArgumentException or InvalidOperationException){
+diff --git a/tests/Weather.Remote.Tests/RemoteTests.cs b/tests/Weather.Remote.Tests/RemoteTests.cs
+index eacde47..af6edb0 100644
+--- a/tests/Weather.Remote.Tests/RemoteTests.cs
++++ b/tests/Weather.Remote.Tests/RemoteTests.cs
+@@ -146,6 +146,13 @@ internal sealed class InProcessHandler(Server.WeatherApi api):HttpMessageHandler
+     }
+ }
+ 
++/// <summary>決まった JSON を 200 で返す(サーバーの誤った応答の再現用)。</summary>
++internal sealed class FixedJsonHandler(string json):HttpMessageHandler{
++    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken cancellationToken){
++        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent(json,Encoding.UTF8,"application/json")});
++    }
++}
++
+ internal sealed class RemoteHarness{
+     public FakeWeatherService Server{get;}=new();
+     public InProcessHandler Handler{get;}
+@@ -287,6 +294,26 @@ public class RemoteWeatherService{
+             Assert.Equal(ProviderFailure.ServerError,ex.Failure);
+             Assert.Equal(ProviderId.Jma,ex.Provider);
+         }
++        {
++            //方針 5: 日本域の予報に MET の出典を含む応答はクライアントで拒否し、WeatherProviderException(InvalidResponse)にする
++            var dto=Contracts.ContractMapper.ToDto(new ForecastResult(Availability.Available,Sample.JmaForecast()));
++            var met=Contracts.ContractMapper.ToDto(Sample.Source(ProviderId.MetNorway));
++            var broken=dto with{Forecast=dto.Forecast! with{Sources=[met,..dto.Forecast.Sources.Skip(1)]}};
++            var client=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(RemoteJson.Serialize(broken))){BaseAddress=new Uri("https://example.test/api/")});
++            var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await client.GetForecastAsync(Sample.Tokyo,ct));
++            Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
++        }
++        {
++            //範囲外の座標を含む地点の解決・観測所の応答も InvalidResponse
++            var station=new StationDto("44132",ProviderId.Jma,"東京",new GeoPointDto(95,139.75),25);
++            var client=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(RemoteJson.Serialize(new StationsResponse([station])))){BaseAddress=new Uri("https://example.test/api/")});
++            var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await client.FindStationsAsync(Sample.Tokyo,3,ct));
++            Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
++            var bad=new ResolveResponse(Contracts.ContractMapper.ToDto(Sample.Tokyo) with{Point=new GeoPointDto(95,139.75)},Availability.Available,true,[]);
++            var resolver=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(RemoteJson.Serialize(bad))){BaseAddress=new Uri("https://example.test/api/")});
++            var ex2=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await resolver.ResolveAsync(new GeoPoint(35.69,139.75),ct));
++            Assert.Equal(ProviderFailure.InvalidResponse,ex2.Failure);
++        }
+         {
+             //サーバーに届かないときは Network / Timeout
+             var h=new RemoteHarness();

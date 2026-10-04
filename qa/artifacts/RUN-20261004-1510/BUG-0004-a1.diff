@@ -1,0 +1,58 @@
+diff --git a/src/Weather.Geo/PlaceSearch.cs b/src/Weather.Geo/PlaceSearch.cs
+index 43a293c..2d6a61f 100644
+--- a/src/Weather.Geo/PlaceSearch.cs
++++ b/src/Weather.Geo/PlaceSearch.cs
+@@ -6,7 +6,7 @@ using Weather.Core;
+ 
+ namespace Weather.Geo;
+ 
+-/// <summary>検索用の正規化(NFKC、小文字化、カタカナ → ひらがな、空白除去)。</summary>
++/// <summary>検索用の正規化(NFKC、小文字化、カタカナ → ひらがな、ヶ・ヵ の統合、空白除去)。</summary>
+ public static class TextNormalizer{
+     public static string Normalize(string? text){
+         if(string.IsNullOrWhiteSpace(text)){
+@@ -18,7 +18,12 @@ public static class TextNormalizer{
+             if(char.IsWhiteSpace(c)){
+                 continue;
+             }
+-            if(c>='ァ'&&c<='ヶ'){
++            //小書きの「ヶ」「ヵ」は「ケ」「カ」と同じ扱いにする(茅ヶ崎市と茅ケ崎のように地名で混在する)
++            if(c=='ヶ'){
++                builder.Append('け');
++            }else if(c=='ヵ'){
++                builder.Append('か');
++            }else if(c>='ァ'&&c<='ヶ'){
+                 builder.Append((char)(c-0x60));
+             }else{
+                 builder.Append(c);
+diff --git a/tests/Weather.Geo.Tests/GeoTests.cs b/tests/Weather.Geo.Tests/GeoTests.cs
+index c6a382a..95090e3 100644
+--- a/tests/Weather.Geo.Tests/GeoTests.cs
++++ b/tests/Weather.Geo.Tests/GeoTests.cs
+@@ -86,6 +86,12 @@ public class PlaceSearch{
+             Assert.Contains(Search.Search("ちよだ",10),static s=>s.Id=="jma:1310100");
+             Assert.Contains(Search.Search("チヨダ",10),static s=>s.Id=="jma:1310100");
+         }
++        {
++            //実在の区域名の「ヶ」「ケ」は、どちらの表記で入力しても当たる
++            foreach(var (query,name) in new[]{("茅ケ崎","茅ヶ崎市"),("茅ヶ崎","茅ヶ崎市"),("金ヶ崎","金ケ崎町"),("金ケ崎","金ケ崎町"),("鎌ヶ谷","鎌ケ谷市"),("鎌ケ谷","鎌ケ谷市")}){
++                Assert.Contains(Search.Search(query,10),s=>s.Kind==PlaceKind.JmaArea&&s.Name==name);
++            }
++        }
+         {
+             //英語・日本語名で世界の都市
+             Assert.Equal("GB",Search.Search("London",5)[0].CountryCode);
+@@ -106,6 +112,13 @@ public class TextNormalizer{
+             Assert.Equal("とうきょう",Geo.TextNormalizer.Normalize("トウキョウ"));
+             Assert.Equal("newyork",Geo.TextNormalizer.Normalize("Ｎｅｗ York"));
+         }
++        {
++            //「ヶ」「ヵ」(小書き)は「ケ」「カ」と同じキーにする(茅ヶ崎市と茅ケ崎の表記ゆれ)
++            Assert.Equal(Geo.TextNormalizer.Normalize("茅ケ崎"),Geo.TextNormalizer.Normalize("茅ヶ崎"));
++            Assert.Equal(Geo.TextNormalizer.Normalize("ケ"),Geo.TextNormalizer.Normalize("ヶ"));
++            Assert.Equal(Geo.TextNormalizer.Normalize("カ"),Geo.TextNormalizer.Normalize("ヵ"));
++            Assert.Equal("けいこ",Geo.TextNormalizer.Normalize("ヶイコ"));
++        }
+     }
+ }
+ 

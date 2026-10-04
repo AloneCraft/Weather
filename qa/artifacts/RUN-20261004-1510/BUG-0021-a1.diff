@@ -1,0 +1,126 @@
+diff --git a/src/Weather.Providers/Grib/Grib2Decoder.cs b/src/Weather.Providers/Grib/Grib2Decoder.cs
+index 4823452..410ae26 100644
+--- a/src/Weather.Providers/Grib/Grib2Decoder.cs
++++ b/src/Weather.Providers/Grib/Grib2Decoder.cs
+@@ -22,6 +22,9 @@ public sealed class Grib2Message{
+ /// GFS の pgrb2(0.5°・1°)は 5.3(2026-10-04 確認)。アルゴリズムは NCEP g2clib の comunpack に従う。
+ /// </summary>
+ public static class Grib2Decoder{
++    /// <summary>格子の点数の上限。GFS 0.25°(1440×721 = 約 104 万点)に余裕を持たせた値。破損データで巨大な配列を確保しないための検証。</summary>
++    private const int MaxPoints=1<<22;
++
+     public static Grib2Message Decode(ReadOnlySpan<byte> data){
+         if(data.Length<16||data[0]!='G'||data[1]!='R'||data[2]!='I'||data[3]!='B'){
+             throw new FormatException("GRIB メッセージではありません。");
+@@ -85,7 +88,12 @@ public static class Grib2Decoder{
+             throw new FormatException("GRIB メッセージに必要な節がありません。");
+         }
+         var template=BinaryPrimitives.ReadUInt16BigEndian(drs[9..]);
+-        var encoded=(int)BinaryPrimitives.ReadUInt32BigEndian(drs[5..]);
++        var encodedCount=BinaryPrimitives.ReadUInt32BigEndian(drs[5..]);
++        if(encodedCount>(uint)points){
++            //ビットマップがなければ点数と同じ、あればそれ以下。破損データで巨大な配列を確保しない
++            throw new FormatException($"値の数 {encodedCount} が格子の点数 {points} を超えています。");
++        }
++        var encoded=(int)encodedCount;
+         var packed=new float[encoded];
+         switch(template){
+             case 0:
+@@ -116,13 +124,19 @@ public static class Grib2Decoder{
+     }
+ 
+     private static (Grib2LatLonGrid Grid,int Points) ReadGrid(ReadOnlySpan<byte> s){
+-        var points=(int)BinaryPrimitives.ReadUInt32BigEndian(s[6..]);
++        var pointCount=BinaryPrimitives.ReadUInt32BigEndian(s[6..]);
+         var template=BinaryPrimitives.ReadUInt16BigEndian(s[12..]);
+         if(template!=0){
+             throw new NotSupportedException($"格子テンプレート 3.{template} には対応していません。");
+         }
+-        var ni=(int)BinaryPrimitives.ReadUInt32BigEndian(s[30..]);
+-        var nj=(int)BinaryPrimitives.ReadUInt32BigEndian(s[34..]);
++        var niCount=BinaryPrimitives.ReadUInt32BigEndian(s[30..]);
++        var njCount=BinaryPrimitives.ReadUInt32BigEndian(s[34..]);
++        if(pointCount>MaxPoints||(long)niCount*njCount!=pointCount){
++            throw new FormatException($"格子の点数が不正です: {niCount}×{njCount} と {pointCount}(上限 {MaxPoints})");
++        }
++        var points=(int)pointCount;
++        var ni=(int)niCount;
++        var nj=(int)njCount;
+         var basic=BinaryPrimitives.ReadUInt32BigEndian(s[38..]);
+         var subdivisions=BinaryPrimitives.ReadUInt32BigEndian(s[42..]);
+         //既定の単位は 10^-6 度。掛け算ではなく割り算にして 90 や 359.5 を誤差なく表す
+@@ -145,9 +159,6 @@ public static class Grib2Decoder{
+             Angle(63,s),
+             Angle(67,s),
+             s[71]);
+-        if(ni*nj!=points){
+-            throw new FormatException($"格子の点数が一致しません: {ni}×{nj} と {points}");
+-        }
+         return (grid,points);
+     }
+ 
+@@ -171,7 +182,11 @@ public static class Grib2Decoder{
+     private static void UnpackComplex(ReadOnlySpan<byte> drs,ReadOnlySpan<byte> payload,float[] output,bool spatial){
+         var (reference,binary,dec,referenceBits)=Scaling(drs);
+         var missingManagement=drs[22];
+-        var groups=(int)BinaryPrimitives.ReadUInt32BigEndian(drs[31..]);
++        var groupCount=BinaryPrimitives.ReadUInt32BigEndian(drs[31..]);
++        if(groupCount>(uint)output.Length){
++            throw new FormatException($"群の数 {groupCount} が値の数 {output.Length} を超えています。");
++        }
++        var groups=(int)groupCount;
+         var widthReference=(int)drs[35];
+         var widthBits=(int)drs[36];
+         var lengthReference=(int)BinaryPrimitives.ReadUInt32BigEndian(drs[37..]);
+diff --git a/tests/Weather.Providers.Tests/Grib2Decoder.cs b/tests/Weather.Providers.Tests/Grib2Decoder.cs
+index 6db3a74..346c1df 100644
+--- a/tests/Weather.Providers.Tests/Grib2Decoder.cs
++++ b/tests/Weather.Providers.Tests/Grib2Decoder.cs
+@@ -80,6 +80,47 @@ public class Grib2Decoder{
+             Assert.Throws<FormatException>(()=>Target.Decode("NOTGRIB0000000000000"u8));
+             Assert.Throws<FormatException>(()=>Target.Decode(messages["TMP"].AsSpan(0,1000)));
+         }
++        {
++            //破損した節の記述子(値の数・群の数が巨大・符号付きで負)は、巨大な配列を確保せず FormatException で失敗する
++            var drs=SectionOffset(messages["TMP"],5);
++            foreach(var (offset,value) in new[]{(5,0x7FFFFFFFu),(5,0xFFFFFFFFu),(5,0x40000000u),(31,0x7FFFFFFFu),(31,0xFFFFFFFFu),(31,0x00FFFFFFu)}){
++                var broken=(byte[])messages["TMP"].Clone();
++                BinaryPrimitives.WriteUInt32BigEndian(broken.AsSpan(drs+offset),value);
++                var before=GC.GetAllocatedBytesForCurrentThread();
++                Assert.Throws<FormatException>(()=>Target.Decode(broken));
++                Assert.True(GC.GetAllocatedBytesForCurrentThread()-before<64*1024*1024,$"節 5 の +{offset} を 0x{value:X} にすると巨大な配列を確保する");
++            }
++        }
++        {
++            //壊したバイト列(固定シード)は、ProviderHttp.Map が InvalidResponse にできる例外だけで、小さなメモリ・短時間で失敗する
++            foreach(var (name,original) in messages){
++                for(var i=0;i<400;i++){
++                    var random=new Random(HashCode.Combine(name,i));
++                    var data=(byte[])original.Clone();
++                    for(var k=0;k<1+random.Next(8);k++){
++                        data[random.Next(Math.Min(data.Length,200))]=(byte)random.Next(256);
++                    }
++                    var before=GC.GetAllocatedBytesForCurrentThread();
++                    try{
++                        Target.Decode(data);
++                    }catch(Exception ex) when(ex is FormatException or NotSupportedException or ArgumentException or IndexOutOfRangeException or InvalidDataException){
++                    }
++                    Assert.True(GC.GetAllocatedBytesForCurrentThread()-before<64*1024*1024,$"{name} #{i}: 巨大な配列を確保した");
++                }
++            }
++        }
++    }
++
++    /// <summary>メッセージ内の節(番号)の先頭位置。</summary>
++    private static int SectionOffset(byte[] message,int number){
++        var pos=16;
++        while(pos+5<=message.Length){
++            if(message[pos+4]==number){
++                return pos;
++            }
++            pos+=(int)BinaryPrimitives.ReadUInt32BigEndian(message.AsSpan(pos));
++        }
++        throw new InvalidOperationException($"節 {number} がありません。");
+     }
+ 
+     private static void AssertRange(float[] values,float min,float max){

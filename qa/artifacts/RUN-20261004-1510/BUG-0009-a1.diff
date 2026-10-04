@@ -1,0 +1,67 @@
+diff --git a/src/Weather.Scene/SceneConverter.cs b/src/Weather.Scene/SceneConverter.cs
+index 63794b5..d00d908 100644
+--- a/src/Weather.Scene/SceneConverter.cs
++++ b/src/Weather.Scene/SceneConverter.cs
+@@ -32,6 +32,9 @@ public sealed class SceneConverter(SceneTuning tuning){
+ 
+     public SceneTuning Tuning{get;}=tuning;
+ 
++    /// <summary>「後」(Later)で副天気へ切り替える区間の最小の長さ。これより短い区間は主天気のみ(SceneState.md)。</summary>
++    internal static readonly TimeSpan LaterMinimumDuration=TimeSpan.FromHours(6);
++
+     public SceneState Convert(Forecast forecast,DateTimeOffset time){
+         ArgumentNullException.ThrowIfNull(forecast);
+         var location=forecast.Location;
+@@ -87,7 +90,7 @@ public sealed class SceneConverter(SceneTuning tuning){
+         if(c.Transition is {} transition&&c.Secondary is {} secondary){
+             switch(transition){
+                 case ConditionTransition.Later:
+-                    if(end-start>=TimeSpan.FromHours(6)&&time>=start+(end-start)/2){
++                    if(end-start>=LaterMinimumDuration&&time>=start+(end-start)/2){
+                         primary=secondary;
+                     }
+                     break;
+diff --git a/src/Weather.Scene/SceneTimeline.cs b/src/Weather.Scene/SceneTimeline.cs
+index e341850..35d9245 100644
+--- a/src/Weather.Scene/SceneTimeline.cs
++++ b/src/Weather.Scene/SceneTimeline.cs
+@@ -18,6 +18,13 @@ public sealed class SceneTimeline{
+         this.converter=converter;
+         this.keyframes=[];
+         foreach(var point in forecast.TimeSeries){
++            if(point.Condition is {Transition:ConditionTransition.Later}&&point.Duration>=SceneConverter.LaterMinimumDuration){
++                //「後」は中点で主天気から副天気に切り替わる。中点ちょうどは副天気側なので、1 つのキーフレームでは前半にも副天気が混ざる。
++                //主天気側(1/4)と副天気側(3/4)に分けて置く
++                this.keyframes.Add(converter.Convert(forecast,point.Start+point.Duration/4));
++                this.keyframes.Add(converter.Convert(forecast,point.Start+point.Duration*3/4));
++                continue;
++            }
+             var middle=point.Start+point.Duration/2;
+             this.keyframes.Add(converter.Convert(forecast,middle));
+         }
+diff --git a/tests/Weather.Scene.Tests/SceneTests.cs b/tests/Weather.Scene.Tests/SceneTests.cs
+index e2ea131..45dbd03 100644
+--- a/tests/Weather.Scene.Tests/SceneTests.cs
++++ b/tests/Weather.Scene.Tests/SceneTests.cs
+@@ -198,6 +198,21 @@ public class SceneTimeline{
+                 Assert.InRange(c,0,1);
+             }
+         }
++        {
++            //「後」(6 時間以上の区間): 中点より前は主天気(晴れ)、後は副天気(雨)。前半に雨が出ない
++            var later=new Core.CompositeCondition(new Core.WeatherCondition(SkyCover.Clear),Core.ConditionTransition.Later,new Core.WeatherCondition(SkyCover.Overcast,Core.PrecipitationType.Rain,Core.PrecipitationIntensity.Moderate));
++            var laterPoints=new[]{
++                new Core.ForecastPoint(start,start.AddHours(6),source){Condition=new Core.WeatherCondition(SkyCover.Clear)},
++                new Core.ForecastPoint(start.AddHours(6),start.AddHours(12),source){Condition=later},
++            };
++            var laterTimeline=new Scene.SceneTimeline(new Forecast(Data.Oslo,laterPoints,[]),new Scene.SceneConverter());
++            for(var m=0;m<=7.5*60;m+=30){
++                var s=laterTimeline.At(start.AddMinutes(m));
++                Assert.Equal(ScenePrecipitationType.None,s.Precipitation.Type);
++            }
++            Assert.Equal(ScenePrecipitationType.Rain,laterTimeline.At(start.AddHours(10.5)).Precipitation.Type);
++            Assert.Equal(ScenePrecipitationType.Rain,laterTimeline.At(start.AddHours(11.5)).Precipitation.Type);
++        }
+     }
+ }
+ 

@@ -1,0 +1,27 @@
+Running tests from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+failed Weather.Remote.Tests.RemoteWeatherService.GetForecastAsync (295ms)
+  from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+  Assert.Throws() Failure: Exception type was not an exact match
+  Expected: typeof(Weather.Core.WeatherProviderException)
+  Actual:   typeof(System.InvalidOperationException)
+  ---- System.InvalidOperationException : 日本域に気象庁以外のデータが含まれています: MetNorway
+    at Weather.Remote.Tests.RemoteWeatherService.GetForecastAsync() in /home/user/Weather/tests/Weather.Remote.Tests/RemoteTests.cs:303
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at Weather.Core.ForecastRules.EnsureJapanUsesJmaOnly(ResolvedLocation location, IEnumerable`1 timeSeries, IEnumerable`1 daily) in /home/user/Weather/src/Weather.Core/Models/Forecast.cs:79
+    at Weather.Core.Forecast..ctor(ResolvedLocation location, IReadOnlyList`1 timeSeries, IReadOnlyList`1 daily, String areaName, IReadOnlyList`1 issues) in /home/user/Weather/src/Weather.Core/Models/Forecast.cs:14
+    at Weather.Remote.Contracts.ContractMapper.ToModel(ForecastDto dto) in /home/user/Weather/src/Weather.Remote/Contracts/ContractMapper.cs:59
+    at Weather.Remote.Contracts.ContractMapper.ToModel(ForecastResponse dto) in /home/user/Weather/src/Weather.Remote/Contracts/ContractMapper.cs:75
+    at Weather.Remote.RemoteWeatherService.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:37
+    at Weather.Remote.Tests.RemoteWeatherService.<>c__DisplayClass1_2.<<GetForecastAsync>b__1>d.MoveNext() in /home/user/Weather/tests/Weather.Remote.Tests/RemoteTests.cs:303
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64) failed with 1 error(s) (775ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 6
+  failed: 1
+  succeeded: 5
+  skipped: 0
+  duration: 1s 034ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

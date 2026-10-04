@@ -1,0 +1,28 @@
+Running tests from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+failed Weather.Geo.Tests.TextNormalizer.Normalize (26ms)
+  from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+  Assert.Equal() Failure: Strings differ
+              ↓ (pos 1)
+  Expected: "茅け崎"
+  Actual:   "茅ゖ崎"
+              ↑ (pos 1)
+    at Weather.Geo.Tests.TextNormalizer.Normalize() in /home/user/Weather/tests/Weather.Geo.Tests/GeoTests.cs:117
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+failed Weather.Geo.Tests.PlaceSearch.Search_ (571ms)
+  from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+  Assert.Contains() Failure: Filter not matched in collection
+  Collection: []
+    at Weather.Geo.Tests.PlaceSearch.Search_() in /home/user/Weather/tests/Weather.Geo.Tests/GeoTests.cs:92
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64) failed with 2 error(s) (7s 502ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 10
+  failed: 2
+  succeeded: 8
+  skipped: 0
+  duration: 7s 807ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

@@ -1,0 +1,17 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.TmpFuzz.Fuzz (15s 960ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  実行 1560 回 / WeatherProviderException 以外の例外の種類 0
+  
+    at Weather.Providers.Tests.TmpFuzz.Fuzz() in /home/user/Weather/tests/Weather.Providers.Tests/TmpFuzz.cs:144
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (16s 508ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 1
+  failed: 1
+  succeeded: 0
+  skipped: 0
+  duration: 16s 782ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

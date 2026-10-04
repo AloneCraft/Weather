@@ -1,0 +1,9 @@
+Running tests from /home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64)
+/home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64) passed (904ms)
+
+Test run summary: Passed!
+  total: 42
+  failed: 0
+  succeeded: 42
+  skipped: 0
+  duration: 1s 199ms

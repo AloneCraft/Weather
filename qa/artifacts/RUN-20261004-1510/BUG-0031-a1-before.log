@@ -1,0 +1,25 @@
+Running tests from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+failed Weather.Rendering.Tests.IsobarLayer.Contour_Saddle (6ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  高い角が対角: 期待の線分 (0.8766666666666667, 0.396097831306388, 0.8777777777777778, 0.39745095389987506) がない
+    at Weather.Rendering.Tests.IsobarLayer.AssertSame(List`1 expected, List`1 actual, String message) in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:436
+    at Weather.Rendering.Tests.IsobarLayer.Contour_Saddle() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:456
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+failed Weather.Rendering.Tests.MapRenderer.Render_Golden (6s 007ms)
+  from /home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64)
+  map-temperature: 平均差 3.53
+    at Weather.Rendering.Tests.Golden.Check(String name, SKBitmap bitmap) in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:523
+    at Weather.Rendering.Tests.MapRenderer.Render_Golden() in /home/user/Weather/tests/Weather.Rendering.Tests/MapTests.cs:377
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Rendering.Tests/bin/Debug/net10.0/Weather.Rendering.Tests.dll (net10.0|x64) failed with 2 error(s) (2m 06s 533ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 20
+  failed: 2
+  succeeded: 18
+  skipped: 0
+  duration: 2m 06s 785ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

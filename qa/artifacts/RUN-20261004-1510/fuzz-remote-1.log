@@ -1,0 +1,34 @@
+Running tests from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+failed Weather.Remote.Tests.TmpFuzz.Fuzz (1s 036ms)
+  from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+  実行 3000 回 / WeatherProviderException 以外 9 種類
+     8x alerts | NullReferenceException | at Weather.Remote.Contracts.ContractMapper.ToModel(SourceDto dto) in /home/user/Weather/src/Weather.Remote/Contracts/ContractMapper.cs:line 208
+        例: /alerts/sources/0/license op0 → Object reference not set to an instance of an object.
+     6x forecast | NullReferenceException | at Weather.Remote.Contracts.ContractMapper.ToModel(ConditionDto dto) in /home/user/Weather/src/Weather.Remote/Contracts/ContractMapper.cs:line 362
+        例: /forecast/timeSeries/2/condition op4 → Object reference not set to an instance of an object.
+     6x resolve | OverflowException | at Weather.Remote.RemoteWeatherService.ResolveAsync(GeoPoint point, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:line 28
+        例: /retention/0/days op5 → TimeSpan overflowed because the duration is too long.
+     6x resolve | NullReferenceException | at Weather.Remote.RemoteWeatherService.ResolveAsync(GeoPoint point, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:line 27
+        例: /retention op1 → Object reference not set to an instance of an object.
+     4x observations | NullReferenceException | at Weather.Remote.Contracts.ContractMapper.<>c.<ToModel>b__13_0(ObservationDto o) in /home/user/Weather/src/Weather.Remote/Contracts/ContractMapper.cs:line 163
+        例: /items/0 op1 → Object reference not set to an instance of an object.
+     3x resolve | NullReferenceException | at Weather.Remote.RemoteWeatherService.ResolveAsync(GeoPoint point, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:line 28
+        例: /retention/0 op1 → Object reference not set to an instance of an object.
+     3x observations | NullReferenceException | at Weather.Remote.Contracts.ContractMapper.ToModel(SourceDto dto) in /home/user/Weather/src/Weather.Remote/Contracts/ContractMapper.cs:line 208
+        例: /source/license op0 → Object reference not set to an instance of an object.
+     1x forecast | NullReferenceException | at Weather.Remote.Contracts.ContractMapper.ToModel(DailyDto d, List`1 sources) in /home/user/Weather/src/Weather.Remote/Contracts/ContractMapper.cs:line 305
+        例: /forecast/daily/0 op1 → Object reference not set to an instance of an object.
+     1x observations | NullReferenceException | at Weather.Remote.Contracts.ContractMapper.<>c.<ToModel>b__13_1(DailySummaryDto s) in /home/user/Weather/src/Weather.Remote/Contracts/ContractMapper.cs:line 180
+        例: /dailySummaries/0 op1 → Object reference not set to an instance of an object.
+    at Weather.Remote.Tests.TmpFuzz.Fuzz() in /home/user/Weather/tests/Weather.Remote.Tests/TmpFuzz.cs:92
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64) failed with 1 error(s) (1s 484ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 1
+  failed: 1
+  succeeded: 0
+  skipped: 0
+  duration: 1s 757ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

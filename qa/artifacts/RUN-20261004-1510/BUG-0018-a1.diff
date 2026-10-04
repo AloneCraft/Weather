@@ -1,0 +1,104 @@
+diff --git a/src/Weather.Core/Caching/IHttpCacheStore.cs b/src/Weather.Core/Caching/IHttpCacheStore.cs
+index 69221db..8a4105d 100644
+--- a/src/Weather.Core/Caching/IHttpCacheStore.cs
++++ b/src/Weather.Core/Caching/IHttpCacheStore.cs
+@@ -16,6 +16,16 @@ public sealed record HttpCacheEntry{
+     public DateTimeOffset LastAccessedAt{get;init;}
+ }
+ 
++/// <summary>最終利用時刻(LastAccessedAt)の更新規則。読み取りのたびに書き込まないよう、更新は 1 時間に 1 回まで。</summary>
++public static class HttpCacheAccess{
++    public static readonly TimeSpan UpdateInterval=TimeSpan.FromHours(1);
++
++    public static bool NeedsUpdate(HttpCacheEntry entry,DateTimeOffset now){
++        ArgumentNullException.ThrowIfNull(entry);
++        return now-entry.LastAccessedAt>UpdateInterval;
++    }
++}
++
+ public interface IHttpCacheStore{
+     ValueTask<HttpCacheEntry?> GetAsync(string key,CancellationToken cancellationToken);
+     ValueTask SetAsync(HttpCacheEntry entry,CancellationToken cancellationToken);
+diff --git a/src/Weather.Infrastructure/FileHttpCacheStore.cs b/src/Weather.Infrastructure/FileHttpCacheStore.cs
+index 8943fbc..c0494b7 100644
+--- a/src/Weather.Infrastructure/FileHttpCacheStore.cs
++++ b/src/Weather.Infrastructure/FileHttpCacheStore.cs
+@@ -38,7 +38,6 @@ internal sealed partial class InfrastructureJsonContext:JsonSerializerContext;
+ /// 本文とメタデータを別ファイルに保存する。JSON は source generator(AOT / トリミング安全)。
+ /// </summary>
+ public sealed class FileHttpCacheStore:IHttpCacheStore{
+-    private static readonly TimeSpan AccessUpdateInterval=TimeSpan.FromHours(1);
+     private readonly string directory;
+ 
+     public FileHttpCacheStore(InfrastructureOptions options){
+@@ -120,10 +119,9 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
+         }
+     }
+ 
+-    /// <summary>最終利用時刻の更新は 1 時間に 1 回まで(読み取りのたびに書き込まないため)。</summary>
++    /// <summary>最終利用時刻の更新は 1 時間に 1 回まで(読み取りのたびに書き込まないため)。規則は HttpCacheAccess。</summary>
+     public static bool NeedsAccessUpdate(HttpCacheEntry entry,DateTimeOffset now){
+-        ArgumentNullException.ThrowIfNull(entry);
+-        return now-entry.LastAccessedAt>AccessUpdateInterval;
++        return HttpCacheAccess.NeedsUpdate(entry,now);
+     }
+ 
+     private (string Body,string Meta) Paths(string key){
+diff --git a/src/Weather.Providers/Http/HttpCacheHandler.cs b/src/Weather.Providers/Http/HttpCacheHandler.cs
+index f4a22a1..77ddcfe 100644
+--- a/src/Weather.Providers/Http/HttpCacheHandler.cs
++++ b/src/Weather.Providers/Http/HttpCacheHandler.cs
+@@ -54,6 +54,11 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
+         var now=time.GetUtcNow();
+         var entry=await this.TryGetAsync(key,cancellationToken).ConfigureAwait(false);
+         if(entry is not null&&HttpFreshness.IsFresh(entry,now,rule.MinimumFreshness)){
++            if(HttpCacheAccess.NeedsUpdate(entry,now)){
++                //最終利用時刻を更新する(容量・未使用期限の削除は最終利用時刻の古い順。1 時間に 1 回まで)
++                entry=entry with{LastAccessedAt=now};
++                await this.TrySetAsync(entry,cancellationToken).ConfigureAwait(false);
++            }
+             return CreateResponse(request,entry,"hit");
+         }
+         if(entry is not null){
+diff --git a/tests/Weather.Providers.Tests/HttpCacheHandler.cs b/tests/Weather.Providers.Tests/HttpCacheHandler.cs
+index 57cb25f..1b739c3 100644
+--- a/tests/Weather.Providers.Tests/HttpCacheHandler.cs
++++ b/tests/Weather.Providers.Tests/HttpCacheHandler.cs
+@@ -1,4 +1,5 @@
+ using System.Net;
++using Microsoft.Extensions.DependencyInjection;
+ using Weather.Core;
+ using Target=Weather.Providers.Nws.NwsProvider;
+ 
+@@ -18,6 +19,31 @@ public class HttpCacheHandler{
+             Assert.Equal(1,host.Handler.CountRequests(PointsUrl));
+             Assert.Equal("hit",string.Join("",second.Headers.GetValues(Http.CacheHeaders.State)));
+         }
++        {
++            //ヒットしたら最終利用時刻を更新する(1 時間に 1 回まで)。容量・未使用期限の削除を使用実態に合わせる
++            using var host=TestHost.Create();
++            host.Handler.Override=static _=>{
++                var response=new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent("{\"v\":1}")};
++                response.Headers.TryAddWithoutValidation("Cache-Control","max-age=2592000");
++                return response;
++            };
++            var client=host.Get<IHttpClientFactory>().CreateClient(Target.HttpClientName);
++            var store=host.Get<IHttpCacheStore>();
++            var key=Http.HttpCacheHandler.CreateKey(new Uri(PointsUrl));
++            await client.GetAsync(new Uri(PointsUrl),TestContext.Current.CancellationToken);
++            Assert.Equal(TestHost.Now,(await store.GetAsync(key,TestContext.Current.CancellationToken))!.LastAccessedAt);
++            host.Time.Advance(TimeSpan.FromMinutes(30));
++            await client.GetAsync(new Uri(PointsUrl),TestContext.Current.CancellationToken);
++            Assert.Equal(TestHost.Now,(await store.GetAsync(key,TestContext.Current.CancellationToken))!.LastAccessedAt);
++            host.Time.Advance(TimeSpan.FromDays(13));
++            await client.GetAsync(new Uri(PointsUrl),TestContext.Current.CancellationToken);
++            Assert.Equal(TestHost.Now.AddMinutes(30).AddDays(13),(await store.GetAsync(key,TestContext.Current.CancellationToken))!.LastAccessedAt);
++            Assert.Equal(1,host.Handler.CountRequests(PointsUrl));
++            //13 日目に使ったエントリは、15 日目の「14 日使われていないものの削除」で消えない
++            host.Time.Advance(TimeSpan.FromDays(2));
++            await store.TrimAsync(long.MaxValue,TimeSpan.FromDays(14),host.Time.GetUtcNow(),TestContext.Current.CancellationToken);
++            Assert.NotNull(await store.GetAsync(key,TestContext.Current.CancellationToken));
++        }
+         {
+             //期限切れは条件付き GET。If-Modified-Since は受信した Last-Modified と完全一致、304 で本文を再利用
+             using var host=TestHost.Create();
