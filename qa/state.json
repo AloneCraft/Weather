@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 75,
-  "updated_at": "2026-10-04T16:18:13Z",
+  "revision": 79,
+  "updated_at": "2026-10-04T16:20:48Z",
   "workflow_doc": "docs/QA_WORKFLOW.md",
   "mode": "FOCUSED",
   "budget": {
@@ -29,7 +29,7 @@
       "branch": "claude/zen-keller-0fx365"
     },
     "budget_used": {
-      "run_minutes": 67,
+      "run_minutes": 69,
       "exploratory_minutes": 0
     },
     "survey": {
@@ -1342,6 +1342,66 @@
         "method": 67,
         "visual_check_required": false,
         "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0024",
+      "title": "ファイルの HTTP キャッシュ: 並行する書き込みと読み取りで、本文とメタ(ETag など)の食い違う組を返す",
+      "source_ids": [
+        "cache-torn"
+      ],
+      "severity": "中〜低",
+      "fix_priority": 8,
+      "symptom": "同じキーを書き込みながら読み取ると、読み取り 26,843 回中 11,408 回で、新しい本文に古い ETag/メタを組み合わせたエントリが返った(固定条件の探索)。HttpCacheHandler のロックはハンドラーインスタンス単位で、IHttpClientFactory の複数インスタンスや背景更新との同時実行では共有されない",
+      "expected": "食い違う組は返さない(キャッシュなしとして扱う)。条件付き GET の ETag/If-Modified-Since は本文と対応している必要がある(MET は Last-Modified の完全一致が規約)",
+      "cause": {
+        "confirmed": "SetAsync は本文→メタの順に別々に File.Move し、GetAsync はメタと本文を別々に読んで長さも内容も照合しない(コード読み+実行)",
+        "hypotheses": [],
+        "unknown": [
+          "実運用での同時実行の頻度"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:19:56Z",
+          "reason": "優先: キャッシュの整合性。同時実行で決定的に再現できる。独立して修正できる",
+          "code_before": {
+            "commit": "76426d2de4b0f74f7a08a4912d00819e5439fca7",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "実行: 食い違い 11,408/26,843 回",
+          "hypothesis": "メタに本文の SHA-256 を保存し、読み取りで長さとハッシュを照合して、食い違えばキャッシュなし(null)として返せば、食い違う組は返らない(古い形式のメタはハッシュなしで長さだけ照合)",
+          "planned_change": "src/Weather.Infrastructure/FileHttpCacheStore.cs のメタに BodySha256 を追加し Get で照合 + tests/Weather.Infrastructure.Tests に並行テストを追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS(食い違い 0 かつ有効な読み取りが存在)、Infrastructure/Providers テスト PASS、古い形式のメタも読める",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:20:48Z",
+          "diff_sha256": "14822bdfac1297af53073907dff55ee1dfed92cbfc4d634c0b9d523978f350f7",
+          "commit": "764b502c021d9c49017b211a7c35bf13043779e0"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Infrastructure.Tests/FileHttpCacheStore.GetAsync_Concurrent"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/probe-cache-torn.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:19:55Z",
+      "verified": {
+        "commit": "764b502c021d9c49017b211a7c35bf13043779e0",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 69,
+        "visual_check_required": false,
+        "full_regression": "未実施",
+        "note": "Windows では File.Move 中のファイル共有違反(IOException)が別に起こり得る(HttpCacheHandler が IOException を握りつぶす)。未確認"
       }
     }
   ],
