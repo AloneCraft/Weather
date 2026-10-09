@@ -2049,10 +2049,11 @@
     {
       "id": "Q-0002",
       "related_bugs": [],
-      "status": "OPEN",
+      "status": "ANSWERED",
       "asked_at": "2026-10-04T15:00:00Z",
       "summary": "検証手段: (a) Pull Request で CI(Windows・Android・iOS)(b) 手元で dotnet test を実行して結果を共有 (c) Linux のみ。.NET SDK は実行枠でコンテナへ導入済み。BUG-0031(等圧線の見た目)の確認と Render_Golden の判定も、この経路で行う",
-      "answer": null
+      "answer": "Pull Request で CI を回す(推奨を採用)",
+      "answered_at": "2026-10-09T05:52:14Z"
     },
     {
       "id": "Q-0003",
@@ -2288,6 +2289,12 @@
       "question": "BUG-0031 等圧線の鞍点の見た目",
       "answer": "受け入れて、Windows でゴールデン画像を更新する(推奨を採用)",
       "scope": "見た目の受け入れと、Windows でのゴールデン再生成・目視確認が条件。Windows の経路は Q-0002 で決める"
+    },
+    {
+      "at": "2026-10-09T05:52:14Z",
+      "question": "Q-0002 Windows での確認経路",
+      "answer": "Pull Request で CI を回す(推奨を採用)",
+      "scope": "CI(Windows)でゴールデン比較と Render_Golden を判定する。Pull Request の作成は、作成のタイミングをあらためて確認してから行う"
     }
   ]
 }

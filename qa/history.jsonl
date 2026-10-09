@@ -179,3 +179,4 @@
 {"seq":179,"ts":"2026-10-09T05:47:19Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0005","answer":"BUG-0012: 不一致なら週間予報を空にする","scope_confirmed":"BUG-0012 のみ"}
 {"seq":180,"ts":"2026-10-09T05:49:26Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0005","answer":"BUG-0017: 端の格子点の値を返す","scope_confirmed":"BUG-0017 のみ"}
 {"seq":181,"ts":"2026-10-09T05:51:04Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0005","answer":"BUG-0031: 受け入れて Windows でゴールデン画像を更新する","scope_confirmed":"見た目の受け入れ。実行経路は Q-0002 待ち"}
+{"seq":182,"ts":"2026-10-09T05:52:14Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0002","answer":"Pull Request で CI を回す","scope_confirmed":"CI での判定。PR の作成時期は別途確認"}
