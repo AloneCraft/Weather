@@ -212,3 +212,5 @@
 {"seq": 212, "ts": "2026-10-09T12:18:23Z", "type": "TEST_RUN", "run_id": "RUN-20261004-1510", "text": "CI(claude/zen-keller-0fx365、run 37927361381、ヘッド 7276c4c): test・build-android・build-ios・live すべて success。live の札幌は注記なしで通過"}
 {"seq": 213, "ts": "2026-10-09T12:18:23Z", "type": "NOTE", "run_id": "RUN-20261004-1510", "text": "修正 7276c4c は作業ブランチ上。main へのマージは未実施(判断待ち)"}
 {"seq": 214, "ts": "2026-10-09T12:20:57Z", "type": "NOTE", "run_id": "RUN-20261004-1510", "bug_id": "BUG-0012", "text": "修正 7276c4c を main にマージ(merge commit b3df9d5)。マージ後の main の CI で再確認する。診断用の一時コミット(57300c8、b824d06)とその revert は作業ブランチの履歴に残り、main には診断ファイルは無い"}
+{"seq": 215, "ts": "2026-10-09T12:35:44Z", "type": "TEST_RUN", "run_id": "RUN-20261004-1510", "text": "main(b3df9d5 マージ後)の CI: push 37929388629・手動 37929390597・push 37929440992(5a6a2f8)。すべて全体 success。手動の 37929390597 は test・build-android・build-ios・live すべて success。live の札幌が通過(BUG-0012 の修正が main で有効)"}
+{"seq": 216, "ts": "2026-10-09T12:35:44Z", "type": "NOTE", "run_id": "RUN-20261004-1510", "bug_id": "BUG-0012", "text": "main での CI 確認済み(run 37929390597)。修正 b3df9d5 は main で検証済み"}
