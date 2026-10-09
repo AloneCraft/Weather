@@ -191,3 +191,7 @@
 {"seq":191,"ts":"2026-10-09T06:26:44Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0005","answer":"I-3: 今すぐ直す","scope_confirmed":"NWS の日最高・最低の現地日付。実装は未着手"}
 {"seq":192,"ts":"2026-10-09T06:29:08Z","type":"FIX_ATTEMPT","run_id":"RUN-20261004-1510","bug_id":"BUG-0035","attempt":1,"result":"VERIFIED","commit":"9929c1c","hypothesis":"観測所のタイムゾーンで現地日付の範囲を決める(DB 変更なし)"}
 {"seq":193,"ts":"2026-10-09T06:30:14Z","type":"FIX_ATTEMPT","run_id":"RUN-20261004-1510","bug_id":"BUG-0036","attempt":1,"result":"VERIFIED","commit":"843f475","hypothesis":"未知コードは注意報の「(未対応の警報)」として残す"}
+{"seq": 194, "ts": "2026-10-09T06:40:32Z", "type": "STATE_CHANGE", "run_id": "RUN-20261004-1510", "bug_id": "BUG-0024", "from": "VERIFIED", "to": "FIXED_UNVERIFIED", "reason": "PR #1 の Windows CI で GetAsync_Concurrent が失敗(Linux では通過)"}
+{"seq": 195, "ts": "2026-10-09T06:40:32Z", "type": "FIX_ATTEMPT", "run_id": "RUN-20261004-1510", "bug_id": "BUG-0024", "attempt": 2, "result": "FIXED_UNVERIFIED", "hypothesis": "Windows: 読み取りを FileShare.ReadWrite|Delete で開き、置き換えを短い再試行で囲む。キャッシュ書き込み失敗の捕捉に UnauthorizedAccessException を追加"}
+{"seq": 196, "ts": "2026-10-09T06:40:32Z", "type": "NOTE", "run_id": "RUN-20261004-1510", "bug_id": "BUG-0019", "text": "Render_TileFailure(テスト)の 2 段目の前に 2.1 秒の待機を追加(Windows CI で再要求が 1 回しか起きなかったタイミング依存の修正)。Linux で通過"}
+{"seq": 197, "ts": "2026-10-09T06:40:32Z", "type": "NOTE", "run_id": "RUN-20261004-1510", "text": "Render_Allocation(SceneRenderer, 4096 B 閾値)は main にも既存で、本ブランチは SceneRenderer を変えていない。Windows の CI で 5481 B/フレーム。閾値は緩めない。判断待ち"}

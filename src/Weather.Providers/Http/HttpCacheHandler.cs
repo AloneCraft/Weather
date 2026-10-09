@@ -140,8 +140,8 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
     private async ValueTask TrySetAsync(HttpCacheEntry entry,CancellationToken cancellationToken){
         try{
             await store.SetAsync(entry,cancellationToken).ConfigureAwait(false);
-        }catch(IOException ex){
-            //キャッシュの書き込み失敗は取得結果に影響させない(記録は残す)
+        }catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){
+            //キャッシュの書き込み失敗は取得結果に影響させない(記録は残す。Windows では置き換えの拒否が UnauthorizedAccessException で届く)
             LogStoreFailure(logger,entry.Key,ex);
         }
     }

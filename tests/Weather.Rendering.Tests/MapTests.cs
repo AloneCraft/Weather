@@ -260,6 +260,8 @@ public class MapRenderer{
         Assert.All(requests,static pair=>Assert.Equal(1,pair.Value));
         //再試行の間隔が過ぎたら、もう一度だけ要求する(間隔を 2 秒にすると、失敗から 2 秒以上たっている最初のフレームで 1 回だけ再要求し、続くフレームでは待つ)
         map.TileRetryAfter=TimeSpan.FromSeconds(2);
+        //最初の段の描画に要した時間は環境で変わるため、失敗から必ず 2 秒以上たってから再び描く(Windows の CI で再要求が 1 回しか起きなかった)
+        await Task.Delay(TimeSpan.FromMilliseconds(2100),TestContext.Current.CancellationToken);
         for(var i=0;i<4;i++){
             using(MapSamples.Render(map,480,360)){
             }

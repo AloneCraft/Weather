@@ -1483,7 +1483,7 @@
         ]
       },
       "reproduced": true,
-      "state": "VERIFIED",
+      "state": "FIXED_UNVERIFIED",
       "depends_on": [],
       "affects": [],
       "attempts": [
@@ -1516,14 +1516,8 @@
       ],
       "human_needed": null,
       "found_at": "2026-10-04T16:19:55Z",
-      "verified": {
-        "commit": "764b502c021d9c49017b211a7c35bf13043779e0",
-        "environment": "Linux x64 / .NET 10.0.401 / Debug",
-        "method": 69,
-        "visual_check_required": false,
-        "full_regression": "未実施",
-        "note": "Windows では File.Move 中のファイル共有違反(IOException)が別に起こり得る(HttpCacheHandler が IOException を握りつぶす)。未確認"
-      }
+      "verified": false,
+      "ci_note": "Windows CI(PR #1, 58533bc)で GetAsync_Concurrent が UnauthorizedAccessException で失敗。読み取り共有の修正と置き換えの再試行を入れた。Windows CI の結果待ち"
     },
     {
       "id": "BUG-0025",
