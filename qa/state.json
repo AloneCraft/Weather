@@ -2113,10 +2113,11 @@
     {
       "id": "Q-0003",
       "related_bugs": [],
-      "status": "OPEN",
+      "status": "ANSWERED",
       "asked_at": "2026-10-04T15:00:00Z",
       "summary": "docs/QA_WORKFLOW.md の置き場所の確認(仮置き: docs/)",
-      "answer": null
+      "answer": "docs/ のまま(仮置きを確定)",
+      "answered_at": "2026-10-09T06:24:47Z"
     },
     {
       "id": "Q-0004",
@@ -2362,6 +2363,12 @@
       "question": "Q-0001 次のゴールと変更範囲",
       "answer": "現状の範囲で続ける(推奨を採用)",
       "scope": "src/ と tests/ の不具合修正と再現テスト追加のみ"
+    },
+    {
+      "at": "2026-10-09T06:24:47Z",
+      "question": "Q-0003 QA_WORKFLOW.md の置き場所",
+      "answer": "docs/ のまま(推奨を採用)",
+      "scope": "docs/QA_WORKFLOW.md で確定"
     }
   ],
   "pull_request": {

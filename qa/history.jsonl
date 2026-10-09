@@ -185,3 +185,4 @@
 {"seq":185,"ts":"2026-10-09T05:59:25Z","type":"FIX_ATTEMPT","run_id":"RUN-20261004-1510","bug_id":"BUG-0003","attempt":1,"result":"VERIFIED","commit":"5464bbf","hypothesis":"国の判明している地点は同じ国の都市だけを候補にする"}
 {"seq":186,"ts":"2026-10-09T05:59:25Z","type":"FIX_ATTEMPT","run_id":"RUN-20261004-1510","bug_id":"BUG-0017","attempt":1,"result":"VERIFIED","commit":"9b7d74f","hypothesis":"外周の半セルは端の格子点の値を使う"}
 {"seq":187,"ts":"2026-10-09T06:24:29Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0001","answer":"現状の範囲で続ける","scope_confirmed":"src/ と tests/ の不具合修正と再現テスト追加"}
+{"seq":188,"ts":"2026-10-09T06:24:47Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0003","answer":"docs/ のまま","scope_confirmed":"QA_WORKFLOW.md の置き場所"}
