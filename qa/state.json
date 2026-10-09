@@ -836,6 +836,14 @@
         "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ 関連プロジェクトの全テスト",
         "visual_check_required": false,
         "full_regression": "未実施"
+      },
+      "live_check": {
+        "run": 37901006176,
+        "at": "2026-10-09T08:15:16Z",
+        "probe": "Weather.Providers.LiveTests LiveContractTests.GetForecastAsync(43.0621, 141.3544, Jma)(札幌)",
+        "result": "Issues に「府県週間天気予報 NotFound」。LiveContract の Assert.Empty(Issues) が失敗",
+        "status": "NEEDS_HUMAN",
+        "note": "BUG-0012 の修正(区域が一致しなければ週間を空にして注記)が札幌で発動している可能性。対応表が正しくない、または区域の照合キーが違う。JMA の実データで確認が必要(この環境では通信不可)"
       }
     },
     {
@@ -2514,5 +2522,36 @@
       "live": "skipped"
     },
     "note": "マージ済み。PR 本文の「Render_Golden が失敗する見込み」は、Windows CI では通ったため当てはまらなかった"
+  },
+  "stability_ci": {
+    "main_head": "9350d32",
+    "runs": [
+      {
+        "run": 37900956936,
+        "event": "push",
+        "test": "success",
+        "render_allocation": "pass",
+        "build": "success",
+        "live": "skipped"
+      },
+      {
+        "run": 37901006176,
+        "event": "workflow_dispatch",
+        "test": "success",
+        "render_allocation": "pass",
+        "build": "success",
+        "live": "failure(札幌の週間予報の注記。BUG-0012 参照)"
+      },
+      {
+        "run": 37901008788,
+        "event": "workflow_dispatch",
+        "test": "success",
+        "render_allocation": "pass",
+        "build": "success",
+        "live": "failure(同上)"
+      }
+    ],
+    "verdict": "Render_Allocation は 3/3 で通過(区間ごとの値はログに出していない)。live は新規の失敗",
+    "checked_at": "2026-10-09T08:15:16Z"
   }
 }

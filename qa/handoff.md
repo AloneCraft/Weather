@@ -13,6 +13,8 @@
 - PR #1 を `main` にマージ(merge commit `9350d32`)。マージ前のヘッド `9edc416` は CI 全 success。
 - BUG-0024 は Windows CI で検証済み(VERIFIED)。BUG-0019 のテストは Windows CI で通過。
 - `Render_Allocation` は、判定を 5 区間の最小値に変えた(閾値 4096 は不変)。Windows での安定性は、main の CI で数回確認中。
+- main の CI(9350d32)3 件: test は 3/3 成功(Render_Allocation は 3/3 で通過)。build は成功。
+- **新規の問題**: 手動実行の `live`(実 API)が札幌で失敗。週間予報の区域が一致せず「府県週間天気予報 NotFound」の注記が出る(BUG-0012 の修正の影響の疑い)。原因未確認。判断待ち。
 - 以下の「現状」の記述は、この追記より前の時点のもの。
 
 - コード状態: 作業ブランチ `claude/zen-keller-0fx365`(`main` から 61 コミット。うち製品・テストの変更は 29 コミットで、`src/`・`tests/` の 44 ファイル)。製品コードの未コミット差分なし。Pull Request は作っていない。
