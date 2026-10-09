@@ -6,7 +6,7 @@ using Weather.Providers.Http;
 
 namespace Weather.Providers.Jma;
 
-internal sealed record JmaDailyResult(IReadOnlyList<DailyForecast> Daily,string? AreaName,IReadOnlyList<string> UnknownCodes);
+internal sealed record JmaDailyResult(IReadOnlyList<DailyForecast> Daily,string? AreaName,IReadOnlyList<string> UnknownCodes,bool WeeklyMatched=true);
 
 /// <summary>気象庁の府県天気予報・時系列予報 → model(WeatherProviders.md「気象庁 Adapter」)。</summary>
 internal static class JmaForecastMapper{
@@ -34,6 +34,7 @@ internal static class JmaForecastMapper{
         }
         var unknown=new List<string>();
         var days=new SortedDictionary<DateOnly,DayBuilder>();
+        var weeklyMatched=true;
         var page=JmaEndpoints.ForecastPage(area.OfficeCode);
 
         var shortBlock=blocks[0];
@@ -110,7 +111,9 @@ internal static class JmaForecastMapper{
             if(weeklySeries.Count>0){
                 var series=weeklySeries[0];
                 var times=ReadTimes(series);
-                var target=FindArea(series,area.Class10Code,true);
+                //区域が一致しないときは先頭の区域で代用しない(伊豆諸島などは別の区域の値になるため)。週間予報は出さない
+                var target=FindArea(series,area.Class10Code,false);
+                weeklyMatched&=target is not null;
                 if(target is {} t){
                     var codes=t.ItemList("weatherCodes");
                     var pops=t.ItemList("pops");
@@ -129,7 +132,8 @@ internal static class JmaForecastMapper{
             if(weeklySeries.Count>1){
                 var series=weeklySeries[1];
                 var times=ReadTimes(series);
-                var target=FindArea(series,area.TemperatureStationCode,true);
+                var target=FindArea(series,area.TemperatureStationCode,false);
+                weeklyMatched&=target is not null;
                 if(target is {} t){
                     var pointName=t.Required("area").Str("name");
                     var min=t.ItemList("tempsMin");
@@ -203,7 +207,7 @@ internal static class JmaForecastMapper{
                 Reliability=day.Reliability,
             });
         }
-        return new JmaDailyResult(result,areaName,unknown);
+        return new JmaDailyResult(result,areaName,unknown,weeklyMatched);
     }
 
     /// <summary>時系列予報(3 時間区間)。</summary>
@@ -224,11 +228,16 @@ internal static class JmaForecastMapper{
         var weathers=areaSeries.ItemList("weather");
         var winds=areaSeries.ItemList("wind");
         var points=new List<ForecastPoint>();
+        DateTimeOffset? lastEnd=null;
         for(var i=0;i<timeDefines.Count;i++){
             var start=timeDefines[i].Time("dateTime")??throw new FormatException("dateTime がありません。");
             var duration=TimeSpan.FromHours(3);
             if(timeDefines[i].Str("duration") is {} text){
                 duration=XmlConvert.ToTimeSpan(text);
+            }
+            if(lastEnd is {} le&&start<le){
+                //重複・逆順・重なり。補助プロダクトの異常で予報全体を失わないよう、重なる点は飛ばす(NWS の hourly と同じ)
+                continue;
             }
             var word=At(weathers,i);
             var condition=JmaWeatherCodes.FromTimeSeriesWord(word);
@@ -252,6 +261,7 @@ internal static class JmaForecastMapper{
                 WindDirectionDeg=direction,
                 WindSpeedRangeMs=speedRange,
             });
+            lastEnd=start+duration;
         }
         return points;
     }

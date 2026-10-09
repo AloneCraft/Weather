@@ -1,0 +1,16 @@
+Running tests from /home/user/Weather/tests/Weather.Infrastructure.Tests/bin/Debug/net10.0/Weather.Infrastructure.Tests.dll (net10.0|x64)
+failed Weather.Infrastructure.Tests.TmpProbe.Probe (835ms)
+  from /home/user/Weather/tests/Weather.Infrastructure.Tests/bin/Debug/net10.0/Weather.Infrastructure.Tests.dll (net10.0|x64)
+  読み取り 26843 回 / 本文とメタが食い違った組 11408 回 / 例外: 
+    at Weather.Infrastructure.Tests.TmpProbe.Probe() in /home/user/Weather/tests/Weather.Infrastructure.Tests/TmpProbe.cs:46
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Infrastructure.Tests/bin/Debug/net10.0/Weather.Infrastructure.Tests.dll (net10.0|x64) failed with 1 error(s) (1s 330ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 1
+  failed: 1
+  succeeded: 0
+  skipped: 0
+  duration: 1s 610ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

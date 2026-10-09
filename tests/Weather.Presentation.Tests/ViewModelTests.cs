@@ -33,6 +33,46 @@ internal sealed class Harness{
 }
 
 public class PlaceWeatherViewModel{
+    [Fact,Trait("Category","Unit")]public async Task RefreshAsync_Race(){
+        //同じ地点の更新が重なり、先に始めた更新が後で終わっても、最後に始めた更新の結果を残す(古い予報・失敗で上書きしない)
+        var h=new Harness();
+        var older=new ForecastResult(Availability.Available,Sample.JmaForecast());
+        var newer=new ForecastResult(Availability.Available,Sample.JmaForecast());
+        var first=new TaskCompletionSource<ForecastResult>();
+        var second=new TaskCompletionSource<ForecastResult>();
+        h.Weather.ForecastFactory=n=>n==1?first.Task:second.Task;
+        var vm=h.Place();
+        var ct=TestContext.Current.CancellationToken;
+        var t1=vm.RefreshAsync(ct);
+        var t2=vm.RefreshAsync(ct);
+        second.SetResult(newer);
+        await t2;
+        Assert.Same(newer,vm.Data.Forecast);
+        {
+            //古い更新が成功して終わっても、新しい結果を上書きしない
+            first.SetResult(older);
+            await t1;
+            Assert.Same(newer,vm.Data.Forecast);
+            Assert.Equal(PlaceState.Ready,vm.State);
+        }
+        {
+            //古い更新が失敗して終わっても、新しい結果の状態を Error / Stale にしない
+            var h2=new Harness();
+            var fail=new TaskCompletionSource<ForecastResult>();
+            var ok=new TaskCompletionSource<ForecastResult>();
+            h2.Weather.ForecastFactory=n=>n==1?fail.Task:ok.Task;
+            var vm2=h2.Place();
+            var a=vm2.RefreshAsync(ct);
+            var b=vm2.RefreshAsync(ct);
+            ok.SetResult(newer);
+            await b;
+            fail.SetException(new WeatherProviderException(ProviderId.Jma,ProviderFailure.Network,"offline"));
+            await a;
+            Assert.Equal(PlaceState.Ready,vm2.State);
+            Assert.Same(newer,vm2.Data.Forecast);
+        }
+    }
+
     [Fact,Trait("Category","Unit")]public async Task RefreshAsync(){
         {
             //日本域は気象庁の天気文を優先し、出典は「気象庁 hh:mm 発表」
@@ -172,6 +212,26 @@ public class MainViewModel{
             Assert.Equal(3,h.Weather.ForecastCalls);
         }
     }
+
+    [Fact,Trait("Category","Unit")]public async Task RefreshAllAsync(){
+        //初回の取得が取り消されたら(背景に回したときなど)、次の周期(1 分)ですぐ再取得する。10 分間「読み込み中」のままにしない
+        var h=new Harness();
+        h.Weather.Forecast=new ForecastResult(Availability.Available,Sample.JmaForecast());
+        h.Weather.Resolver=static _=>throw new OperationCanceledException();
+        var favorites=new FakeFavorites();
+        favorites.Items.Add(new FavoritePlace("f1","大阪",new GeoPoint(34.69,135.5),0));
+        var vm=new Presentation.ViewModels.MainViewModel(favorites,new FakeLocationService(LocationStatus.Denied,null),h.Lifecycle,h.Navigator,h.Time,d=>new Presentation.ViewModels.PlaceWeatherViewModel(d,h.Weather,h.Session,h.Settings,h.Navigator,h.Lifecycle,h.Time),h.Widget());
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async ()=>await vm.LoadAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(PlaceState.Loading,vm.Places[0].State);
+        h.Weather.Resolver=null;
+        vm.Start();
+        h.Time.Advance(TimeSpan.FromMinutes(1));
+        for(var i=0;i<300&&vm.Places[0].State!=PlaceState.Ready;i++){
+            await Task.Delay(10,TestContext.Current.CancellationToken);
+        }
+        vm.Stop();
+        Assert.Equal(PlaceState.Ready,vm.Places[0].State);
+    }
 }
 
 public class AlertsViewModel{
@@ -205,6 +265,16 @@ public class Units{
             Assert.Equal("20°",Presentation.Units.Temperature(20,UnitSystem.Metric));
             Assert.Equal("68°",Presentation.Units.Temperature(20,UnitSystem.Imperial));
             Assert.Equal("--",Presentation.Units.Temperature(null,UnitSystem.Metric));
+        }
+        {
+            //丸めて 0 になる値に負号を付けない(「-0°」と表示しない)。0 でない負の値は負号を付ける
+            Assert.Equal("0°",Presentation.Units.Temperature(-0.3,UnitSystem.Metric));
+            Assert.Equal("0°",Presentation.Units.Temperature(-0.49,UnitSystem.Metric));
+            Assert.Equal("0°",Presentation.Units.Temperature(-0.0,UnitSystem.Metric));
+            Assert.Equal("0°",Presentation.Units.Temperature(-17.9,UnitSystem.Imperial));
+            Assert.Equal("-1°",Presentation.Units.Temperature(-0.5,UnitSystem.Metric));
+            Assert.Equal("-1°",Presentation.Units.Temperature(-0.6,UnitSystem.Metric));
+            Assert.Equal("-5°",Presentation.Units.Temperature(-5,UnitSystem.Metric));
         }
     }
 

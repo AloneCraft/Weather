@@ -47,13 +47,16 @@ internal static class NwsMapper{
     public static List<DailyForecast> MapDaily(JsonElement root,FetchResult fetch,NwsPoint point,GeoPoint location,List<string> unknownPhrases){
         var p=root.Required("properties");
         var source=NwsAttribution.Create("Forecast",point.GridId,p.Time("updateTime")??p.Time("generatedAt"),fetch,location,DataProcessing.None);
-        var groups=new SortedDictionary<DateOnly,(JsonElement? Day,JsonElement? Night)>();
+        var groups=new SortedDictionary<DateOnly,(JsonElement? Day,JsonElement? Night,JsonElement? Early)>();
         foreach(var period in p.Items("periods")){
             var start=period.Time("startTime")??throw new FormatException("startTime");
             var date=DateOnly.FromDateTime(start.DateTime);
             groups.TryGetValue(date,out var g);
             if(period.Bool("isDaytime")==true){
                 g.Day??=period;
+            }else if(start.Hour<12){
+                //深夜〜早朝に取得したとき先頭に来る Overnight(同じ日の 02:00〜06:00 など)。夕方からの夜(Tonight など)とは別に持つ
+                g.Early??=period;
             }else{
                 g.Night??=period;
             }
@@ -67,7 +70,8 @@ internal static class NwsMapper{
             string? code=null;
             double? max=null;
             double? min=null;
-            foreach(var period in new[]{g.Day,g.Night}){
+            double? earlyMin=null;
+            foreach(var period in new[]{g.Day,g.Night,g.Early}){
                 if(period is not {} pe){
                     continue;
                 }
@@ -90,10 +94,15 @@ internal static class NwsMapper{
                 code??=shortForecast;
                 if(pe.Bool("isDaytime")==true){
                     max=temperature;
+                }else if(g.Early is {} early&&early.Equals(pe)){
+                    earlyMin=temperature;
                 }else{
                     min=temperature;
                 }
             }
+            //夕方からの夜がなければ(予報の末尾など)、早朝の気温を最低気温に使う。Parts は時刻順にする
+            min??=earlyMin;
+            parts.Sort(static (a,b)=>a.Start.CompareTo(b.Start));
             result.Add(new DailyForecast(date,source){
                 Condition=condition,
                 SourceCode=code,

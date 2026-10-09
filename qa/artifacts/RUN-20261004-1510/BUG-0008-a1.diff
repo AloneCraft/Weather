@@ -1,0 +1,54 @@
+diff --git a/src/Weather.Geo/LocationResolver.cs b/src/Weather.Geo/LocationResolver.cs
+index 4b47e84..0a245c0 100644
+--- a/src/Weather.Geo/LocationResolver.cs
++++ b/src/Weather.Geo/LocationResolver.cs
+@@ -81,9 +81,9 @@ public sealed class LocationResolver(GeoDatabase database):ILocationResolver{
+         };
+     }
+ 
+-    /// <summary>最寄り都市の timezone。近くに都市がない海上は経度から Etc/GMT±n を使う。</summary>
++    /// <summary>最寄り都市の timezone。近くに都市がない海上、または端末が知らない ID(tzdata が古い端末の新しい IANA ID)は経度から Etc/GMT±n を使う。</summary>
+     private string ResolveTimeZone(double lat,double lon){
+-        if(database.FindNearestPlace(lat,lon,800) is {} place){
++        if(database.FindNearestPlace(lat,lon,800) is {} place&&IsKnownZone(place.TimeZone)){
+             return place.TimeZone;
+         }
+         var offset=(int)Math.Round(lon/15);
+@@ -97,6 +97,16 @@ public sealed class LocationResolver(GeoDatabase database):ILocationResolver{
+         return string.Create(CultureInfo.InvariantCulture,$"Etc/GMT+{-offset}");
+     }
+ 
++    /// <summary>この端末で解決できる timezone か。解決できない ID は下流(予報の現地日付・表示時刻)で黙って UTC にされるため、返さない。</summary>
++    private static bool IsKnownZone(string zoneId){
++        try{
++            TimeZoneInfo.FindSystemTimeZoneById(zoneId);
++            return true;
++        }catch(Exception ex) when(ex is TimeZoneNotFoundException or InvalidTimeZoneException){
++            return false;
++        }
++    }
++
+     /// <summary>探索範囲内に区域がない場合は無限大(20 km より遠い)とする。</summary>
+     private static double FiniteOrInfinity(double distance){
+         if(distance>=double.MaxValue){
+diff --git a/tests/Weather.Geo.Tests/GeoTests.cs b/tests/Weather.Geo.Tests/GeoTests.cs
+index 856eb47..5d7ce3b 100644
+--- a/tests/Weather.Geo.Tests/GeoTests.cs
++++ b/tests/Weather.Geo.Tests/GeoTests.cs
+@@ -51,6 +51,16 @@ public class LocationResolver{
+             Assert.Equal("3252800",ResolveAt(37.24,131.87).JmaArea!.Class20Code);
+             Assert.Equal("4720700",ResolveAt(25.75,123.5).JmaArea!.Class20Code);
+         }
++        {
++            //端末が解決できないタイムゾーン ID の都市は、下流で黙って UTC にならないよう、経度から決める Etc/GMT± を使う
++            var oslo=new PlaceRecord(1,"Oslo","Oslo","オスロ",59.91f,10.75f,"NO","Oslo",600000,"Europe/Oslo");
++            var unknown=new PlaceRecord(2,"Kyiv","Kyiv","キーウ",50.45f,30.52f,"UA","Kyiv",2800000,"Not/AZone");
++            var mask=new JapanAreaMask(0,0,1,1,1,[0]);
++            var database=new Geo.GeoDatabase(static ()=>[],static ()=>[],()=>[oslo,unknown],()=>mask);
++            var resolver=new Geo.LocationResolver(database);
++            Assert.Equal("Europe/Oslo",resolver.Resolve(new GeoPoint(59.91,10.75)).TimeZoneId);
++            Assert.Equal("Etc/GMT-2",resolver.Resolve(new GeoPoint(50.45,30.52)).TimeZoneId);
++        }
+         {
+             //米国と準州は NWS の国コード
+             Assert.Equal("GU",ResolveAt(13.4443,144.7937).CountryCode);

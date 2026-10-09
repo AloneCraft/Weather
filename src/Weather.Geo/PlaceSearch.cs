@@ -6,23 +6,51 @@ using Weather.Core;
 
 namespace Weather.Geo;
 
-/// <summary>検索用の正規化(NFKC、小文字化、カタカナ → ひらがな、空白除去)。</summary>
+/// <summary>検索用の正規化(NFKC、小文字化、カタカナ → ひらがな、ヶ・ヵ の統合、空白除去)。</summary>
 public static class TextNormalizer{
     public static string Normalize(string? text){
         if(string.IsNullOrWhiteSpace(text)){
             return "";
         }
-        var normalized=text.Normalize(NormalizationForm.FormKC).ToLowerInvariant();
+        var normalized=RemoveUnpairedSurrogates(text).Normalize(NormalizationForm.FormKC).ToLowerInvariant();
         var builder=new StringBuilder(normalized.Length);
         foreach(var c in normalized){
             if(char.IsWhiteSpace(c)){
                 continue;
             }
-            if(c>='ァ'&&c<='ヶ'){
+            //小書きの「ヶ」「ヵ」は「ケ」「カ」と同じ扱いにする(茅ヶ崎市と茅ケ崎のように地名で混在する)
+            if(c=='ヶ'){
+                builder.Append('け');
+            }else if(c=='ヵ'){
+                builder.Append('か');
+            }else if(c>='ァ'&&c<='ヶ'){
                 builder.Append((char)(c-0x60));
             }else{
                 builder.Append(c);
             }
+        }
+        return builder.ToString();
+    }
+
+    /// <summary>孤立サロゲート(貼り付けや絵文字の途中切断)は string.Normalize が例外にするので取り除く。</summary>
+    private static string RemoveUnpairedSurrogates(string text){
+        StringBuilder? builder=null;
+        for(var i=0;i<text.Length;i++){
+            var c=text[i];
+            var valid=true;
+            if(char.IsHighSurrogate(c)){
+                valid=i+1<text.Length&&char.IsLowSurrogate(text[i+1]);
+            }else if(char.IsLowSurrogate(c)){
+                valid=i>0&&char.IsHighSurrogate(text[i-1]);
+            }
+            if(valid){
+                builder?.Append(c);
+            }else{
+                builder??=new StringBuilder(text.Length).Append(text,0,i);
+            }
+        }
+        if(builder is null){
+            return text;
         }
         return builder.ToString();
     }

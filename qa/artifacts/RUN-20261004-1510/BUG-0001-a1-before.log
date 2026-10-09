@@ -1,0 +1,26 @@
+Running tests from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+failed Weather.Remote.Tests.ContractMapper.ToDto (22ms)
+  from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.ArgumentException : .NET number values such as positive and negative infinity cannot be written as valid JSON. To make it work when using 'JsonSerializer', consider specifying 'JsonNumberHandling.AllowNamedFloatingPointLiterals' (see https://learn.microsoft.com/dotnet/api/system.text.json.serialization.jsonnumberhandling).
+    at System.Text.Json.ThrowHelper.ThrowArgumentException_ValueNotSupported()
+    at System.Text.Json.Utf8JsonWriter.WriteNumber(JsonEncodedText propertyName, Double value)
+    at Weather.Remote.Contracts.RemoteJsonContext.JmaAreaDtoSerializeHandler(Utf8JsonWriter writer, JmaAreaDto value) in /home/user/Weather/src/Weather.Remote/obj/Debug/net10.0/System.Text.Json.SourceGeneration/System.Text.Json.SourceGeneration.JsonSourceGenerator/RemoteJsonContext.JmaAreaDto.g.cs:133
+    at Weather.Remote.Contracts.RemoteJsonContext.LocationDtoSerializeHandler(Utf8JsonWriter writer, LocationDto value) in /home/user/Weather/src/Weather.Remote/obj/Debug/net10.0/System.Text.Json.SourceGeneration/System.Text.Json.SourceGeneration.JsonSourceGenerator/RemoteJsonContext.LocationDto.g.cs:224
+    at Weather.Remote.Contracts.RemoteJsonContext.ResolveResponseSerializeHandler(Utf8JsonWriter writer, ResolveResponse value) in /home/user/Weather/src/Weather.Remote/obj/Debug/net10.0/System.Text.Json.SourceGeneration/System.Text.Json.SourceGeneration.JsonSourceGenerator/RemoteJsonContext.ResolveResponse.g.cs:154
+    at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.Serialize(Utf8JsonWriter writer, T& rootValue, Object rootValueBoxed)
+    at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.SerializeAsObject(Utf8JsonWriter writer, Object rootValue)
+    at System.Text.Json.JsonSerializer.WriteStringAsObject(Object value, JsonTypeInfo jsonTypeInfo)
+    at Weather.Remote.Contracts.RemoteJson.Serialize[T](T value) in /home/user/Weather/src/Weather.Remote/Contracts/RemoteJson.cs:9
+    at Weather.Remote.Tests.ContractMapper.ToDto() in /home/user/Weather/tests/Weather.Remote.Tests/RemoteTests.cs:177
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64) failed with 1 error(s) (1s 018ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 6
+  failed: 1
+  succeeded: 5
+  skipped: 0
+  duration: 1s 365ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

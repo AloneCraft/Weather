@@ -1,0 +1,18 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.NwsProvider.GetObservationsAsync_CacheKey (147ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  Assert.Equal() Failure: Values differ
+  Expected: 1
+  Actual:   2
+    at Weather.Providers.Tests.NwsProvider.GetObservationsAsync_CacheKey() in /home/user/Weather/tests/Weather.Providers.Tests/NwsProvider.cs:110
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (581ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 1
+  failed: 1
+  succeeded: 0
+  skipped: 0
+  duration: 818ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

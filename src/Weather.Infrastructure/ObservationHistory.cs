@@ -283,13 +283,15 @@ public sealed partial class ObservationHistoryService(IWeatherService weather,IO
         return store.DeleteAllAsync(cancellationToken);
     }
 
-    /// <summary>NWS の日最高・最低は保存した観測から計算する(IsDerived、UI に「アプリで集計」)。</summary>
+    /// <summary>NWS の日最高・最低は保存した観測から計算する(IsDerived、UI に「アプリで集計」)。日付は観測所の現地日付。</summary>
     private async Task<List<DailyObservationSummary>> DeriveSummariesAsync(ObservationStation station,IReadOnlyList<Observation> items,CancellationToken cancellationToken){
-        var dates=items.Select(static o=>DateOnly.FromDateTime(o.ObservedAt.UtcDateTime)).Distinct().ToList();
+        var zone=await this.ZoneOfAsync(station,cancellationToken).ConfigureAwait(false);
+        var dates=items.Select(o=>LocalDate(o.ObservedAt,zone)).Distinct().ToList();
         var result=new List<DailyObservationSummary>();
         foreach(var date in dates){
-            var start=new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue),TimeSpan.Zero);
-            var day=await store.GetObservationsAsync(station.Key,start,start.AddDays(1).AddSeconds(-1),cancellationToken).ConfigureAwait(false);
+            var start=LocalMidnight(date,zone);
+            var end=LocalMidnight(date.AddDays(1),zone).AddSeconds(-1);
+            var day=await store.GetObservationsAsync(station.Key,start,end,cancellationToken).ConfigureAwait(false);
             var temps=day.Where(static o=>o.TemperatureC is not null).ToList();
             if(temps.Count==0){
                 continue;
@@ -305,6 +307,25 @@ public sealed partial class ObservationHistoryService(IWeatherService weather,IO
             });
         }
         return result;
+    }
+
+    /// <summary>観測所の位置のタイムゾーン。解決できなければ UTC(日付がずれるが、例外にはしない)。</summary>
+    private async Task<TimeZoneInfo> ZoneOfAsync(ObservationStation station,CancellationToken cancellationToken){
+        try{
+            var location=await weather.ResolveAsync(station.Location,cancellationToken).ConfigureAwait(false);
+            return TimeZoneInfo.FindSystemTimeZoneById(location.TimeZoneId);
+        }catch(Exception ex) when(ex is WeatherProviderException or TimeZoneNotFoundException or InvalidTimeZoneException){
+            return TimeZoneInfo.Utc;
+        }
+    }
+
+    private static DateOnly LocalDate(DateTimeOffset time,TimeZoneInfo zone){
+        return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(time,zone).DateTime);
+    }
+
+    private static DateTimeOffset LocalMidnight(DateOnly date,TimeZoneInfo zone){
+        var local=date.ToDateTime(TimeOnly.MinValue);
+        return new DateTimeOffset(local,zone.GetUtcOffset(local));
     }
 
     [LoggerMessage(Level=LogLevel.Warning,Message="観測履歴の同期に失敗しました: {Station}")]

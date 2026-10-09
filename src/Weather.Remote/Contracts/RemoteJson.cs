@@ -21,6 +21,10 @@ public static class RemoteJson{
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy=JsonKnownNamingPolicy.CamelCase,
     UseStringEnumConverter=true,
+    //OutOfCoverage の距離は無限大(区域が 20 km 以内にない)。JSON の数値には書けないので "Infinity" の文字列で往復する
+    NumberHandling=JsonNumberHandling.AllowNamedFloatingPointLiterals,
+    //サーバーの応答は信頼しない: 非 null の項目への null は JsonException にして InvalidResponse にする(null を省略する項目は nullable のまま)
+    RespectNullableAnnotations=true,
     DefaultIgnoreCondition=JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(ResolveResponse))]
 [JsonSerializable(typeof(ForecastResponse))]

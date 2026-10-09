@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json.Nodes;
 using Weather.Core;
 using Target=Weather.Providers.Nws.NwsProvider;
 
@@ -37,6 +39,33 @@ public class NwsProvider{
         }
     }
 
+    [Fact,Trait("Category","Unit")]public async Task GetForecastAsync_Overnight(){
+        //深夜〜早朝の取得: 先頭が Overnight(同じ日の 02:00〜06:00)でも、その日の昼と夜(Sunday Night)を日別に残す
+        var root=JsonNode.Parse(File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath("nws/forecast.json")))!;
+        var periods=(JsonArray)root["properties"]!["periods"]!;
+        var overnight=periods[0]!.DeepClone();
+        overnight["name"]="Overnight";
+        overnight["startTime"]="2026-10-04T02:00:00-04:00";
+        overnight["endTime"]="2026-10-04T06:00:00-04:00";
+        overnight["temperature"]=14;
+        periods[0]=overnight;
+        var bytes=Encoding.UTF8.GetBytes(root.ToJsonString());
+        using var host=TestHost.Create(Fixtures.MapNws);
+        host.Handler.Override=r=>{
+            if(r.RequestUri!.AbsoluteUri=="https://api.weather.gov/gridpoints/LWX/96,71/forecast?units=si"){
+                return FixtureHttpMessageHandler.Respond(r,bytes);
+            }
+            return null;
+        };
+        var forecast=await host.Get<Target>().GetForecastAsync(Locations.Washington,TestContext.Current.CancellationToken);
+        var sunday=forecast.Daily.Single(static d=>d.Date==new DateOnly(2026,10,4));
+        Assert.Equal(["Overnight","Sunday","Sunday Night"],sunday.Parts.Select(static p=>p.Label));
+        Assert.True(sunday.Parts.Zip(sunday.Parts.Skip(1)).All(static pair=>pair.First.End<=pair.Second.Start));
+        Assert.Equal(19,sunday.TempMaxC);
+        Assert.Equal(16,sunday.TempMinC);
+        Assert.Equal("Rain Showers Likely",sunday.WeatherText);
+    }
+
     [Fact,Trait("Category","Unit")]public async Task GetAlertsAsync(){
         using var host=TestHost.Create(Fixtures.MapNws);
         var alerts=await host.Get<Target>().GetAlertsAsync(Locations.Washington,TestContext.Current.CancellationToken);
@@ -58,6 +87,27 @@ public class NwsProvider{
             Assert.Equal(3,stations.Count);
             Assert.All(stations,static s=>Assert.Equal(ProviderId.Nws,s.Provider));
         }
+    }
+
+    [Fact,Trait("Category","Unit")]public async Task GetObservationsAsync_CacheKey(){
+        //同じ分の中で取り直すとき、終了時刻の秒が違ってもキャッシュの鍵は同じ(鮮度内はネットワークに出ない)
+        using var host=TestHost.Create(static h=>h.Override=static r=>{
+            if(r.RequestUri!.AbsolutePath=="/stations/KDCA/observations"){
+                var response=new HttpResponseMessage(System.Net.HttpStatusCode.OK){Content=new ByteArrayContent(File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath("nws/observations.json"))),RequestMessage=r};
+                response.Headers.TryAddWithoutValidation("Cache-Control","max-age=60");
+                return response;
+            }
+            return null;
+        });
+        var station=new ObservationStation("KDCA",ProviderId.Nws,"Washington/Reagan National Airport",new GeoPoint(38.85,-77.03),5);
+        var provider=host.Get<Target>();
+        var ct=TestContext.Current.CancellationToken;
+        //同じ分(00:00:10 と 00:00:30 はどちらも 00:01:00 まで)の中で取り直す
+        host.Time.Advance(TimeSpan.FromSeconds(10));
+        await provider.GetObservationsAsync(station,TestHost.Now.AddDays(-2),host.Time.GetUtcNow(),ct);
+        host.Time.Advance(TimeSpan.FromSeconds(20));
+        await provider.GetObservationsAsync(station,TestHost.Now.AddDays(-2),host.Time.GetUtcNow(),ct);
+        Assert.Equal(1,host.Handler.Requests.Count(static r=>r.RequestUri!.AbsolutePath=="/stations/KDCA/observations"));
     }
 
     [Fact,Trait("Category","Unit")]public async Task GetObservationsAsync(){

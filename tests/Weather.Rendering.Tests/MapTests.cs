@@ -2,6 +2,7 @@ using SkiaSharp;
 using Weather.Core;
 using Weather.Geo;
 using Weather.Rendering.Map;
+using Weather.Rendering.Scene;
 
 namespace Weather.Rendering.Tests;
 
@@ -167,6 +168,7 @@ public class MapCamera{
     }
 }
 
+[Collection("ShaderCache")]
 public class MapRenderer{
     [Fact,Trait("Category","Unit")]public void Render_JapanArea(){
         //方針 5: 日本周辺には GFS の色を描かない(格子の NaN とシェーダーのマスクの二重)
@@ -210,6 +212,62 @@ public class MapRenderer{
             var korea=MapSamples.PixelAt(bitmap,map,36.5,127.8);
             Assert.True(korea.Red<120,$"朝鮮半島: {korea}");
         }
+    }
+
+    [Fact,Trait("Category","Unit")]public async Task Render_TilesWithoutMask(){
+        //日本マスクのシェーダーが使えないときは、気象庁のタイルを日本周辺の外に描かない(失敗時は描かない側に倒す。方針 5)
+        using var solid=new SKBitmap(new SKImageInfo(256,256,SKColorType.Rgba8888,SKAlphaType.Premul));
+        solid.Erase(SKColors.Red);
+        using var image=SKImage.FromBitmap(solid);
+        using var data=image.Encode(SKEncodedImageFormat.Png,100);
+        var tile=data.ToArray();
+        ShaderCache.ForceFailure=static name=>name=="japanmask";
+        try{
+            using var map=new Map.MapRenderer(MapSamples.Database);
+            var loaded=new TaskCompletionSource();
+            map.RedrawRequested+=()=>loaded.TrySetResult();
+            map.TileLoader=(layer,z,x,y,ct)=>Task.FromResult<byte[]?>(tile);
+            map.Camera.CenterOn(new GeoPoint(36,135),4);
+            map.Frame=new MapFrame{Layer=FieldLayer.Precipitation,Time=MapSamples.Time,Tiles=[MapSamples.TileLayer()],Legend=MapLegends.RainRate,Japan=JapanCoverage.Available};
+            using(MapSamples.Render(map,480,360)){
+            }
+            await Task.Delay(500,TestContext.Current.CancellationToken);
+            using var bitmap=MapSamples.Render(map,480,360);
+            //全面が赤のタイルでも、朝鮮半島(日本周辺の外)は赤にならない
+            var korea=MapSamples.PixelAt(bitmap,map,36.5,127.8);
+            Assert.True(korea.Red<120,$"朝鮮半島: {korea}");
+        }finally{
+            ShaderCache.ForceFailure=null;
+        }
+    }
+
+    [Fact,Trait("Category","Unit")]public async Task Render_TileFailure(){
+        //読み込みに失敗したタイルは、連続描画の間は毎フレーム再要求しない(気象庁サーバーへの負荷・電池)。一定時間後に再び要求する
+        var requests=new System.Collections.Concurrent.ConcurrentDictionary<(int,int,int),int>();
+        using var map=new Map.MapRenderer(MapSamples.Database);
+        map.TileLoader=(layer,z,x,y,ct)=>{
+            requests.AddOrUpdate((z,x,y),1,static (_,count)=>count+1);
+            throw new WeatherProviderException(ProviderId.Jma,ProviderFailure.ServerError,"503");
+        };
+        map.Camera.CenterOn(new GeoPoint(36,138),5);
+        map.Frame=new MapFrame{Layer=FieldLayer.Precipitation,Time=MapSamples.Time,Tiles=[MapSamples.TileLayer()],Legend=MapLegends.RainRate,Japan=JapanCoverage.Available};
+        for(var i=0;i<30;i++){
+            using(MapSamples.Render(map,480,360)){
+            }
+            await Task.Delay(20,TestContext.Current.CancellationToken);
+        }
+        Assert.NotEmpty(requests);
+        Assert.All(requests,static pair=>Assert.Equal(1,pair.Value));
+        //再試行の間隔が過ぎたら、もう一度だけ要求する(間隔を 2 秒にすると、失敗から 2 秒以上たっている最初のフレームで 1 回だけ再要求し、続くフレームでは待つ)
+        map.TileRetryAfter=TimeSpan.FromSeconds(2);
+        //最初の段の描画に要した時間は環境で変わるため、失敗から必ず 2 秒以上たってから再び描く(Windows の CI で再要求が 1 回しか起きなかった)
+        await Task.Delay(TimeSpan.FromMilliseconds(2100),TestContext.Current.CancellationToken);
+        for(var i=0;i<4;i++){
+            using(MapSamples.Render(map,480,360)){
+            }
+            await Task.Delay(20,TestContext.Current.CancellationToken);
+        }
+        Assert.All(requests,static pair=>Assert.Equal(2,pair.Value));
     }
 
     [Fact,Trait("Category","Unit")]public void Render_Wind(){
@@ -347,6 +405,71 @@ public class MapRenderer{
 }
 
 public class IsobarLayer{
+    //格子座標(列, 行)の線分 → 世界の座標(Web メルカトル)の線分。格子は 2×2・北端 35°・西端 135°・1° 間隔
+    private static (double X0,double Y0,double X1,double Y1) World((double X,double Y) a,(double X,double Y) b){
+        (double X,double Y) Project((double X,double Y) p){
+            var (x,y)=Rendering.Map.MapCamera.Project(35-p.Y,135+p.X);
+            return (x-Math.Floor(x),y);
+        }
+        var (ax,ay)=Project(a);
+        var (bx,by)=Project(b);
+        if(ax+ay>bx+by){
+            return (bx,by,ax,ay);
+        }
+        return (ax,ay,bx,by);
+    }
+
+    private static List<(double X0,double Y0,double X1,double Y1)> Segments(float[] flat){
+        var list=new List<(double,double,double,double)>();
+        for(var i=0;i+3<flat.Length;i+=4){
+            var a=(X:(double)flat[i],Y:(double)flat[i+1]);
+            var b=(X:(double)flat[i+2],Y:(double)flat[i+3]);
+            if(a.X+a.Y>b.X+b.Y){
+                (a,b)=(b,a);
+            }
+            list.Add((a.X,a.Y,b.X,b.Y));
+        }
+        return list;
+    }
+
+    private static void AssertSame(List<(double X0,double Y0,double X1,double Y1)> expected,List<(double X0,double Y0,double X1,double Y1)> actual,string message){
+        Assert.Equal(expected.Count,actual.Count);
+        foreach(var e in expected){
+            Assert.True(actual.Any(a=>Math.Abs(a.X0-e.X0)<1e-4&&Math.Abs(a.Y0-e.Y0)<1e-4&&Math.Abs(a.X1-e.X1)<1e-4&&Math.Abs(a.Y1-e.Y1)<1e-4),$"{message}: 期待の線分 {e} がない");
+        }
+    }
+
+    [Fact,Trait("Category","Unit")]public void Contour_Saddle(){
+        //鞍点(曖昧なセル): 4 隅の平均がレベル以上なら高い角はつながり(低い角を孤立)、未満なら高い角を孤立させる
+        var geometry=new GridGeometry(2,2,35,135,1,1);
+        var source=new SourceAttribution{Provider=ProviderId.Gfs,AgencyName="t",ProductName="t",RetrievedAt=MapSamples.Time,License=new LicenseInfo("t",null)};
+        GridField Make(params float[] values){
+            return new GridField(geometry,values,FieldQuantity.PressureHpa,MapSamples.Time,MapSamples.Time,source);
+        }
+        {
+            //左上と右下が高い(1010)、右上と左下が低い(1000)。平均 1005
+            var (thin,_)=Rendering.Map.IsobarLayer.Contour(Make(1010,1000,1000,1010));
+            var expected=new List<(double,double,double,double)>{
+                //1004(平均以下): 高い角がつながる → 低い角(右上・左下)を孤立させる: 上辺 0.6 - 右辺 0.4、左辺 0.6 - 下辺 0.4
+                World((0.6,0),(1,0.4)),World((0,0.6),(0.4,1)),
+                //1008(平均より上): 高い角を孤立させる: 左辺 0.2 - 上辺 0.2、右辺 0.8 - 下辺 0.8
+                World((0,0.2),(0.2,0)),World((1,0.8),(0.8,1)),
+            };
+            AssertSame(expected,Segments(thin),"高い角が対角");
+        }
+        {
+            //右上と左下が高い(1010)、左上と右下が低い(1000)。平均 1005
+            var (thin,_)=Rendering.Map.IsobarLayer.Contour(Make(1000,1010,1010,1000));
+            var expected=new List<(double,double,double,double)>{
+                //1004: 高い角がつながる → 低い角(左上・右下)を孤立させる: 左辺 0.4 - 上辺 0.4、右辺 0.6 - 下辺 0.6
+                World((0,0.4),(0.4,0)),World((1,0.6),(0.6,1)),
+                //1008: 高い角を孤立させる: 上辺 0.8 - 右辺 0.2、左辺 0.8 - 下辺 0.2
+                World((0.8,0),(1,0.2)),World((0,0.8),(0.2,1)),
+            };
+            AssertSame(expected,Segments(thin),"高い角が逆の対角");
+        }
+    }
+
     [Fact,Trait("Category","Unit")]public void Contour(){
         {
             //緯度だけで変わる気圧(北ほど低い)→ 等圧線は東西にのびる。4 hPa ごと、20 hPa ごとは太線

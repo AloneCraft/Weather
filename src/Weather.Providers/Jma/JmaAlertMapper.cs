@@ -38,16 +38,21 @@ internal static class JmaAlertMapper{
                 if(item.Str("areaCode")!=area.Class20Code){
                     continue;
                 }
-                matched=true;
                 foreach(var kind in item.Items("kinds")){
                     var code=kind.Str("code");
-                    if(code is null||alerts.ContainsKey(code)){
+                    if(code is null){
+                        //「発表警報・注意報はなし」は code を持たない。この区域に関する発表ではないので見出しも採用しない
+                        continue;
+                    }
+                    matched=true;
+                    if(alerts.ContainsKey(code)){
                         continue;
                     }
                     var definition=JmaWarningCodes.Find(code);
                     if(definition is null){
+                        //表にない警報も落とさない(安全情報)。名称は「(未対応の警報)」、区分は注意報とし、見出しは原文のまま出す
                         unknownCodes.Add(code);
-                        continue;
+                        definition=new JmaWarningCode("(未対応の警報)","unknown",AlertTier.Advisory,null);
                     }
                     var status=MapStatus(kind.Str("status"),unknownStatuses);
                     if(status is null){

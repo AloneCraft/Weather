@@ -1,0 +1,18 @@
+Running tests from /home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64)
+failed Weather.Presentation.Tests.HistoryViewModel.LoadAsync (47ms)
+  from /home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64)
+  Assert.Null() Failure: Value is not null
+  Expected: null
+  Actual:   "保存済みの観測はまだありません"
+    at Weather.Presentation.Tests.HistoryViewModel.LoadAsync() in /home/user/Weather/tests/Weather.Presentation.Tests/HistoryViewModelTests.cs:80
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64) failed with 1 error(s) (873ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 43
+  failed: 1
+  succeeded: 42
+  skipped: 0
+  duration: 1s 172ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

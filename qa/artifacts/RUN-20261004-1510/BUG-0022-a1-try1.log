@@ -1,0 +1,132 @@
+Running tests from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+failed Weather.Remote.Tests.ContractMapper.ToModel (323ms)
+  from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.Text.Json.JsonException : JSON deserialization for type 'Weather.Remote.Contracts.DailySummaryDto' was missing required properties including: 'minTempAt', 'precipitationMm'.
+    at System.Text.Json.ThrowHelper.ThrowJsonException_JsonRequiredPropertyMissing(JsonTypeInfo parent, BitArray assignedOrNotRequiredPropertiesSet)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, TCollection& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.TryReadAsObject(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, Object& value)
+    at System.Text.Json.Serialization.Converters.LargeObjectWithParameterizedConstructorConverter`1.ReadAndCacheConstructorArgument(ReadStack& state, Utf8JsonReader& reader, JsonParameterInfo jsonParameterInfo)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.ReadCore(Utf8JsonReader& reader, T& value, JsonSerializerOptions options, ReadStack& state)
+    at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.Deserialize(Utf8JsonReader& reader, ReadStack& state)
+    at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsObject(Utf8JsonReader& reader, ReadStack& state)
+    at System.Text.Json.JsonSerializer.ReadFromSpanAsObject(ReadOnlySpan`1 utf8Json, JsonTypeInfo jsonTypeInfo, Nullable`1 actualByteCount)
+    at System.Text.Json.JsonSerializer.ReadFromSpanAsObject(ReadOnlySpan`1 json, JsonTypeInfo jsonTypeInfo)
+    at Weather.Remote.Contracts.RemoteJson.Deserialize[T](String json) in /home/user/Weather/src/Weather.Remote/Contracts/RemoteJson.cs:13
+    at Weather.Remote.Tests.ContractMapper.ToModel() in /home/user/Weather/tests/Weather.Remote.Tests/RemoteTests.cs:214
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+failed Weather.Remote.Tests.RemoteWeatherService.GetForecastAsync (296ms)
+  from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : サーバーの応答を読み取れません: forecast
+  ---- System.Text.Json.JsonException : JSON deserialization for type 'Weather.Remote.Contracts.CompositeConditionDto' was missing required properties including: 'transition', 'secondary'.
+    at Weather.Remote.RemoteWeatherService.GetAsync[T,TResult](String route, String query, ResolvedLocation location, Func`2 map, CancellationToken cancellationToken, Nullable`1 provider) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:98
+    at Weather.Remote.RemoteWeatherService.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:35
+    at Weather.Remote.Tests.RemoteWeatherService.GetForecastAsync() in /home/user/Weather/tests/Weather.Remote.Tests/RemoteTests.cs:285
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Text.Json.ThrowHelper.ThrowJsonException_JsonRequiredPropertyMissing(JsonTypeInfo parent, BitArray assignedOrNotRequiredPropertiesSet)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.TryReadAsObject(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, Object& value)
+    at System.Text.Json.Serialization.Converters.LargeObjectWithParameterizedConstructorConverter`1.ReadAndCacheConstructorArgument(ReadStack& state, Utf8JsonReader& reader, JsonParameterInfo jsonParameterInfo)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, TCollection& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.TryReadAsObject(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, Object& value)
+    at System.Text.Json.Serialization.Converters.LargeObjectWithParameterizedConstructorConverter`1.ReadAndCacheConstructorArgument(ReadStack& state, Utf8JsonReader& reader, JsonParameterInfo jsonParameterInfo)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.TryReadAsObject(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, Object& value)
+    at System.Text.Json.Serialization.Converters.LargeObjectWithParameterizedConstructorConverter`1.ReadAndCacheConstructorArgument(ReadStack& state, Utf8JsonReader& reader, JsonParameterInfo jsonParameterInfo)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.ReadCore(Utf8JsonReader& reader, T& value, JsonSerializerOptions options, ReadStack& state)
+    at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.Deserialize(Utf8JsonReader& reader, ReadStack& state)
+    at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsObject(Utf8JsonReader& reader, ReadStack& state)
+    at System.Text.Json.JsonSerializer.ReadFromSpanAsObject(ReadOnlySpan`1 utf8Json, JsonTypeInfo jsonTypeInfo, Nullable`1 actualByteCount)
+    at System.Text.Json.JsonSerializer.ReadFromSpanAsObject(ReadOnlySpan`1 json, JsonTypeInfo jsonTypeInfo)
+    at Weather.Remote.Contracts.RemoteJson.Deserialize[T](String json) in /home/user/Weather/src/Weather.Remote/Contracts/RemoteJson.cs:13
+    at Weather.Remote.RemoteWeatherService.GetAsync[T,TResult](String route, String query, ResolvedLocation location, Func`2 map, CancellationToken cancellationToken, Nullable`1 provider) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:96
+failed Weather.Remote.Tests.ContractMapper.ToDto (1ms)
+  from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.Text.Json.JsonException : JSON deserialization for type 'Weather.Remote.Contracts.CompositeConditionDto' was missing required properties including: 'transition', 'secondary'.
+    at System.Text.Json.ThrowHelper.ThrowJsonException_JsonRequiredPropertyMissing(JsonTypeInfo parent, BitArray assignedOrNotRequiredPropertiesSet)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.TryReadAsObject(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, Object& value)
+    at System.Text.Json.Serialization.Converters.LargeObjectWithParameterizedConstructorConverter`1.ReadAndCacheConstructorArgument(ReadStack& state, Utf8JsonReader& reader, JsonParameterInfo jsonParameterInfo)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, TCollection& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.TryReadAsObject(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, Object& value)
+    at System.Text.Json.Serialization.Converters.LargeObjectWithParameterizedConstructorConverter`1.ReadAndCacheConstructorArgument(ReadStack& state, Utf8JsonReader& reader, JsonParameterInfo jsonParameterInfo)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.TryReadAsObject(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, Object& value)
+    at System.Text.Json.Serialization.Converters.LargeObjectWithParameterizedConstructorConverter`1.ReadAndCacheConstructorArgument(ReadStack& state, Utf8JsonReader& reader, JsonParameterInfo jsonParameterInfo)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.ReadCore(Utf8JsonReader& reader, T& value, JsonSerializerOptions options, ReadStack& state)
+    at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.Deserialize(Utf8JsonReader& reader, ReadStack& state)
+    at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsObject(Utf8JsonReader& reader, ReadStack& state)
+    at System.Text.Json.JsonSerializer.ReadFromSpanAsObject(ReadOnlySpan`1 utf8Json, JsonTypeInfo jsonTypeInfo, Nullable`1 actualByteCount)
+    at System.Text.Json.JsonSerializer.ReadFromSpanAsObject(ReadOnlySpan`1 json, JsonTypeInfo jsonTypeInfo)
+    at Weather.Remote.Contracts.RemoteJson.Deserialize[T](String json) in /home/user/Weather/src/Weather.Remote/Contracts/RemoteJson.cs:13
+    at Weather.Remote.Tests.ContractMapper.ToDto() in /home/user/Weather/tests/Weather.Remote.Tests/RemoteTests.cs:173
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+failed Weather.Remote.Tests.RemoteWeatherService.GetObservationsAsync (12ms)
+  from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : サーバーの応答を読み取れません: observations
+  ---- System.Text.Json.JsonException : JSON deserialization for type 'Weather.Remote.Contracts.DailySummaryDto' was missing required properties including: 'minTempAt', 'precipitationMm'.
+    at Weather.Remote.RemoteWeatherService.GetAsync[T,TResult](String route, String query, ResolvedLocation location, Func`2 map, CancellationToken cancellationToken, Nullable`1 provider) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:98
+    at Weather.Remote.RemoteWeatherService.GetObservationsAsync(ObservationStation station, DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:61
+    at Weather.Remote.Tests.RemoteWeatherService.GetObservationsAsync() in /home/user/Weather/tests/Weather.Remote.Tests/RemoteTests.cs:332
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Text.Json.ThrowHelper.ThrowJsonException_JsonRequiredPropertyMissing(JsonTypeInfo parent, BitArray assignedOrNotRequiredPropertiesSet)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, TCollection& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.TryReadAsObject(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, Object& value)
+    at System.Text.Json.Serialization.Converters.LargeObjectWithParameterizedConstructorConverter`1.ReadAndCacheConstructorArgument(ReadStack& state, Utf8JsonReader& reader, JsonParameterInfo jsonParameterInfo)
+    at System.Text.Json.Serialization.Converters.ObjectWithParameterizedConstructorConverter`1.OnTryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value)
+    at System.Text.Json.Serialization.JsonConverter`1.TryRead(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options, ReadStack& state, T& value, Boolean& isPopulatedValue)
+    at System.Text.Json.Serialization.JsonConverter`1.ReadCore(Utf8JsonReader& reader, T& value, JsonSerializerOptions options, ReadStack& state)
+    at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.Deserialize(Utf8JsonReader& reader, ReadStack& state)
+    at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsObject(Utf8JsonReader& reader, ReadStack& state)
+    at System.Text.Json.JsonSerializer.ReadFromSpanAsObject(ReadOnlySpan`1 utf8Json, JsonTypeInfo jsonTypeInfo, Nullable`1 actualByteCount)
+    at System.Text.Json.JsonSerializer.ReadFromSpanAsObject(ReadOnlySpan`1 json, JsonTypeInfo jsonTypeInfo)
+    at Weather.Remote.Contracts.RemoteJson.Deserialize[T](String json) in /home/user/Weather/src/Weather.Remote/Contracts/RemoteJson.cs:13
+    at Weather.Remote.RemoteWeatherService.GetAsync[T,TResult](String route, String query, ResolvedLocation location, Func`2 map, CancellationToken cancellationToken, Nullable`1 provider) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:96
+failed Weather.Remote.Tests.TmpFuzz.Fuzz (1s 162ms)
+  from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+  実行 3000 回 / WeatherProviderException 以外 4 種類
+     5x alerts | NullReferenceException | at Weather.Remote.Contracts.ContractMapper.<>c__DisplayClass9_0.<ToModel>b__0(AlertDto a) in /home/user/Weather/src/Weather.Remote/Contracts/ContractMapper.cs:line 112
+        例: /alerts/alerts/0 op1 → Object reference not set to an instance of an object.
+     5x resolve | NullReferenceException | at Weather.Remote.RemoteWeatherService.ResolveAsync(GeoPoint point, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:line 28
+        例: /retention/0 op1 → Object reference not set to an instance of an object.
+     3x observations | NullReferenceException | at Weather.Remote.Contracts.ContractMapper.<>c.<ToModel>b__13_1(DailySummaryDto s) in /home/user/Weather/src/Weather.Remote/Contracts/ContractMapper.cs:line 180
+        例: /dailySummaries/0 op1 → Object reference not set to an instance of an object.
+     2x resolve | OverflowException | at Weather.Remote.RemoteWeatherService.ResolveAsync(GeoPoint point, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Remote/RemoteWeatherService.cs:line 28
+        例: /retention/0/days op5 → TimeSpan overflowed because the duration is too long.
+    at Weather.Remote.Tests.TmpFuzz.Fuzz() in /home/user/Weather/tests/Weather.Remote.Tests/TmpFuzz.cs:92
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64) failed with 5 error(s) (1s 625ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 7
+  failed: 5
+  succeeded: 2
+  skipped: 0
+  duration: 1s 892ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using Weather.Core;
 using Weather.Providers.Routing;
 using Target=Weather.Providers.Routing.WeatherProviderRouter;
@@ -77,6 +78,15 @@ public class WeatherService{
             Assert.Equal(ProviderFailure.ServerError,ex.Failure);
         }
         {
+            //アプリが使用中でないとき(背景更新・ウィジェット)は、NWS が 404 でも MET へ通信しない(MET の規約。NotAllowed で失敗する)
+            using var host=TestHost.Create(Fixtures.MapMet,static s=>s.AddSingleton<IAppActivity>(new Activity(false)));
+            var location=Locations.World(59.91,10.75,"US","Europe/Oslo");
+            Assert.True(host.Get<IWeatherService>().AllowsBackgroundFetch(location));
+            var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await host.Get<IWeatherService>().GetForecastAsync(location,TestContext.Current.CancellationToken));
+            Assert.Equal(ProviderFailure.NotAllowed,ex.Failure);
+            Assert.DoesNotContain(host.Handler.Requests,static r=>r.RequestUri!.Host=="api.met.no");
+        }
+        {
             //日本の対象外は取得せずに OutOfCoverage
             using var host=TestHost.Create();
             var result=await host.Get<IWeatherService>().GetForecastAsync(Locations.JapanOutOfCoverage,TestContext.Current.CancellationToken);
@@ -117,5 +127,9 @@ public class WeatherService{
             Assert.False(service.AllowsBackgroundFetch(Locations.Oslo));
             Assert.False(service.AllowsBackgroundFetch(Locations.JapanOutOfCoverage));
         }
+    }
+
+    private sealed class Activity(bool inUse):IAppActivity{
+        public bool IsInUse=>inUse;
     }
 }

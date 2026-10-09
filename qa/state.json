@@ -1,0 +1,2502 @@
+{
+  "schema_version": 1,
+  "revision": 122,
+  "updated_at": "2026-10-09T05:28:25Z",
+  "workflow_doc": "docs/QA_WORKFLOW.md",
+  "mode": "FOCUSED",
+  "budget": {
+    "note": "初期値から変更: 実行枠をユーザー指示(探索的デバッグ・最大12時間)により 720 分に変更。探索的テスト枠は目的が探索のため 600 分(終了整理 15 分と調査・修正の予算とは別に使う)とした。これは AI の解釈で、違えば変更する。他の予算(1件30分・試行1回・未検証修正1件)は初期値のまま",
+    "run_window_max_minutes": 720,
+    "per_bug_attempts": 1,
+    "per_bug_attempts_with_new_evidence": 2,
+    "per_bug_time_minutes": 30,
+    "exploratory_total_minutes": 600,
+    "closeout_reserve_minutes": 15,
+    "max_unverified_fixes": 1,
+    "test_consolidation": "candidates_only"
+  },
+  "run": {
+    "status": "ENDED",
+    "run_id": "RUN-20261004-1510",
+    "started_at": "2026-10-04T15:10:58Z",
+    "deadline": "2026-10-05T03:10:58Z",
+    "goal": "探索的デバッグ(最大12時間)",
+    "release_scope": "未指定(Q-0001 未回答)。暫定: 現行 main(62ea11e)の既存機能の不具合。新機能は対象外",
+    "allowed_change_scope": "未指定(Q-0001 未回答)。暫定(AI の解釈): src/ と tests/ の不具合修正と再現テスト追加のみ。生成データ・ゴールデン画像・記録データ・設計書・依存パッケージ版・CI 設定は変更しない",
+    "code_state": {
+      "commit": "9737cbe3f1593b608a51389996f130308a971394",
+      "uncommitted_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "branch": "claude/zen-keller-0fx365"
+    },
+    "budget_used": {
+      "run_minutes": 102,
+      "exploratory_minutes": null,
+      "note": "run_minutes は開始・終了時刻の差(実測、サンドボックスの時計)。exploratory_minutes は測定していない(推定: 変異・不変条件・実測の探索で約 45 分、静的調査エージェントは並行で約 14 分)"
+    },
+    "survey": {
+      "launched_at": "2026-10-04T15:16:35Z",
+      "agents": 5,
+      "status": "REPORTS_RECEIVED",
+      "reports_received": [
+        "scene",
+        "geo-core",
+        "infra-presentation",
+        "map",
+        "providers"
+      ]
+    },
+    "ended_at": "2026-10-04T16:53:19Z",
+    "end_reason": "予算(実行枠 12 時間)は約 8% しか使っていないが、優先度の高い実行可能な既知の作業を処理し、残りは人間判断待ち(BUG-0003・0012・0017)・目視/Windows 確認待ち(BUG-0031)・低優先度の未再現候補だけになった。ルール 12「今回対象の実行可能な作業を処理した」「残りが人間判断待ちだけになった」に近い終了。低優先度の未再現候補(candidates)は次の実行枠で再開する",
+    "final_test": {
+      "code_state": {
+        "commit": "978a8f3728211cf213f704721538909cee5c0942",
+        "worktree": "製品コードの未コミット差分なし(qa/ の記録のみ)"
+      },
+      "environment": "Linux x64 / .NET SDK 10.0.401 / Debug(Rendering は libSkiaSharp.so を bin に手動配置)",
+      "results": {
+        "Weather.Core.Tests": "14/14 PASS",
+        "Weather.Geo.Tests": "10/10 PASS",
+        "Weather.Scene.Tests": "8/8 PASS",
+        "Weather.Infrastructure.Tests": "9/9 PASS",
+        "Weather.Providers.Tests": "46/46 PASS",
+        "Weather.Presentation.Tests": "48/48 PASS",
+        "Weather.Remote.Tests": "7/7 PASS",
+        "Weather.Rendering.Tests": "19/20(MapRenderer.Render_Golden の map-temperature 平均差 3.53 のみ失敗。Windows 生成のゴールデンの Linux 比較で、開始時のベースラインと同値。判定対象外=環境)",
+        "Functions ビルド(-warnaserror)": "成功"
+      },
+      "not_run": [
+        "Weather.Providers.LiveTests(通信制限)",
+        "Weather.App の Android/iOS ビルド・実機",
+        "SceneLab(WPF)",
+        "Windows のゴールデン画像",
+        "Full Regression(CI)"
+      ],
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/final2-*.log"
+      ]
+    },
+    "resumed": [
+      {
+        "at": "2026-10-09T05:28:25Z",
+        "by": "ユーザー指示「続けて」",
+        "budget": "新しい予算は与えていない(ENDED の枠の残りの範囲で、判断に依存しない作業のみ)",
+        "work": "BUG-0034"
+      }
+    ]
+  },
+  "baseline_snapshot": {
+    "note": "準備時(実行枠の開始前)に採取した参考値。実行枠の開始時に必ず採り直す",
+    "captured_at": "2026-10-04T15:07:10Z",
+    "repository": "AloneCraft/Weather",
+    "branch": "claude/zen-keller-0fx365",
+    "commit": "62ea11e14f4e38a83e4ad080fcef4a360baf669c",
+    "tree": "6d6a9ac9237fc3c1522f563d433b187b029e1935",
+    "main_commit_at_capture": "62ea11e14f4e38a83e4ad080fcef4a360baf669c",
+    "uncommitted_changes": {
+      "count": 0,
+      "fingerprint_sha256": "48916e3a8eee516db91d0487bcb797cb6b9a4196718ca6808be3eebf30a04a77",
+      "fingerprint_method": "docs/QA_WORKFLOW.md 13.3 の fp(クリーンなら空入力の SHA-256)"
+    }
+  },
+  "environment": {
+    "captured_at": "2026-10-04T15:07:10Z",
+    "os": "Linux 6.18.44-fc-v64 x86_64(Claude Code クラウドコンテナ。使い捨て)",
+    "product": ".NET MAUI(Android / iOS)+ SkiaSharp。Unity は使っていない",
+    "dotnet_sdk_required": "global.json: 10.0.401(rollForward: latestFeature)、テストランナー: Microsoft.Testing.Platform",
+    "dotnet_sdk_installed": "10.0.401(この実行枠で ~/.dotnet に導入。dotnet-install.sh)",
+    "maui_workload_required": "10.0.400 のワークロードセット(iOS 26.5.10301 / Android 36.1.69)",
+    "maui_workload_installed": null,
+    "rendering_paths": [
+      "Android: SKGLView",
+      "iOS: SKMetalView",
+      "テスト: オフスクリーン描画"
+    ],
+    "golden_image_platform": "Windows(TestStrategy.md)",
+    "other_tools": {
+      "git": "2.43.0",
+      "python3": "3.11.15",
+      "node": "v22.22.0",
+      "jq": "present",
+      "sha256sum": "present",
+      "java": "present(版は未確認)"
+    },
+    "dotnet_test_notes": "Rendering.Tests を Linux で動かすには SkiaSharp.NativeAssets.Linux 4.153.1 の libSkiaSharp.so を tests/Weather.Rendering.Tests/bin/Debug/net10.0/ に手動配置(リポジトリ未変更。bin は gitignore)"
+  },
+  "capabilities": {
+    "read_edit_files": {
+      "available": true
+    },
+    "git_local": {
+      "available": true
+    },
+    "dotnet_build_test": {
+      "available": true,
+      "note": "この実行枠で導入。MAUI ワークロードは未導入(App の Android/iOS ビルドは不可)。コンテナは使い捨て"
+    },
+    "golden_image_tests": {
+      "available": false,
+      "reason": "Windows 以外の結果はゴールデン画像の証拠にしない(TestStrategy.md)。dotnet もない"
+    },
+    "android_emulator_adb": {
+      "available": false,
+      "reason": "adb・emulator がない"
+    },
+    "ios_build_simulator": {
+      "available": false,
+      "reason": "xcodebuild がない(macOS ではない)"
+    },
+    "ci_github_actions": {
+      "available": "unverified",
+      "note": "ci.yml は main と feature/** への push と Pull Request で動く。claude/** への push では動かない。Pull Request の作成はユーザーの明示指示がある場合だけ。結果の読み取りは GitHub MCP ツール(actions_*)を想定しているが、この準備では実行していない"
+    },
+    "live_api_tests": {
+      "available": false,
+      "reason": "ネットワーク制限で www.jma.go.jp / api.weather.gov / api.met.no に到達できない(2026-10-04 実測)。GFS の取得先ホストは未確認",
+      "effect": "実 API の契約テストは判定できない(NOT_RUN 扱い)。ユーザーが環境のネットワーク設定(Allowed domains)を変えれば実行できる"
+    },
+    "push": {
+      "available": true,
+      "scope": "クラウド作業の開始ごとに作る、そのセッション専用のブランチ(claude/…)のみ",
+      "not_included": [
+        "main・他セッションのブランチ・feature/** への push",
+        "Pull Request の作成・公開・申請",
+        "force push などの履歴書き換え"
+      ],
+      "authorized_by": "ユーザー指示(2026-10-04)"
+    },
+    "instruction_file_G_drive": {
+      "available": false,
+      "reason": "AGENTS.md が参照する G:\\ai\\skills\\ai_rules.md はこの環境にない(読めていない)"
+    }
+  },
+  "running_processes_at_capture": "dotnet / msbuild / testhost / adb / emulator / unity に該当するプロセスなし(準備時に ps で確認)",
+  "bugs": [
+    {
+      "id": "BUG-0010",
+      "title": "JMA警報: 警報のない地点に別区域の見出しが付く",
+      "source_ids": [
+        "P-1"
+      ],
+      "severity": "高",
+      "fix_priority": 1,
+      "symptom": "Providers.Tests の記録データ warning_130000.json + Locations.Tokyo で GetAlertsAsync → Headline が null でなく他区域の文面になる(コード読みで機構確認。実行再現は修正前テストで行う)",
+      "expected": "警報がない地点では Headline==null(WeatherProviders.md「警報(r8)」。気象業務法の趣旨で他区域の文面を出さない)",
+      "cause": {
+        "confirmed": "matched が areaCode 一致のみで立ち、「なし」の電文(code なし)の見出しも採用していた(確定。修正前テストで FAIL を確認)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:31:03Z",
+          "reason": "優先1位: 利用者に誤情報(他区域の警報文面)を出し得る安全情報の問題。独立して修正・検証できる",
+          "code_before": {
+            "commit": "9737cbe3f1593b608a51389996f130308a971394",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "JmaAlertMapper.cs:36,41,64-66 で matched が areaCode 一致のみで立つ(コード読み)",
+          "hypothesis": "kinds に code を持つ項目がある電文の headlineText だけを採用すべきで、なしの電文の見出しは採用されない",
+          "planned_change": "src/Weather.Providers/Jma/JmaAlertMapper.cs の matched 判定のみ + tests/Weather.Providers.Tests/JmaProvider.cs へ再現テスト追加",
+          "success_criteria": "再現テストが修正前 FAIL・修正後 PASS、Weather.Providers.Tests / Remote.Tests 全 PASS、稚内(警報あり)の既存ケースが変わらない",
+          "isolation": "git diff を qa/artifacts に保存。不採用なら今回追加した hunk のみ git apply -R で戻す(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:32:27Z",
+          "diff_sha256": "6e22b16da3b1b11b32da8945a51c2f76c70854ca689a403a4b5c1913aa7b2633",
+          "commit": "8a7b61400de76febe7d71db378c76b88ae912a6e",
+          "evidence": [
+            "qa/artifacts/RUN-20261004-1510/BUG-0010-a1.diff",
+            "qa/artifacts/RUN-20261004-1510/BUG-0010-a1-before.log"
+          ]
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/JmaProvider.GetAlertsAsync",
+        "Weather.Providers.Tests/JmaProvider.GetAlertsAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "8a7b61400de76febe7d71db378c76b88ae912a6e",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ Providers/Remote/Presentation の全テスト PASS",
+        "visual_check_required": false,
+        "full_regression": "未実施(関連 3 プロジェクトのみ)"
+      }
+    },
+    {
+      "id": "BUG-0001",
+      "title": "日本沖(OutOfCoverage)で DistanceKm=Infinity となり Remote の JSON 直列化が例外",
+      "source_ids": [
+        "G-1"
+      ],
+      "severity": "高(Remote 使用時)",
+      "fix_priority": 2,
+      "symptom": "LocationResolver.Resolve(GeoPoint(34.3,141.6)) の JmaArea.DistanceKm=Infinity → RemoteJson.Serialize(ContractMapper.ToDto(loc)) が ArgumentException",
+      "expected": "例外にならない(往復で値が保たれる)",
+      "cause": {
+        "confirmed": "RemoteJson の NumberHandling に AllowNamedFloatingPointLiterals がない",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:32:57Z",
+          "reason": "優先2位: Remote 経路でサーバーの /resolve が日本沖の地点で例外になる(機構確認済み・再現済み)。独立して修正・検証できる",
+          "code_before": {
+            "commit": "8a7b61400de76febe7d71db378c76b88ae912a6e",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "RemoteJson.Serialize(ContractMapper.ToDto(OutOfCoverage の location)) が ArgumentException(Infinity は JSON に書けない)",
+          "hypothesis": "JsonSourceGenerationOptions に NumberHandling=AllowNamedFloatingPointLiterals を足せば、Infinity が文字列 \"Infinity\" で往復する",
+          "planned_change": "src/Weather.Remote/Contracts/RemoteJson.cs の 1 属性 + tests/Weather.Remote.Tests/RemoteTests.cs に再現テスト",
+          "success_criteria": "再現テストが修正前 FAIL・修正後 PASS、Remote/Providers/Presentation テスト全 PASS、既存の JSON 形式(camelCase・列挙は文字列・null 省略)が不変",
+          "isolation": "git で 1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:33:38Z",
+          "diff_sha256": "9cc811e19006a4c1dc8c1a05d17ffa870fa56f4f1051ec5a783bb991d4de5094",
+          "commit": "70a4bf60ba45fc9edc8a1f948352b7061f874b1d"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Remote.Tests/*",
+        "Weather.Remote.Tests/ContractMapper.ToDto"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/survey-geo-core.md"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "70a4bf60ba45fc9edc8a1f948352b7061f874b1d",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ Remote/Providers/Presentation 全テスト + Functions ビルド",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0002",
+      "title": "高緯度で最寄り都市の探索が取りこぼされ、TimeZone が Etc/GMT± に落ちる",
+      "source_ids": [
+        "G-3"
+      ],
+      "severity": "中",
+      "fix_priority": 3,
+      "symptom": "Resolve(GeoPoint(65,-124.5)) → TZ=Etc/GMT+8(最寄りは Yellowknife 572km, America/Edmonton)。FindNearestPlace を総当たりと比較: 緯度55〜70で 316/8000、70〜84で 717/8000 不一致",
+      "expected": "maxKm 以内の最寄り都市を返す",
+      "cause": {
+        "confirmed": "探索の区画数が経度方向も緯度と同じ度数(range=ceil(maxKm/100)+1)で、高緯度では経度1°が短い",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:34:25Z",
+          "reason": "優先3位: 高緯度の地点でタイムゾーンが Etc/GMT± に落ちる(夏時間の地域で時刻が 1〜2 時間ずれる)。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "70a4bf60ba45fc9edc8a1f948352b7061f874b1d",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "総当たりとの比較で緯度 55〜70 の 316/8000、70〜84 の 717/8000 が不一致。Resolve(65,-124.5)=Etc/GMT+8",
+          "hypothesis": "探索する経度の区画数を、探索円が届く最高緯度での経度 1° の長さから決めれば総当たりと一致する",
+          "planned_change": "src/Weather.Geo/GeoDatabase.cs の FindNearestPlace のみ + tests/Weather.Geo.Tests に総当たり比較テスト",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Geo/Providers/Presentation/Remote テスト PASS、低緯度の結果が変わらない",
+          "isolation": "1 コミット。不採用なら git revert",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:35:22Z",
+          "diff_sha256": "40027586d5328127076f6667486896e12c854d24a6eea7690d88728b468429e1",
+          "commit": "6a3c67907ecf79dfa5b36fd4264609c84f9a30bb"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Geo.Tests/*",
+        "Weather.Geo.Tests/GeoDatabase.FindNearestPlace"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "6a3c67907ecf79dfa5b36fd4264609c84f9a30bb",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "総当たり比較テスト(修正前 FAIL → 修正後 PASS)+ Geo/Providers/Presentation/Remote の全テスト",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0004",
+      "title": "地点検索で「ヶ」と「ケ」の表記ゆれが吸収されず JMA 区域に当たらない",
+      "source_ids": [
+        "G-4"
+      ],
+      "severity": "中",
+      "fix_priority": 4,
+      "symptom": "Search(\"茅ケ崎\") / (\"金ヶ崎\") / (\"鎌ヶ谷\") の JMA 区域が 0 件(茅ヶ崎市・金ケ崎町・鎌ケ谷市は存在)",
+      "expected": "どちらの表記でも当たる",
+      "cause": {
+        "confirmed": "NFKC は ヶ/ケ を統合せず、カタカナ→ひらがな変換で ゖ/け に分かれる",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:36:03Z",
+          "reason": "優先4位: 実在の市町村名(茅ヶ崎市・金ケ崎町・鎌ケ谷市 ほか)が逆の表記で検索できない。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "a6b55c382ec4b7da064e5bf511c9cb0202786eb8",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "Search(茅ケ崎/金ヶ崎/鎌ヶ谷) の JMA 区域が 0 件",
+          "hypothesis": "カタカナ→ひらがな変換の前に ヶ→ケ・ヵ→カ(小書き)を統合すれば、表記ゆれが吸収される",
+          "planned_change": "src/Weather.Geo/PlaceSearch.cs の TextNormalizer.Normalize のみ + tests/Weather.Geo.Tests に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Geo/Providers/Presentation テスト PASS、既存の検索順(千代田区 先頭など)が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:36:51Z",
+          "diff_sha256": "7fd2a251f1b4a0db465f68c34e6d9c358e3c6a8217b94c209cfec4d70cb6f613",
+          "commit": "67056c4cf3bc3e362e202d6ee093d20c49fb0bae"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Geo.Tests/*",
+        "Weather.Geo.Tests/TextNormalizer.Normalize"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "67056c4cf3bc3e362e202d6ee093d20c49fb0bae",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 25,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0005",
+      "title": "孤立サロゲートの検索入力で ArgumentException",
+      "source_ids": [
+        "G-5"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 5,
+      "symptom": "PlaceSearch.Search(\"\\uD83D\",5) → ArgumentException: String contains invalid Unicode code points",
+      "expected": "例外にならず 0 件",
+      "cause": {
+        "confirmed": "string.Normalize(FormKC) が不正な Unicode で例外",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:37:04Z",
+          "reason": "優先5位: 検索ボックスへの貼り付けや絵文字の途中切断で例外になり得る。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "67056c4cf3bc3e362e202d6ee093d20c49fb0bae",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "PlaceSearch.Search(\"\\uD83D\") が ArgumentException(String contains invalid Unicode code points)",
+          "hypothesis": "孤立サロゲートは検索の手がかりにならないので Normalize の前に除去すれば、例外にならず残りの文字で検索できる",
+          "planned_change": "src/Weather.Geo/PlaceSearch.cs の TextNormalizer.Normalize のみ + tests/Weather.Geo.Tests に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Geo/Providers/Presentation テスト PASS、正当なサロゲートペアは保たれる",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:37:54Z",
+          "diff_sha256": "2394be959a15600fc1b9c67079592a671433d2148a1c5e3c5ffadab6b4c78d7e",
+          "commit": "08ce1c403a77c4707cbb0ed8acc129d4cd732216"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Geo.Tests/*",
+        "Weather.Geo.Tests/TextNormalizer.Normalize"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "08ce1c403a77c4707cbb0ed8acc129d4cd732216",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 26,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0006",
+      "title": "GridField.Sample が循環継ぎ目の x≈-ε で格子外の列を読む(最南行で IndexOutOfRange)",
+      "source_ids": [
+        "G-7/M-4"
+      ],
+      "severity": "低",
+      "fix_priority": 6,
+      "symptom": "1440x721 格子で Sample(-90,-1e-15) が IndexOutOfRangeException。Sample(0,-1e-15) は 360 行でなく 361 行の値",
+      "expected": "Sample(lat,-1e-15)≒Sample(lat,0)",
+      "cause": {
+        "confirmed": "x+Columns が丸めで Columns ちょうどになる",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:38:18Z",
+          "reason": "優先6位: 経度 0 のごく近く(-1e-15)の地図サンプリングで最南行は例外、他の行は 1 行ずれた値を返す。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "8eadefac12299a2dd672e1ed1bf4a07feb754706",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "1440x721 格子で Sample(-90,-1e-15) が IndexOutOfRangeException。x+Columns が丸めで Columns ちょうどになる",
+          "hypothesis": "循環の正規化の後に x>=Columns なら 0 に戻せば [0,Columns) に収まる",
+          "planned_change": "src/Weather.Core/Fields/GridField.cs の TryGetPosition のみ + tests/Weather.Core.Tests/FieldTests.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Core/Providers/Rendering(Linux ネイティブ配置)/Presentation テスト PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:40:29Z",
+          "diff_sha256": "dc50a3b5cf5d13b2565c04c178433ca5112418ad0fdbbde11f90d72b3e03c21d",
+          "commit": "91c11422e2202bbb2dd668d10dc10069bc8fc4b6"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Core.Tests/FieldTests",
+        "Weather.Core.Tests/GridField.Sample"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "91c11422e2202bbb2dd668d10dc10069bc8fc4b6",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 29,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0007",
+      "title": "GridField.SampleNearest(NaN,NaN) が this[0,0] を返す(NaN 入力のみ。修正済み)",
+      "source_ids": [
+        "G-6"
+      ],
+      "severity": "低",
+      "fix_priority": 8,
+      "symptom": "SampleNearest(NaN,NaN)=0(Sample は NaN)。非循環 GridGeometry(10,10,40,130,1,1) の SampleNearest(35,129.7)=NaN",
+      "expected": "NaN 入力は NaN。外周半セルの扱いは設計判断",
+      "cause": {
+        "confirmed": "TryGetPosition の比較が NaN で全て偽になる",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:51:02Z",
+          "reason": "NaN の緯度経度で SampleNearest が北西端の実値を返す(Sample は NaN)。再現済み。外周の半セルは仕様判断のため対象外",
+          "code_before": {
+            "commit": "8d4ef4291bae2fc9e28afb2103f7b40e7e0a5d70",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "SampleNearest(NaN,NaN)=0(格子 [0,0] の値)。Sample(NaN,NaN)=NaN",
+          "hypothesis": "TryGetPosition が非有限の緯度経度を false にすれば、Sample/SampleNearest とも NaN になる",
+          "planned_change": "src/Weather.Core/Fields/GridField.cs の TryGetPosition のみ + tests/Weather.Core.Tests/FieldTests.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Core/Providers/Presentation/Rendering(既知のゴールデン差のみ) テスト",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:53:13Z",
+          "diff_sha256": "0c10339a84e7c61d1582c751917dd264672a2c0b1cfc80afe724cfcaaf4385db",
+          "commit": "14c1ec520e87dd8e702a4a9d782898d76880ade3"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Core.Tests/FieldTests",
+        "Weather.Core.Tests/GridField.SampleNearest"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "14c1ec520e87dd8e702a4a9d782898d76880ade3",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 42,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0003",
+      "title": "国境付近で国はポリゴン由来、表示名/行政区/TZ は他国の最寄り都市になる",
+      "source_ids": [
+        "G-2"
+      ],
+      "severity": "中",
+      "fix_priority": 9,
+      "symptom": "Resolve(GeoPoint(41.85,-6.3)) → 国=ES, 表示名=ブラガンサ, TZ=Europe/Lisbon(正は Europe/Madrid)",
+      "expected": "国が判明していれば同じ国の都市を優先(設計書は「国境付近の誤差は既知の制約」としており境界が曖昧)",
+      "cause": {
+        "confirmed": "FindNearestPlace の結果の国を確認しない",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T05:59:25Z",
+          "commit": "5464bbf",
+          "hypothesis": "同じ国の都市を優先(判断: 同じ国の都市の中から最寄り)",
+          "evidence": [
+            "Geo 10/10(修正前 FAIL: ブラガンサ)・Providers/Presentation/Remote/Scene/Infrastructure PASS"
+          ]
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Geo.Tests/*"
+      ],
+      "retry_when": "Q-0005 の回答(国境付近で同じ国の都市を優先するか)",
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "5464bbf",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ 関連プロジェクトの全テスト",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0008",
+      "title": "端末が解決できないタイムゾーン ID を地点解決が返し、下流(Scene・MET・表示)が黙って UTC にする",
+      "source_ids": [
+        "S-5a"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 10,
+      "symptom": "TimeZoneId=Not/AZone の日本地点で JST 10/4 08:00 → 10/3 の日別(Rain)を選ぶ。Asia/Tokyo なら 10/4(None)",
+      "expected": "不明 ID でも地点の経度から妥当なオフセットを使う等(方針は判断)",
+      "cause": {
+        "confirmed": "SceneConverter.ZoneOffset・MetNorway.FindZone・TimeText.Zone が TimeZoneNotFoundException を握りつぶして UTC にする(コード読み+Scene で再現)。LocationResolver は GeoNames の timezone ID をそのまま返すため、tzdata が古い端末(新しい IANA ID: Europe/Kyiv など)で起こり得る",
+        "hypotheses": [
+          "古い Android 等で実際に解決できない ID があるか(未確認。この Linux では全 371 ID が解決できた)"
+        ],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:49:58Z",
+          "reason": "優先: 古い端末で現地日付・表示時刻が UTC になる恐れ(日別予報が別の日を選ぶ)。再現済み(Scene)。発生源 1 か所で直せる",
+          "code_before": {
+            "commit": "efe5378f2ddeb4ccc22292d0560acd89080de572",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "Scene: TimeZoneId=Not/AZone の日本地点で JST 10/4 08:00 → 10/3 の Rain を選ぶ。全 371 ID はこの環境で解決可",
+          "hypothesis": "LocationResolver で端末が解決できない ID を経度から決める Etc/GMT± に置き換えれば、下流は UTC に落ちない",
+          "planned_change": "src/Weather.Geo/LocationResolver.cs の ResolveTimeZone のみ + tests/Weather.Geo.Tests に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Geo/Providers/Presentation テスト PASS、解決できる ID は不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:50:50Z",
+          "diff_sha256": "4fa12a66957d3ce37343cdead2ef2c38a38f056f3b65ce2839a90365c597189e",
+          "commit": "883ab3b0185f84b39f9d8b276d469275dcd6368b"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Scene.Tests/*",
+        "Weather.Geo.Tests/LocationResolver.Resolve"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "883ab3b0185f84b39f9d8b276d469275dcd6368b",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 39,
+        "visual_check_required": false,
+        "full_regression": "未実施",
+        "note": "下流 3 か所(Scene・MET・表示)の UTC フォールバック自体は残る。発生源での対策のみ。Remote 経路のクライアント側 ID は未対策"
+      }
+    },
+    {
+      "id": "BUG-0009",
+      "title": "SceneTimeline.At が「後に雨」の区間前半から雨を返す(Convert は中点まで主天気)",
+      "source_ids": [
+        "S-1"
+      ],
+      "severity": "低(現行アダプターでは 6h 以上の Later なし)",
+      "fix_priority": 11,
+      "symptom": "06:00-12:00 に Clear→Later→Rain の ForecastPoint。At(06:30..08:54) が Rain 0.35→0.59、Convert 直接は None",
+      "expected": "SceneState.md「Later: 中点より前は主天気」",
+      "cause": {
+        "confirmed": "キーフレームが区間中点で、中点は常に副天気側(>=)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:38:42Z",
+          "reason": "ほかに READY で実行可能な作業が残っているため。公開 API で決定的に再現済み(現行アダプターで到達しうる NWS の Later は日別経路のみのため影響は小さい)",
+          "code_before": {
+            "commit": "fc40f281de477635a10f95e507aaa2a060a1e271",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "実行: 06:00-12:00 の「後に雨」で At(06:30..08:54) が Rain(0.35→0.59)。Convert 直接は 09:00 まで None",
+          "hypothesis": "Later(6 時間以上)の区間のキーフレームを、中点 1 つでなく区間の 1/4 と 3/4(主天気側・副天気側)に置けば、中点の前半は主天気になる",
+          "planned_change": "src/Weather.Scene/SceneTimeline.cs と SceneConverter.cs(6 時間の定数の共有)+ tests/Weather.Scene.Tests に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Scene/Presentation テスト全 PASS、Later でない区間の補間が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:39:20Z",
+          "diff_sha256": "84551586a250c548d449f1c7d359cc73fc6b6437dcf3a0dfbef1e8ff967be23e",
+          "commit": "24cd8e76a701739c94c6d4090e62ae89e90c4ea1"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Scene.Tests/*",
+        "Weather.Scene.Tests/SceneTimeline.At"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "24cd8e76a701739c94c6d4090e62ae89e90c4ea1",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 88,
+        "visual_check_required": false,
+        "full_regression": "未実施",
+        "note": "時間軸のスクラブでの見た目(クロスフェードの違和感)は未確認(目視)"
+      }
+    },
+    {
+      "id": "BUG-0011",
+      "title": "Remote: サーバー応答のモデル検証例外が WeatherProviderException(InvalidResponse)にならず漏れる",
+      "source_ids": [
+        "I-1"
+      ],
+      "severity": "高(Remote 使用時)",
+      "fix_priority": 2,
+      "symptom": "サーバーの応答が不変条件に反する(日本域に MET の出典・範囲外座標・Location が null など)と、ContractMapper.ToModel の InvalidOperationException/ArgumentException がそのまま呼び出し側へ漏れる",
+      "expected": "WeatherProviderException(InvalidResponse)(CacheAndRouting.md「HTTP エラーの変換」、TestStrategy.md「日本域に気象庁以外を含む電文はクライアントで拒否」)",
+      "cause": {
+        "confirmed": "RemoteWeatherService.GetAsync の検証例外の catch は Deserialize だけを囲み、ToModel は try の外(コード読み)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:42:40Z",
+          "reason": "優先: Remote 経路でサーバーの誤りがクライアントで検出されても例外の種類が WeatherProviderException にならず、呼び出し側の catch をすり抜けてクラッシュし得る",
+          "code_before": {
+            "commit": "dd7f5bff9d5a789cf9fda3eb2fa0244bb213d44d",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: GetAsync の catch は Deserialize だけを囲み ToModel は try の外",
+          "hypothesis": "ToModel を GetAsync の try の中で実行すれば検証例外が InvalidResponse になる",
+          "planned_change": "src/Weather.Remote/RemoteWeatherService.cs の GetAsync に変換関数を渡す + tests/Weather.Remote.Tests/RemoteTests.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Remote/Providers/Presentation テスト PASS、Functions ビルド",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:43:27Z",
+          "diff_sha256": "a2cacdb4ac1d6a4c3ce4005f158f2f4921e37674bdf8d3c3bbb337f7a745ae52",
+          "commit": "47c58582f0e4682b1d70b8402a8e12864fc2d988"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Remote.Tests/RemoteWeatherService.GetForecastAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:42:40Z",
+      "verified": {
+        "commit": "47c58582f0e4682b1d70b8402a8e12864fc2d988",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 32,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0012",
+      "title": "JMA 週間予報: 区域が一致しないと先頭の区域に黙って置換(伊豆諸島北部・南部で東京地方の値)",
+      "source_ids": [
+        "P-2"
+      ],
+      "severity": "中",
+      "fix_priority": 5,
+      "symptom": "大島町(class10=130020)・八丈町の 10/6 以降の天気コード・降水確率・信頼度が千代田区(東京地方 130010)と同一。気温は週間の気温地点に 44172(大島)がなく先頭の「東京」になる(大島町)。記録データの週間予報には 130100(伊豆諸島)の別の値がある(エージェント報告: コード 202・降水確率 50・信頼度 C)",
+      "expected": "自区域の週間予報、または不一致なら週間を空にして Issues に残す",
+      "cause": {
+        "confirmed": "JmaForecastMapper.FindArea(...,fallbackToFirst:true) が一致しないとき areas[0] を返す(JmaForecastMapper.cs:113,132)。区域データ(area.json)に 130020/130030→130100 の対応がない",
+        "hypotheses": [
+          "気象庁ページの WEEK_AREAS 定数に対応表がある(設計書 WeatherProviders.md:105 が要確認としている)"
+        ],
+        "unknown": [
+          "対応表の正しい内容(通信制限で取得できない)"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T05:59:25Z",
+          "commit": "0021c57",
+          "hypothesis": "不一致なら週間予報を空にし、注記を出す(判断)",
+          "evidence": [
+            "Providers 48/48(修正前 FAIL: 5 件に値)・Presentation/Remote PASS"
+          ]
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [],
+      "retry_when": "WEEK_AREAS の対応表を得る、または方針(不一致のとき週間を出さない / 近い区域で代用)をユーザーが決める",
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/P-2-probe.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:44:27Z",
+      "verified": {
+        "commit": "0021c57",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ 関連プロジェクトの全テスト",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0013",
+      "title": "HTTP キャッシュ: 本文の読み込み失敗が古いキャッシュへの切り替えとタイムアウトの外にある",
+      "source_ids": [
+        "P-4"
+      ],
+      "severity": "中",
+      "fix_priority": 4,
+      "symptom": "200 応答のヘッダー受信後、本文の途中で通信が切れる(IOException → HttpRequestException)と、許容期間内の古いエントリがあっても stale にならず Network で失敗する。本文読み込みに設計の 15 秒タイムアウトも効かない",
+      "expected": "CacheAndRouting.md「処理」3: 通信失敗・タイムアウト・5xx → 許容期間内の古いエントリを返し印を付ける",
+      "cause": {
+        "confirmed": "HttpCacheHandler.SendCoreAsync の stale 切替の try は SendWithTimeoutAsync だけを囲み、ReadAsByteArrayAsync(88 行)は try の外・呼び出し元トークンのみ(コード読み)",
+        "hypotheses": [],
+        "unknown": [
+          "実ネットワークでの頻度"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:45:06Z",
+          "reason": "優先: オフライン耐性(古いキャッシュの表示)はアプリの主要な振る舞い。モバイル回線では本文の途中切断は起こりやすい。独立して修正できる",
+          "code_before": {
+            "commit": "90cf913d298a0068a8c993da2e7664777a7e4d52",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 本文読み込みが stale 切替の try の外",
+          "hypothesis": "本文読み込みを同じタイムアウトと stale 切替の範囲に入れれば、本文の途中切断・停止でも古いエントリを返す",
+          "planned_change": "src/Weather.Providers/Http/HttpCacheHandler.cs のみ + tests/Weather.Providers.Tests/HttpCacheHandler.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Providers/Remote/Presentation/Geo テスト PASS、キャッシュなしの失敗は従来どおり Network",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:46:38Z",
+          "diff_sha256": "bc6b26800fc21d461b49632f8b44a700f7f9fd9c56b667997b8f0943b232bfc7",
+          "commit": "e2ae5286d882cf543a6e3587748ce61e9f4a2694"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/HttpCacheHandler.SendAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:45:06Z",
+      "verified": {
+        "commit": "e2ae5286d882cf543a6e3587748ce61e9f4a2694",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 35,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0014",
+      "title": "履歴画面: 今日の要約がまだないとき、昨日の最高/最低が「今日の最高/最低」として表示される",
+      "source_ids": [
+        "I-5b"
+      ],
+      "severity": "中",
+      "fix_priority": 6,
+      "symptom": "summaries.LastOrDefault() を今日として使い、LocalDate を確認しない。昨日だけの要約だと「今日の最高 25° / 最低 15°」と表示(再現テストで確認)",
+      "expected": "今日の要約がなければ表示しない(History.md の「今日の最高/最低」)",
+      "cause": {
+        "confirmed": "HistoryViewModel.LoadAsync が [昨日,今日] を引いて最後の行を今日として使う",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:48:07Z",
+          "reason": "優先: 利用者に誤った数値(昨日の気温)を「今日」として見せる表示の誤り。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "c9fe1981dd54b3ea825a78af845ef24c7ddc3703",
+            "product_fingerprint_excluding_qa": "326489ee5c9b922649e7dd92e6c5271313c74b383d7b9482cb7a7a6db8b90533"
+          },
+          "observed": "再現テストで SummaryText=今日の最高 25° / 最低 15°(昨日の値)",
+          "hypothesis": "今日(現地日付)の要約だけを引けば昨日の値が出ない",
+          "planned_change": "src/Weather.Presentation/ViewModels/HistoryViewModel.cs の要約取得範囲と空のときのリセット",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation/Providers/Infrastructure テスト PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:49:06Z",
+          "diff_sha256": "26c0d1b498c30111fdf0c7f904e93644a809dcab19cabc64668d7b1173a18cd6",
+          "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync",
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/BUG-0014-16-before.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:48:07Z",
+      "verified": {
+        "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 38,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0015",
+      "title": "履歴画面: 範囲を切り替えて観測が見つかっても「保存済みの観測はまだありません」が残る",
+      "source_ids": [
+        "I-5c"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 7,
+      "symptom": "Day が 0 件で Message=NoSavedObservations の後、Range を切り替えて行が表示されても Message が消えない(コード読み。実行再現は修正前テストで)",
+      "expected": "観測があるときは Message を消す(同期失敗の Message は残す)",
+      "cause": {
+        "confirmed": "LoadAsync は観測 0 件のときだけ Message を設定し、1 件以上のときに消す処理がない",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:48:23Z",
+          "reason": "BUG-0014 と同じ画面。範囲を切り替えて行が出ているのに「観測がありません」が残る。再現済み(修正前テストで FAIL)",
+          "code_before": {
+            "commit": "c9fe1981dd54b3ea825a78af845ef24c7ddc3703",
+            "product_fingerprint_excluding_qa": "4f125a440308f8eb371ebc0f3c1a88fdc9d2d65ae3781ed826109fc4e07e118f"
+          },
+          "observed": "再現テストで Range 切替後も Message=保存済みの観測はまだありません",
+          "hypothesis": "観測が見つかったとき、自分が設定した NoSavedObservations の Message だけを消せば、同期失敗の Message は残る",
+          "planned_change": "src/Weather.Presentation/ViewModels/HistoryViewModel.cs の LoadAsync 末尾のみ",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト PASS",
+          "isolation": "BUG-0014 と同じコミットに含めるが、状態と試行は別に記録",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:49:06Z",
+          "diff_sha256": "26c0d1b498c30111fdf0c7f904e93644a809dcab19cabc64668d7b1173a18cd6",
+          "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync",
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:48:07Z",
+      "verified": {
+        "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 38,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0016",
+      "title": "履歴画面: NWS の観測では降水量の棒が常に空になる",
+      "source_ids": [
+        "I-5a"
+      ],
+      "severity": "中",
+      "fix_priority": 8,
+      "symptom": "降水量を ObservedAt.Minute==0 の行だけ使うが、NWS の定時観測は毎時 52 分前後(History.md)なのでほぼ全行が null(コード読み+設計書。実行再現は修正前テストで)",
+      "expected": "NWS でも降水量(precipitationLastHour)の棒が表示される(History.md「降水量の棒」)",
+      "cause": {
+        "confirmed": "JMA の 10 分値前提のフィルタを全 Provider に適用している",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:48:40Z",
+          "reason": "BUG-0014/15 と同じ画面。NWS の観測所では降水量の棒が常に空。再現済み(修正前テストで FAIL)",
+          "code_before": {
+            "commit": "c9fe1981dd54b3ea825a78af845ef24c7ddc3703",
+            "product_fingerprint_excluding_qa": "292ec8fa8f7620fc52fd6cae3483253582378be58f714fe43983d78956516ea9"
+          },
+          "observed": "再現テストで NWS の 01:52Z・02:52Z の行の降水量が null",
+          "hypothesis": "気象庁は正時の行、NWS は各時間帯の最後の観測を降水量の棒に使えば表示される",
+          "planned_change": "src/Weather.Presentation/ViewModels/HistoryViewModel.cs の降水量の行の選び方のみ",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、気象庁の既存の挙動(正時だけ)は不変、Presentation テスト PASS",
+          "isolation": "BUG-0014 と同じコミットに含めるが、状態と試行は別に記録",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:49:06Z",
+          "diff_sha256": "26c0d1b498c30111fdf0c7f904e93644a809dcab19cabc64668d7b1173a18cd6",
+          "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync",
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:48:07Z",
+      "verified": {
+        "commit": "9d14cbf263ed26e23a8863abb4631281149f2bec",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 38,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0017",
+      "title": "非循環格子の外周半セルが NaN(SampleNearest の「格子点を中心とする 1 区画」の記述と不一致)",
+      "source_ids": [
+        "G-6b"
+      ],
+      "severity": "低",
+      "fix_priority": 12,
+      "symptom": "GridGeometry(10,10,40,130,1,1) の SampleNearest(35,129.7) が NaN(列 0 の区画内のはず)。影響: 気象庁の海上分布予報の風など非循環格子の外周 0.5 格子分",
+      "expected": "SampleNearest の注記どおり外周の半セルも端の格子点の値(仕様の判断)",
+      "cause": {
+        "confirmed": "SampleNearest が補間用の TryGetPosition(x<0 や x>Columns-1 を範囲外)をそのまま使う",
+        "hypotheses": [
+          "外周を NaN にするのが意図(区画外=データなし)の可能性"
+        ],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T05:59:25Z",
+          "commit": "9b7d74f",
+          "hypothesis": "端の格子点の値を返す(判断)",
+          "evidence": [
+            "Core 14/14(修正前 FAIL: NaN)・Providers/Presentation/Geo PASS・Rendering は既知のゴールデン以外 PASS"
+          ]
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Core.Tests/GridField.SampleNearest"
+      ],
+      "retry_when": "ユーザーが外周の扱い(区画として値を返す / NaN のまま)を決める",
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:53:13Z",
+      "verified": {
+        "commit": "9b7d74f",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ 関連プロジェクトの全テスト",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0018",
+      "title": "HTTP キャッシュ: 最終利用時刻がヒットで更新されず、容量・未使用期限の削除が「取得時刻順」になる",
+      "source_ids": [
+        "P-6",
+        "I-4"
+      ],
+      "severity": "中〜低",
+      "fix_priority": 9,
+      "symptom": "LastAccessedAt は取得時と 304 でしか設定されない(FileHttpCacheStore.NeedsAccessUpdate は定義のみで未使用)。頻繁にヒットしても再取得されないエントリ(最低鮮度が長い GFS 7 日・地図タイル 1 日など)が先に消える。14 日使われていないものの削除も取得時刻で判定される",
+      "expected": "CacheAndRouting.md「容量管理」: 最終利用時刻の古い順に削除。使うたびに(1 時間に 1 回まで)更新する設計(NeedsAccessUpdate の意図)",
+      "cause": {
+        "confirmed": "HttpCacheHandler のヒット経路が store に触れない。NeedsAccessUpdate の呼び出し元がない(grep で確認)",
+        "hypotheses": [],
+        "unknown": [
+          "実際の削除の偏りの大きさ"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:54:02Z",
+          "reason": "優先: 実使用に基づくキャッシュ削除の設計意図が実装されていない。決定的に再現できる。独立して修正できる",
+          "code_before": {
+            "commit": "5d75b6d6ce6693226aa25767abce92a5c5b9f1f4",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: ヒット経路は store に触れない。NeedsAccessUpdate は未使用",
+          "hypothesis": "ヒット時に 1 時間に 1 回まで LastAccessedAt を更新すれば設計どおりになる",
+          "planned_change": "src/Weather.Core/Caching/IHttpCacheStore.cs(更新間隔の共有)・src/Weather.Providers/Http/HttpCacheHandler.cs・src/Weather.Infrastructure/FileHttpCacheStore.cs(委譲)+ tests/Weather.Providers.Tests/HttpCacheHandler.cs",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Providers/Infrastructure/Remote/Presentation テスト PASS、30 分以内の再ヒットでは書き込まない",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T15:54:56Z",
+          "diff_sha256": "5bf41c826dd814602ed3b4d4741efb139006eece86938fbcab47fe7c833ec665",
+          "commit": "909cc607517a5a875e3b299d91c4b4bb75209ace"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/HttpCacheHandler.SendAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:54:02Z",
+      "verified": {
+        "commit": "909cc607517a5a875e3b299d91c4b4bb75209ace",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 43,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0019",
+      "title": "地図のタイル層: 読み込みに失敗したタイルをフレームごとに再要求する(連続描画中は毎秒 30 回級)",
+      "source_ids": [
+        "M-1a"
+      ],
+      "severity": "中",
+      "fix_priority": 9,
+      "symptom": "TileLayer.Request は失敗しても pending を外すだけで失敗の記憶がなく、次の Draw が同じタイルを即座に再要求する。風の粒子などで地図が連続描画されている間、失敗中のタイルが毎フレーム要求され、気象庁サーバーへの負荷(WeatherProviders.md:289 がアクセス頻度を要確認としている)と電池消費になる",
+      "expected": "失敗したタイルは一定時間(30 秒)再要求しない",
+      "cause": {
+        "confirmed": "TileLayer.cs の catch に「次の再描画で再び要求する」とコメントされた設計で、待ち時間がない(コード読み)",
+        "hypotheses": [],
+        "unknown": [
+          "気象庁サーバーが実際にどの程度の頻度で制限するか"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T15:55:36Z",
+          "reason": "優先: ネットワーク障害時の外部サーバーへの過剰リクエストと電池消費。決定的に再現できる。独立して修正できる",
+          "code_before": {
+            "commit": "c998b9fa852a3add3191300b0bc949f987fe78ab",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 失敗しても記憶せず、次の Draw で即再要求",
+          "hypothesis": "失敗したタイルのキーを時刻付きで記憶し、再試行間隔の間は要求しなければ、成功したタイルの再描画では再要求されない",
+          "planned_change": "src/Weather.Rendering/Map/TileLayer.cs と MapRenderer の internal な再試行間隔の公開 + tests/Weather.Rendering.Tests/MapTests.cs",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、間隔経過後は再要求される、Rendering の既存テスト(ゴールデン以外)PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:01:14Z",
+          "diff_sha256": "2dac618f9bf425b4244d4a6c06ebbe088ee098de81fa5b610b0b06a3f38a3c0b",
+          "commit": "8b111804d810461733445b0d7e640293daa81ecf"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Rendering.Tests/MapRenderer.Render_TileFailure"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T15:55:36Z",
+      "verified": {
+        "commit": "8b111804d810461733445b0d7e640293daa81ecf",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 50,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0020",
+      "title": "JMA 時系列予報(補助プロダクト)の時刻が重複・逆順だと ArgumentException が漏れ、日別を含む予報全体が失敗する",
+      "source_ids": [
+        "P-8"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 10,
+      "symptom": "wdist の timeDefines の先頭を複製、または先頭 2 件を入れ替えると GetForecastAsync が ArgumentException(時系列が昇順でないか区間が重なっています)で失敗(実行再現済み。qa/artifacts/RUN-20261004-1510/P-8-probe.log)",
+      "expected": "補助プロダクトの異常で予報全体を失わない(WeatherProviders.md「部分的な失敗」)。NWS の hourly は重なる点を飛ばしている",
+      "cause": {
+        "confirmed": "JmaForecastMapper.MapTimeSeries が重複・逆順・重なりを除かず、検証が走る Forecast コンストラクタは ProviderHttp.Map の外",
+        "hypotheses": [],
+        "unknown": [
+          "実データで起こる頻度(低いと見ている)"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:03:39Z",
+          "reason": "優先: 部分的な失敗の設計に反し、補助プロダクトの異常で主プロダクトも失う。再現済み。NWS と同じ規則で最小に直せる",
+          "code_before": {
+            "commit": "ef4c40e0acffc3edb08c4856583a544fe10f3b2e",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "実行: 時刻の重複・逆順で ArgumentException が漏れる",
+          "hypothesis": "MapTimeSeries で NWS の hourly と同じく、直前の区間と重なる点を飛ばせば Forecast のコンストラクタの検証を満たす",
+          "planned_change": "src/Weather.Providers/Jma/JmaForecastMapper.cs の MapTimeSeries のみ + tests/Weather.Providers.Tests/JmaProvider.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Providers テスト全 PASS、正常な記録データの時系列は変わらない(14 点)",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:04:30Z",
+          "diff_sha256": "6464e3b8cccec40470351f09067c648c8904ee7460ec8b5679b4926a6748e313",
+          "commit": "3b4ef171ded21ad322e4a71f376646a480b39ff8"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/JmaProvider.GetForecastAsync_SecondaryFailure"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/P-8-probe.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:03:39Z",
+      "verified": {
+        "commit": "3b4ef171ded21ad322e4a71f376646a480b39ff8",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 53,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0021",
+      "title": "GRIB2 復号: 破損データで巨大なメモリ確保(最大 9.6 GB・最長 36 秒)と、Map が変換しない OverflowException / OutOfMemoryException",
+      "source_ids": [
+        "M-fuzz"
+      ],
+      "severity": "中(破損・改ざんされたキャッシュ/応答でアプリが落ち得る。発生は稀)",
+      "fix_priority": 3,
+      "symptom": "記録データ(GFS 1°)のバイト列を壊すと、24,000 回中 41 回が 200 MB 超を割り当て(最大 9.6 GB・36 秒)、OverflowException 67 回・OutOfMemoryException 8 回(ProviderHttp.Map の捕捉対象外)。例: 先頭 200 バイト内の 1 か所を 0/255 にしただけで 208 MB",
+      "expected": "破損データは FormatException(→ InvalidResponse)で短時間・小さなメモリで失敗する",
+      "cause": {
+        "confirmed": "Grib2Decoder が節の記述子の値(符号付きに変換した encoded・groups、格子の点数)を検証せずに new float[encoded]・new long[groups] などの大きさに使う(Decode:89、UnpackComplex:202)",
+        "hypotheses": [],
+        "unknown": [
+          "実運用で破損が起こる頻度(キャッシュの途中書き込み・サーバー障害)"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [
+        "M-6"
+      ],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:12:55Z",
+          "reason": "優先3位相当: 外部から来るバイナリを読む処理で、破損データによりアプリがメモリ不足で落ち得る。Map が変換しない例外種別も漏れる。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "a265b9e097a0c8506656f33f9ba5b51850ddd78c",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "変異実行: 200 MB 超 41 回(最大 9.6 GB)、OverflowException 67 回、OutOfMemoryException 8 回",
+          "hypothesis": "格子の点数・値の数・群の数を、確保の前に妥当な上限(格子の点数 ≤ 4M、値の数 ≤ 格子の点数、群の数 ≤ 値の数・データ節のビット数)で検証すれば、FormatException で小さく失敗する",
+          "planned_change": "src/Weather.Providers/Grib/Grib2Decoder.cs の検証追加のみ + tests/Weather.Providers.Tests/Grib2Decoder.cs に追加",
+          "success_criteria": "追加テスト(対象の破損 + 固定シードの変異)が修正前 FAIL・修正後 PASS、記録データの復号結果が不変(既存の Decode テスト)、Providers テスト全 PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:14:20Z",
+          "diff_sha256": "fbd8484b8de814bce53b4b4b3b8930b021771f757285d615acd321b68b935532",
+          "commit": "927b675f0425f7d7a7d458cab7b5e3e5c69c6b42"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/Grib2Decoder.Decode"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/fuzz-grib-1.log",
+        "qa/artifacts/RUN-20261004-1510/fuzz-grib-2.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:12:39Z",
+      "verified": {
+        "commit": "927b675f0425f7d7a7d458cab7b5e3e5c69c6b42",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 63,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0022",
+      "title": "Remote クライアント: サーバー応答の null 項目・巨大な数値で NullReferenceException / OverflowException が漏れる",
+      "source_ids": [
+        "I-1b",
+        "fuzz-remote"
+      ],
+      "severity": "中(Remote 使用時)",
+      "fix_priority": 4,
+      "symptom": "サーバー応答の JSON を 3,000 回変異(固定シード)させると 43 回(1.4%)が WeatherProviderException 以外: NullReferenceException(null の項目・配列要素。ContractMapper.ToModel)、OverflowException(retention の days に 1e308 → TimeSpan.FromDays)",
+      "expected": "WeatherProviderException(InvalidResponse)(CacheAndRouting.md「HTTP エラーの変換」: JSON 不正・必須項目欠落 → InvalidResponse)",
+      "cause": {
+        "confirmed": "System.Text.Json は非 null の参照型にも null を入れる(RespectNullableAnnotations が既定でオフ)。TimeSpan.FromDays に範囲検証がない",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [
+        "BUG-0011"
+      ],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:15:07Z",
+          "reason": "優先: BUG-0011 の続き。同じ契約(InvalidResponse)に反し、呼び出し側の catch をすり抜ける。再現済み・独立して修正できる",
+          "code_before": {
+            "commit": "f292313c10d1905efe78d350c248ccc24318ff12",
+            "product_fingerprint_excluding_qa": "7a6318e8c4585ac5c88cdae3309c388dec131d17c9b4cdd1625406a37de49133"
+          },
+          "observed": "変異実行: NullReferenceException・OverflowException が 43/3,000 回",
+          "hypothesis": "JSON の読み取りで非 null の参照型への null を JsonException にし(RespectNullableAnnotations / RespectRequiredConstructorParameters)、数値の範囲外を OverflowException の捕捉で InvalidResponse にすれば漏れない",
+          "planned_change": "src/Weather.Remote/Contracts/RemoteJson.cs の属性 + RemoteWeatherService.cs の捕捉 + tests/Weather.Remote.Tests に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Remote/Providers/Presentation テスト PASS、Functions ビルド、正常な往復が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:16:38Z",
+          "diff_sha256": "f29044f9df0821c23b6f1cfdaa0a324f21075c3a7804c20ba5ef2c91e8a012ea",
+          "commit": "ecaf859aaa6300734fae74fa1ccf61b75b1406ce"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Remote.Tests/RemoteWeatherService.InvalidResponses"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/fuzz-remote-1.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:15:07Z",
+      "verified": {
+        "commit": "ecaf859aaa6300734fae74fa1ccf61b75b1406ce",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 65,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0023",
+      "title": "気温の表示: -0.5〜0℃(華氏でも同様)の値が「-0°」と表示される",
+      "source_ids": [
+        "Units-negative-zero"
+      ],
+      "severity": "低(表示)",
+      "fix_priority": 11,
+      "symptom": "Units.Temperature(-0.3) が \"-0°\"(.NET Core 3.0 以降、書式 \"0\" は負の値を丸めて 0 になっても符号を残す)",
+      "expected": "\"0°\"(丸めて 0 になる値に負号を付けない)",
+      "cause": {
+        "confirmed": "string.Create(...$\"{x:0}°\") が負のゼロを \"-0\" と書式化する(静的調査の仮説。実行で確認する)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:17:44Z",
+          "reason": "冬の 0℃ 付近で頻繁に目に入る表示。決定的に再現できる。独立して直せる",
+          "code_before": {
+            "commit": "56c0a9185e5030b0e707692fe4b2b3c77ec8ce77",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "静的調査の仮説(未実行)",
+          "hypothesis": "丸めた値が 0 のときは正のゼロにして書式化すれば \"0°\" になる",
+          "planned_change": "src/Weather.Presentation/Formatting.cs の Units.Temperature のみ + tests/Weather.Presentation.Tests/ViewModelTests.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト PASS、他の値の表示が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:18:13Z",
+          "diff_sha256": "cf42827ce5a05de49c46f42c63e7fb2f4420c838fe45b6465b92dddfb7777cb8",
+          "commit": "676e79a133c593a0aeaa38b8d019a9e0407927f7"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/Units.Temperature"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:17:44Z",
+      "verified": {
+        "commit": "676e79a133c593a0aeaa38b8d019a9e0407927f7",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 67,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0024",
+      "title": "ファイルの HTTP キャッシュ: 並行する書き込みと読み取りで、本文とメタ(ETag など)の食い違う組を返す",
+      "source_ids": [
+        "cache-torn"
+      ],
+      "severity": "中〜低",
+      "fix_priority": 8,
+      "symptom": "同じキーを書き込みながら読み取ると、読み取り 26,843 回中 11,408 回で、新しい本文に古い ETag/メタを組み合わせたエントリが返った(固定条件の探索)。HttpCacheHandler のロックはハンドラーインスタンス単位で、IHttpClientFactory の複数インスタンスや背景更新との同時実行では共有されない",
+      "expected": "食い違う組は返さない(キャッシュなしとして扱う)。条件付き GET の ETag/If-Modified-Since は本文と対応している必要がある(MET は Last-Modified の完全一致が規約)",
+      "cause": {
+        "confirmed": "SetAsync は本文→メタの順に別々に File.Move し、GetAsync はメタと本文を別々に読んで長さも内容も照合しない(コード読み+実行)",
+        "hypotheses": [],
+        "unknown": [
+          "実運用での同時実行の頻度"
+        ]
+      },
+      "reproduced": true,
+      "state": "FIXED_UNVERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:19:56Z",
+          "reason": "優先: キャッシュの整合性。同時実行で決定的に再現できる。独立して修正できる",
+          "code_before": {
+            "commit": "76426d2de4b0f74f7a08a4912d00819e5439fca7",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "実行: 食い違い 11,408/26,843 回",
+          "hypothesis": "メタに本文の SHA-256 を保存し、読み取りで長さとハッシュを照合して、食い違えばキャッシュなし(null)として返せば、食い違う組は返らない(古い形式のメタはハッシュなしで長さだけ照合)",
+          "planned_change": "src/Weather.Infrastructure/FileHttpCacheStore.cs のメタに BodySha256 を追加し Get で照合 + tests/Weather.Infrastructure.Tests に並行テストを追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS(食い違い 0 かつ有効な読み取りが存在)、Infrastructure/Providers テスト PASS、古い形式のメタも読める",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:20:48Z",
+          "diff_sha256": "14822bdfac1297af53073907dff55ee1dfed92cbfc4d634c0b9d523978f350f7",
+          "commit": "764b502c021d9c49017b211a7c35bf13043779e0"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Infrastructure.Tests/FileHttpCacheStore.GetAsync_Concurrent"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/probe-cache-torn.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:19:55Z",
+      "verified": false,
+      "ci_note": "Windows CI(PR #1, 58533bc)で GetAsync_Concurrent が UnauthorizedAccessException で失敗。読み取り共有の修正と置き換えの再試行を入れた。Windows CI の結果待ち"
+    },
+    {
+      "id": "BUG-0025",
+      "title": "NWS 日別: 深夜〜早朝に取得すると先頭が Overnight になり、その日の「Sunday Night」が捨てられ TempMin も誤る",
+      "source_ids": [
+        "P-5"
+      ],
+      "severity": "中",
+      "fix_priority": 7,
+      "symptom": "先頭の period が Overnight(同じ日の 02:00〜06:00。isDaytime=false)だと、同じ日付の夜が 2 つになり、先に来た Overnight だけが残る。Parts が [Sunday, Overnight] と時刻順でなくなり、TempMin が今夜の最低でなく早朝の気温になり、Sunday Night(18:00〜)が日別から消える(実データの形は NWS の仕様の知識による。再現は記録データの加工で行う)",
+      "expected": "WeatherProviders.md「NWS Adapter」: TempMin = その日の夜の period(今夜の最低)。Parts は時刻順",
+      "cause": {
+        "confirmed": "MapDaily が昼夜を 1 つずつ(g.Night??=period)しか持たず、早朝の夜 period と夕方の夜 period を区別しない",
+        "hypotheses": [
+          "NWS が 0〜6 時台の取得で先頭に Overnight を返す(NWS の仕様の知識。この環境では実 API に届かず未確認)"
+        ],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:21:33Z",
+          "reason": "優先: 米国の日別予報が深夜〜早朝の閲覧で欠ける・誤る(閲覧時間帯の約 1/4)。記録データの加工で再現でき、局所的に直せる",
+          "code_before": {
+            "commit": "0362fbdb6d4fb3a0ad8ac2617ae6b1709a46cc52",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 夜の period を 1 つしか持たない",
+          "hypothesis": "夜の period を、同じ日の昼より前の開始(早朝)と昼より後の開始(夕方以降)に分ければ、今夜の period が残る",
+          "planned_change": "src/Weather.Providers/Nws/NwsMapper.cs の MapDaily のみ + tests/Weather.Providers.Tests/NwsProvider.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Providers テスト全 PASS、既存の記録データ(先頭 Tonight)の結果が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:22:27Z",
+          "diff_sha256": "1cb80db9bbc586573e94736cdf3224abdd818bb0e568785d4eb1fa1acb9df2ae",
+          "commit": "cc8ead6438cc475b71fd5a7805a7b4ba5bf74e3d"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/NwsProvider.GetForecastAsync_Overnight"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:21:33Z",
+      "verified": {
+        "commit": "cc8ead6438cc475b71fd5a7805a7b4ba5bf74e3d",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 71,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0026",
+      "title": "地図: 時間軸(いまの刻み・雨雲の新しいコマ)が、前面で開いたままだと更新されない",
+      "source_ids": [
+        "I-7"
+      ],
+      "severity": "中",
+      "fix_priority": 8,
+      "symptom": "RefreshTimelineAsync(コメント「10 分ごと・前面に戻ったとき」)の呼び出し元は LoadAsync と OnResumed(背景から戻ったとき)だけ。MapViewModel.Start() のループは places の更新とシーンの 1 分更新だけで、時間軸は作り直されない。画面を点けたまま数時間開いていると、「現在」の刻みと降水ナウキャストが開いた時点のまま古くなる(コード読み)",
+      "expected": "コメントのとおり 10 分ごとに時間軸を作り直す(選択していた時刻に近い刻みを保つ)",
+      "cause": {
+        "confirmed": "MapViewModel.Start() が時間軸の更新ループを持たない(コード読み)",
+        "hypotheses": [],
+        "unknown": [
+          "実機での利用で前面のまま放置される頻度"
+        ]
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:23:10Z",
+          "reason": "優先: 地図が主画面で、降水ナウキャストは 5 分ごとに更新される。前面放置で古い雨雲が「現在」に見える。FakeTimeProvider で決定的に再現できる",
+          "code_before": {
+            "commit": "2be128304943c391ad405450a768e0e7a5ead9fc",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 時間軸の更新ループがない",
+          "hypothesis": "Start() で 10 分周期のループ(PeriodicTimer + TimeProvider)を起動し、前面のときだけ時間軸を作り直せば更新される。Stop/Dispose で止める",
+          "planned_change": "src/Weather.Presentation/ViewModels/MapViewModel.cs の Start/Stop/Dispose + tests/Weather.Presentation.Tests/MapTests.cs(Fake に呼び出し回数)",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト全 PASS、Stop 後は更新しない、背景(IsForeground=false)では更新しない",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:23:49Z",
+          "diff_sha256": "b29947bd70cfc4331bf9f7aa64f8cab054cf0a097fdedc1aa7adda258b0c896f",
+          "commit": "2d0852d2a50ec8ec75ecd4385a2250db836515f6"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/MapViewModel.Start"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:23:10Z",
+      "verified": {
+        "commit": "2d0852d2a50ec8ec75ecd4385a2250db836515f6",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 72,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0027",
+      "title": "お気に入り: 同じ地点(同じ予報セル)を何度でも追加でき、同じ地点の行とピンが重複する",
+      "source_ids": [
+        "I-6"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 12,
+      "symptom": "FavoritesService.AddAsync は毎回新しい ID で保存し、重複を確認しない。同じ検索候補・同じ地図の位置を繰り返し追加すると、お気に入りの行・地図のピン・背景取得の枠(先頭 5 地点)が重複する(コード読み)",
+      "expected": "同じ地点は 2 行目を作らず、既存の地点を返す(設計書に重複を許す記述はない。同一とみなす範囲は予報の座標の丸め 0.01° と同じセル、とした AI の判断)",
+      "cause": {
+        "confirmed": "AddAsync が既存の地点と照合しない(コード読み)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:24:33Z",
+          "reason": "優先: お気に入りの重複は画面に直接見える(行・ピン・背景取得の枠)。決定的に再現でき、局所的に直せる",
+          "code_before": {
+            "commit": "fc3630dab349b84376bc9992877e4dc466a09ca2",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: AddAsync が既存と照合しない",
+          "hypothesis": "同じ丸め座標(予報の要求と同じ小数 2 桁)の既存の地点があれば、保存せず既存を返せば重複しない",
+          "planned_change": "src/Weather.Presentation/ViewModels/PlaceViewModels.cs の FavoritesService.AddAsync のみ + tests/Weather.Presentation.Tests に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト全 PASS、別のセルは追加できる",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:25:09Z",
+          "diff_sha256": "1547048c2d6988b6dc42a40f47cc845f52a9a12d08ca7e006a8fa27240c60d99",
+          "commit": "21c1672d775cf6f44a6108212b0b7bacce715be1"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/FavoritesService.AddAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:24:22Z",
+      "verified": {
+        "commit": "21c1672d775cf6f44a6108212b0b7bacce715be1",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 74,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0028",
+      "title": "自動更新: 初回の取得が取り消されると、その地点が次の 10 分周期まで「読み込み中」のまま残る",
+      "source_ids": [
+        "I-8a"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 12,
+      "symptom": "MainViewModel.RefreshAllAsync は先に lastRefresh を更新してから取得する。アプリを背景に回す(Stop → ループ取り消し)などで初回の取得が OperationCanceledException になると、予報のない地点の State が Loading のまま、lastRefresh は更新済みなので次の自動更新は 10 分後(コード読み)",
+      "expected": "取り消されたら更新時刻を戻し、次の周期(1 分)ですぐ再取得する",
+      "cause": {
+        "confirmed": "RefreshAllAsync が取り消しの扱いを持たない(コード読み)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:25:36Z",
+          "reason": "優先: 起動直後に背景へ回すなど、モバイルでは現実的な操作で、地点が 10 分間「読み込み中」のまま。FakeTimeProvider で決定的に再現できる",
+          "code_before": {
+            "commit": "4803d314257be54aca0e6256195c51c90b9a5cec",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 取り消しで lastRefresh が戻らない",
+          "hypothesis": "取り消されたら lastRefresh を MinValue に戻して再スローすれば、次の周期の最初のティックで再取得される",
+          "planned_change": "src/Weather.Presentation/ViewModels/MainViewModel.cs の RefreshAllAsync のみ + tests/Weather.Presentation.Tests/ViewModelTests.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト全 PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:26:11Z",
+          "diff_sha256": "b2a7afc6451d51d7f65187e3588882952261bb96a4ce2ef5c35f914611ab73ac",
+          "commit": "6e40c1121b790e07a6bb2e2d8ef77611ee854787"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/MainViewModel.RefreshAllAsync"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:25:36Z",
+      "verified": {
+        "commit": "6e40c1121b790e07a6bb2e2d8ef77611ee854787",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 75,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0029",
+      "title": "GFS: 取得した応答が要求した要素のメッセージか検証せず、Range を無視した応答で別の物理量を表示し得る",
+      "source_ids": [
+        "M-2"
+      ],
+      "severity": "中(発生は稀)",
+      "fix_priority": 9,
+      "symptom": "GfsProvider.GetFieldAsync は Grib2Decoder.Decode の先頭メッセージをそのまま要求した要素として扱い、Discipline/Category/Number を照合しない。Range を無視して全ファイルを 200 で返す応答では、どの要素を要求しても先頭の要素(例: TMP)の格子が、要求した要素の単位換算で地図に出る(例外なし)",
+      "expected": "InvalidResponse で失敗する(誤った物理量を地図に出さない)",
+      "cause": {
+        "confirmed": "検証コードがない(コード読み)",
+        "hypotheses": [
+          "S3 が Range を無視する/キャッシュ・中継の誤りが起こる頻度は低い"
+        ],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:26:40Z",
+          "reason": "優先: 誤った物理量(風の代わりに気温など)を地図に出す無言の失敗を防ぐ。記録データで決定的に再現できる。局所的に直せる",
+          "code_before": {
+            "commit": "411de4731e27bac0bcd385cf37798bde7419d7c8",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 検証なし",
+          "hypothesis": "復号したメッセージの (Discipline, Category, Number) が要求した要素と一致しなければ InvalidResponse にする",
+          "planned_change": "src/Weather.Providers/Gfs/GfsProvider.cs の GetFieldAsync のみ + tests/Weather.Providers.Tests/GfsProvider.cs に追加",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Providers テスト全 PASS、正常な 6 要素の取得が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:27:19Z",
+          "diff_sha256": "72b26ab5955734243d58bb53f1f561b85e4eb30c259c0a9a6f5740929c4b052b",
+          "commit": "b03d5f64035b1dbaf1726794cb439f35d9b44281"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/GfsProvider.GetFieldAsync_WrongMessage"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:26:40Z",
+      "verified": {
+        "commit": "b03d5f64035b1dbaf1726794cb439f35d9b44281",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 76,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0030",
+      "title": "地図: 日本マスクのシェーダーが使えないと、気象庁のタイルが日本周辺の外にも(全世界に)描かれる",
+      "source_ids": [
+        "M-3"
+      ],
+      "severity": "低〜中(発生は稀)",
+      "fix_priority": 11,
+      "symptom": "JapanOverlay.ClipToJapan は japanmask シェーダーが null のとき何もせず戻るため、SaveLayer の気象庁タイルが DstIn でクリップされず日本周辺の外にも描かれる。方針 5(気象庁以外のデータ=日本周辺の外に気象庁の降水タイルを出すことはしない)・設計書「日本周辺の外は描かない」に反する。失敗時に閉じる側へ倒れていない(コード読み)",
+      "expected": "クリップできないときは気象庁のタイル層ごと描かない",
+      "cause": {
+        "confirmed": "MapRenderer がクリップの可否を確認せずタイルを描く(コード読み)",
+        "hypotheses": [
+          "実機で SkSL がコンパイルできない端末がある(未確認)"
+        ],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:27:54Z",
+          "reason": "優先: 設計の不変条件(日本周辺の外に気象庁のデータを出さない)が、シェーダー失敗時に破れる。ForceFailure で決定的に再現できる。局所的に直せる",
+          "code_before": {
+            "commit": "ad0013ef935b066b759ad7726129280e6e3a33ec",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: ClipToJapan が null で何もしない",
+          "hypothesis": "クリップに使うシェーダーがないとき、気象庁のタイル層を描かなければ日本周辺の外に出ない",
+          "planned_change": "src/Weather.Rendering/Map/MapLayers.cs(CanClip)と MapRenderer.cs + tests/Weather.Rendering.Tests/MapTests.cs(コレクションで直列化)",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Rendering(ゴールデン以外)PASS、通常時は日本周辺の描画が不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:35:07Z",
+          "diff_sha256": "9d64fbfb3daf12a02796fe53be279c6ec0870938ca93d202882b27313b542020",
+          "commit": "4624c8203a06ddea7742379766551a7ea5f3607c"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Rendering.Tests/MapRenderer.Render_TilesWithoutMask"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:27:54Z",
+      "verified": {
+        "commit": "4624c8203a06ddea7742379766551a7ea5f3607c",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 84,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0031",
+      "title": "等圧線: 鞍点(曖昧な 2 隅が高い/低いセル)で、中心の値を見ずに常に同じ位相の線を引く",
+      "source_ids": [
+        "M-5"
+      ],
+      "severity": "低(見た目)",
+      "fix_priority": 12,
+      "symptom": "マーチングスクエアのケース 5・10 は、常に高い角を孤立させる線分を引く。4 隅の平均がレベル以上なら高い角はつながっているので、低い角を孤立させる線が正しい。2 つの高気圧の間(鞍点)の等圧線の位相が誤る(コード読み。2×2 の格子で確認)",
+      "expected": "曖昧なセルは 4 隅の平均で接続を決める(標準的なマーチングスクエアの曖昧さ解消)",
+      "cause": {
+        "confirmed": "MapLayers.cs の Cell のケース 5・default が固定",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "FIXED_UNVERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:40:09Z",
+          "reason": "ほかの READY で実行可能な作業。2×2 の格子で決定的に再現でき、局所的に直せる(見た目のみ)",
+          "code_before": {
+            "commit": "842660c3599ad7801372f63ab656946e9461af76",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: ケース 5 と default が中心を見ない",
+          "hypothesis": "4 隅の平均がレベル以上なら高い角を連結(低い角を孤立)、未満なら高い角を孤立させる",
+          "planned_change": "src/Weather.Rendering/Map/MapLayers.cs の Cell のケース 5・default のみ + tests/Weather.Rendering.Tests/MapTests.cs",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Rendering(ゴールデン以外)PASS、曖昧でないセルは不変",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:47:03Z",
+          "diff_sha256": "de04fcfd56838d2dad23ae0ff828a8d3cb498e0e91aa5cfedecb0f4e60719f27",
+          "commit": "a3c5dbcb6fbd1ba6f9a346866f4504ee68c05b4b"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Rendering.Tests/IsobarLayer.Contour_Saddle"
+      ],
+      "retry_when": "Windows の CI(ゴールデン画像の比較)または手元の目視で、鞍点のある気圧場の等圧線を確認する",
+      "evidence": [],
+      "human_needed": "見た目の確認(Q-0002 の検証手段と同じ経路)",
+      "found_at": "2026-10-04T16:40:09Z",
+      "verified": {
+        "commit": "a3c5dbcb6fbd1ba6f9a346866f4504ee68c05b4b",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 96,
+        "visual_check_required": true,
+        "full_regression": "未実施",
+        "note": "見た目の変更(鞍点の等圧線)。Windows のゴールデン画像との比較と目視は未実施 → VERIFIED は線分の幾何(テスト)に限る"
+      }
+    },
+    {
+      "id": "BUG-0032",
+      "title": "履歴画面: 範囲を素早く切り替えると、先に始めた読み込みが後で終わって古い範囲の内容が表示される",
+      "source_ids": [
+        "I-5d"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 12,
+      "symptom": "OnRangeChanged は async void で LoadAsync を直接呼び、直列化もキャンセルもない。範囲 Week → Year と素早く切り替え、Year の読み込みが先に終わり Week が後に終わると、Range は Year なのにグラフと行が Week の内容になる(コード読み)",
+      "expected": "最後に選んだ範囲の内容が残る",
+      "cause": {
+        "confirmed": "LoadAsync に世代の確認がない(コード読み)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:47:40Z",
+          "reason": "ほかの READY で実行可能な作業。TaskCompletionSource で完了順を制御して決定的に再現できる。局所的に直せる",
+          "code_before": {
+            "commit": "5f883572b5fb32a99004eb245eff1de1ee5a865c",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 完了順の保証がない",
+          "hypothesis": "LoadAsync に世代番号を持たせ、観測の取得後に自分が最新でなければ結果を捨てれば、最後に選んだ範囲が残る",
+          "planned_change": "src/Weather.Presentation/ViewModels/HistoryViewModel.cs の LoadAsync のみ + tests/Weather.Presentation.Tests/HistoryViewModelTests.cs(StubHistory に完了の制御)",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト全 PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:48:21Z",
+          "diff_sha256": "616b150c9d516965375503a4171c69edc0c541357921976cfaf925179cbe219d",
+          "commit": "177517891b15b073569bd1de54faa3d8d94fb35b"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/HistoryViewModel.LoadAsync_Race"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:47:40Z",
+      "verified": {
+        "commit": "177517891b15b073569bd1de54faa3d8d94fb35b",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 97,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0033",
+      "title": "地点の予報更新: 同じ地点の更新が同時に走ると、先に始めた古い応答が最後に反映される",
+      "source_ids": [
+        "I-8b",
+        "I-8c"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 12,
+      "symptom": "PlaceWeatherViewModel.RefreshAsync にガードがなく、MainViewModel の定期更新・地図からの更新・手動更新が重なると、後から始めた更新が先に終わり、先に始めた更新が後で終わって古い予報・警報で上書きする。失敗時も古い更新の例外が新しい結果の State を Error/Stale にする(コード読み。alertsTask も同様に書き込む)",
+      "expected": "最後に始めた更新の結果だけを反映する",
+      "cause": {
+        "confirmed": "RefreshAsync と LoadAlertsAsync に世代の確認がない(コード読み)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "started_at": "2026-10-04T16:48:55Z",
+          "reason": "ほかの READY で実行可能な作業。TaskCompletionSource で完了順を制御して決定的に再現できる。BUG-0032 と同じ手法で局所的に直せる",
+          "code_before": {
+            "commit": "10ec943aebd69f0e3f53403cdc422bfee37f4603",
+            "product_fingerprint_excluding_qa": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "observed": "コード読み: 世代の確認がない",
+          "hypothesis": "RefreshAsync に世代番号を持たせ、予報・警報・失敗の反映を、最後に始めた更新だけに限れば古い応答が上書きしない",
+          "planned_change": "src/Weather.Presentation/ViewModels/PlaceWeatherViewModel.cs の RefreshAsync・LoadAlertsAsync のみ + tests/Weather.Presentation.Tests(FakeWeatherService に完了の制御)",
+          "success_criteria": "追加テストが修正前 FAIL・修正後 PASS、Presentation テスト全 PASS",
+          "isolation": "1 コミットにして不採用なら git revert(ユーザー変更なし)",
+          "result": "VERIFIED",
+          "ended_at": "2026-10-04T16:49:37Z",
+          "diff_sha256": "87c299e618187fdeac8e48b41d2da7c179c7d15d7cdb344dc537f41759d67422",
+          "commit": "1404a7e471db6b6266d47fece1d44aa8df6a07e0"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Presentation.Tests/PlaceWeatherViewModel.RefreshAsync_Race"
+      ],
+      "retry_when": null,
+      "evidence": [],
+      "human_needed": null,
+      "found_at": "2026-10-04T16:48:54Z",
+      "verified": {
+        "commit": "1404a7e471db6b6266d47fece1d44aa8df6a07e0",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": 98,
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0034",
+      "title": "NWS 観測: 終了時刻の秒が URL に入り、取り直すたびにキャッシュが効かない",
+      "source_ids": [
+        "P-7"
+      ],
+      "severity": "低〜中",
+      "fix_priority": 13,
+      "symptom": "NwsProvider.GetObservationsAsync の URL の end に秒が入るため、同じ分の中で取り直しても URL(キャッシュの鍵)が変わり、鮮度内(max-age=60)でもネットワークに出る(修正前テストで 2 回)",
+      "expected": "鮮度内のエントリがあればネットワークに出ない(CacheAndRouting.md 不変条件 4)",
+      "cause": {
+        "confirmed": "end=to.UtcDateTime を秒まで書式化している(NwsProvider.cs。コード読み+テストで確認)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T05:28:25Z",
+          "diff_sha256": "cf090d16d955b50dc0ba957222c262231e19ee6b6731e45988d15d7cd59d4538",
+          "commit": "6e68b27",
+          "hypothesis": "終了時刻を次の分の境界まで切り上げる(取り直しは同じ鍵になり、取りこぼしはない)",
+          "evidence": [
+            "qa/artifacts/RUN-20261004-1510/BUG-0034-a1-before.log",
+            "qa/artifacts/RUN-20261004-1510/BUG-0034-a1-nofix.log",
+            "qa/artifacts/RUN-20261004-1510/BUG-0034-a1.diff"
+          ],
+          "note": "6e68b27 に src・tests の変更と記録がまとめて入った(コミットメッセージは記録のみに見える誤り。履歴は書き換えず、この訂正で明記する)"
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/NwsProvider.GetObservationsAsync_CacheKey"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/BUG-0034-a1-before.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-09T05:28:25Z",
+      "verified": {
+        "commit": "6e68b27",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 2 回→修正後 1 回)+ Providers/Presentation/Remote/Infrastructure の全テスト + Functions ビルド",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0035",
+      "title": "観測履歴: NWS の日最高・最低を UTC の日付で集計し、米国で 1 つの現地日が 2 日に分かれる",
+      "source_ids": [
+        "I-3"
+      ],
+      "severity": "中",
+      "fix_priority": 12,
+      "symptom": "ObservationHistoryService.DeriveSummariesAsync が UTC の日付で日を区切る。夕方以降の観測が翌日の日付に入り、現地日の最低・最高が誤る(修正前テストで 10/3 の最低が 20、期待 10)",
+      "expected": "観測所の現地日付で集計する(History.md の local_date の定義)",
+      "cause": {
+        "confirmed": "日付キーと範囲が UTC(コード読み+テストで確認)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T06:29:08Z",
+          "commit": "9929c1c",
+          "hypothesis": "観測所の位置のタイムゾーン(地点の解決)で現地日付の範囲を決める。DB の変更はしない(判断「今すぐ直す」。保存の代わりに解決を使う)",
+          "evidence": [
+            "qa/artifacts/RUN-20261004-1510/I-3-a1-before.log",
+            "qa/artifacts/RUN-20261004-1510/I-3-a1-after.log"
+          ]
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Infrastructure.Tests/ObservationHistoryService.SyncAsync_LocalDay"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/I-3-a1-before.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-09T06:29:08Z",
+      "verified": {
+        "commit": "9929c1c",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ Infrastructure/Presentation の全テスト + Functions ビルド",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    },
+    {
+      "id": "BUG-0036",
+      "title": "警報: 表にない警報コードの警報を丸ごと落とし、見出しだけが残る(「警報なし」と表示)",
+      "source_ids": [
+        "P-3"
+      ],
+      "severity": "中(安全情報)",
+      "fix_priority": 12,
+      "symptom": "JmaAlertMapper が未知コードの警報を Alert にせず捨てる。見出し(原文)は残るため、警報が無いように見える(修正前テストで警報 0 件)",
+      "expected": "警報を落とさない。名称「(未対応の警報)」、区分は注意報、見出しは原文(WeatherProviders.md ガードレール 6・Q-0005 の回答)",
+      "cause": {
+        "confirmed": "未知コードで continue していた(コード読み+テストで確認)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T06:30:14Z",
+          "commit": "843f475",
+          "hypothesis": "未知コードは注意報の「(未対応の警報)」として残す",
+          "evidence": [
+            "qa/artifacts/RUN-20261004-1510/P-3-a1-before.log",
+            "qa/artifacts/RUN-20261004-1510/P-3-a1-after-Weather.Providers.Tests.log"
+          ]
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/JmaProvider.GetAlertsAsync_UnknownCode"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/P-3-a1-before.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-09T06:30:14Z",
+      "verified": {
+        "commit": "843f475",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ Providers/Presentation/Remote の全テスト",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
+    }
+  ],
+  "queue": [
+    {
+      "id": "BUG-0003",
+      "priority": 9,
+      "reason": "国境付近で国はポリゴン由来、表示名/行政区/TZ は他国の最寄り都市になる"
+    }
+  ],
+  "human_questions": [
+    {
+      "id": "Q-0001",
+      "related_bugs": [],
+      "status": "ANSWERED",
+      "asked_at": "2026-10-04T15:00:00Z",
+      "summary": "次のゴール(リリース対応範囲)と許可する変更範囲。暫定: src/ と tests/ の不具合修正と再現テスト追加のみ",
+      "answer": "現状の範囲(src/ と tests/ の不具合修正と再現テスト追加のみ)で続ける",
+      "answered_at": "2026-10-09T06:24:29Z"
+    },
+    {
+      "id": "Q-0002",
+      "related_bugs": [],
+      "status": "ANSWERED",
+      "asked_at": "2026-10-04T15:00:00Z",
+      "summary": "検証手段: (a) Pull Request で CI(Windows・Android・iOS)(b) 手元で dotnet test を実行して結果を共有 (c) Linux のみ。.NET SDK は実行枠でコンテナへ導入済み。BUG-0031(等圧線の見た目)の確認と Render_Golden の判定も、この経路で行う",
+      "answer": "Pull Request で CI を回す(推奨を採用)。PR は作成済み(AloneCraft/Weather#1)",
+      "answered_at": "2026-10-09T05:52:14Z"
+    },
+    {
+      "id": "Q-0003",
+      "related_bugs": [],
+      "status": "ANSWERED",
+      "asked_at": "2026-10-04T15:00:00Z",
+      "summary": "docs/QA_WORKFLOW.md の置き場所の確認(仮置き: docs/)",
+      "answer": "docs/ のまま(仮置きを確定)",
+      "answered_at": "2026-10-09T06:24:47Z"
+    },
+    {
+      "id": "Q-0004",
+      "related_bugs": [],
+      "status": "ANSWERED",
+      "asked_at": "2026-10-04T15:00:00Z",
+      "summary": "実 API の契約テストのためのネットワーク許可(jma.go.jp・weather.gov・met.no・noaa-gfs-bdp-pds.s3.amazonaws.com)",
+      "answer": "許可しない(推奨を採用)。実 API の契約テストは CI の週次(schedule)か手元で確認する",
+      "answered_at": "2026-10-09T06:25:14Z"
+    },
+    {
+      "id": "Q-0005",
+      "related_bugs": [
+        "BUG-0012",
+        "BUG-0017",
+        "BUG-0003"
+      ],
+      "status": "ANSWERED",
+      "asked_at": "2026-10-04T16:05:24Z",
+      "summary": "設計判断のまとめ: 週間予報の区域対応(BUG-0012)、非循環格子の外周半セル(BUG-0017)、国境付近の表示名・TZ(BUG-0003)、未知の警報コード(P-3)、NWS 日最高/最低の現地日付(I-3。観測所のタイムゾーンの保存が必要)",
+      "answer": "BUG-0003・0012・0017 は推奨どおり実装済み。BUG-0031 は受け入れ(ゴールデン更新は未)。P-3 は原文で出す(未実装)。I-3 は今すぐ直す(未実装)",
+      "answered_at": "2026-10-09T06:26:44Z"
+    }
+  ],
+  "consolidation_candidates": [],
+  "decisions": [
+    {
+      "id": "D-0001",
+      "at": "2026-10-04T15:07:10Z",
+      "decision": "QA_WORKFLOW.md の置き場所を docs/QA_WORKFLOW.md とした。リポジトリに「開発用フォルダ」と明示された場所がなく、ドキュメントは docs/ にあるため。qa/ の記録とは分けた。変更したい場合は移動し、state.json の workflow_doc を更新する",
+      "made_by": "AI(仮置き)"
+    },
+    {
+      "id": "D-0002",
+      "at": "2026-10-04T15:07:10Z",
+      "decision": "Unity 前提の表現は docs/QA_WORKFLOW.md 0.1 の表で .NET MAUI に読み替えた。本文の規則は変更していない",
+      "made_by": "AI"
+    },
+    {
+      "id": "D-0003",
+      "at": "2026-10-04T15:08:59Z",
+      "decision": "push はセッション専用ブランチに限り許可(docs/QA_WORKFLOW.md 0.3)。Pull Request の作成は引き続き明示指示が必要",
+      "made_by": "ユーザー"
+    },
+    {
+      "id": "D-0004",
+      "at": "2026-10-04T15:49:58Z",
+      "decision": "BUG-0008 は下流 3 か所を直さず、発生源の LocationResolver で端末が解決できない ID なら経度から決める Etc/GMT±n に落とす最小修正にした(LocationResolver 自身が海上で使う規則と同じ)。夏時間は失われるが UTC より近似が良い。方針に異論があれば BUG-0008 の差分を見直す",
+      "made_by": "AI(要レビュー)"
+    },
+    {
+      "id": "D-0005",
+      "at": "2026-10-04T16:24:22Z",
+      "decision": "BUG-0027: 同一地点の判定を、予報の要求座標と同じ丸め(小数 2 桁)で一致する地点とした。近接する別の地点(約 1 km 未満)は同じ予報セルのため 1 件にまとまる。設計書に規定がないため AI の判断(要レビュー)",
+      "made_by": "AI(要レビュー)"
+    }
+  ],
+  "smoke": {
+    "at": "2026-10-04T15:15:35Z",
+    "code_state": "9737cbe3f1593b608a51389996f130308a971394",
+    "summary": "Core 14/Geo 9/Scene 8/Infrastructure 8/Providers 44/Presentation 42/Remote 6 すべて成功(Linux, Debug)。Rendering は libSkiaSharp 欠如(環境)で 12 件 ERROR。Linux 用ネイティブを bin にのみ置くと 16/17 成功、MapRenderer.Render_Golden(map-temperature)が平均差 3.53(許容 3)で失敗 — Windows 生成のゴールデンのため Linux では証拠にしない(原因は推定: 文字描画の差。未切り分け)",
+    "not_run": [
+      "Weather.Providers.LiveTests(Explicit・実API)",
+      "Weather.App のビルド(MAUI ワークロード未導入)",
+      "Android/iOS 実機・エミュレーター",
+      "SceneLab(WPF)"
+    ]
+  },
+  "candidates": [
+    {
+      "id": "I-2",
+      "status": "REJECTED",
+      "note": "二重防御(MetNorwayProvider の NotAllowed)で不変条件は守られる。回帰テストを追加(コミット f24e5b9)"
+    },
+    {
+      "id": "I-1",
+      "status": "PROMOTED_TO_BUG",
+      "note": "Remote: ContractMapper.ToModel の検証例外が WeatherProviderException に変換されず漏れる(RemoteWeatherService.cs の catch が try の外)。高(Remote 使用時) → BUG-0011"
+    },
+    {
+      "id": "P-2",
+      "status": "PROMOTED_TO_BUG",
+      "note": "JMA 週間予報の区域不一致で先頭区域に黙って置換(伊豆諸島で東京地方の値)。設計書は「要確認」扱い → BUG-0012(NEEDS_HUMAN)"
+    },
+    {
+      "id": "P-3",
+      "status": "PROMOTED_TO_BUG",
+      "note": "未知の警報コードを丸ごと落とす(ガードレール 6 は原文表示を求める) → 判断: 原文で出す(名称「(未対応の警報)」、区分は注意報)。実装は未着手 → BUG-0036 として検証済み"
+    },
+    {
+      "id": "P-4",
+      "status": "PROMOTED_TO_BUG",
+      "note": "HttpCacheHandler: 本文読み込み失敗が stale 切替の外 → BUG-0013"
+    },
+    {
+      "id": "P-5",
+      "status": "PROMOTED_TO_BUG",
+      "note": "NWS 先頭が Overnight のとき Tonight が捨てられる(実データの形は仮説) → BUG-0025"
+    },
+    {
+      "id": "P-6/I-4",
+      "status": "PROMOTED_TO_BUG",
+      "note": "キャッシュ LastAccessedAt がヒットで更新されない(NeedsAccessUpdate 未使用はコードで確認済み) → BUG-0018"
+    },
+    {
+      "id": "P-7",
+      "status": "UNREPRODUCED",
+      "note": "NWS 観測の URL に秒単位の end が入りキャッシュが効かない"
+    },
+    {
+      "id": "P-8",
+      "status": "PROMOTED_TO_BUG",
+      "note": "JMA 時系列の重複/逆順で ArgumentException が漏れ予報全体が失敗 → BUG-0020"
+    },
+    {
+      "id": "I-3",
+      "status": "PROMOTED_TO_BUG",
+      "note": "NWS 日最高/最低が UTC 日付集計(設計追加が要る可能性) → BUG-0035 として検証済み(9929c1c)"
+    },
+    {
+      "id": "I-5",
+      "status": "PROMOTED_TO_BUG",
+      "note": "HistoryViewModel の (a) NWS 降水棒が空 (b) 今日が昨日 (c) 古い Message (d) 競合 → BUG-0014/0015/0016(d の競合は未対応) → I-5d は BUG-0032"
+    },
+    {
+      "id": "I-6",
+      "status": "PROMOTED_TO_BUG",
+      "note": "お気に入りの重複登録(設計に重複禁止の記述なし) → BUG-0027"
+    },
+    {
+      "id": "I-7",
+      "status": "PROMOTED_TO_BUG",
+      "note": "地図の時間軸が前面で更新されない → BUG-0026"
+    },
+    {
+      "id": "I-8",
+      "status": "PROMOTED_TO_BUG",
+      "note": "PlaceWeatherViewModel のキャンセル後 Loading のまま / 同時更新 → I-8a は BUG-0028。I-8b(同時更新で古い応答が最後に反映)・I-8c(alertsTask の取り残し)は未対応 → I-8b/c は BUG-0033"
+    },
+    {
+      "id": "M-1",
+      "status": "UNREPRODUCED",
+      "note": "TileLayer が失敗タイルを毎回再要求 / キャッシュ上限 192 < 可視タイル → 失敗の再要求は BUG-0019。キャッシュ上限 192<可視タイル(iPad)は未再現のまま"
+    },
+    {
+      "id": "M-2",
+      "status": "PROMOTED_TO_BUG",
+      "note": "GfsProvider が応答の物理量・ステータスを検証しない → BUG-0029"
+    },
+    {
+      "id": "M-3",
+      "status": "PROMOTED_TO_BUG",
+      "note": "japanmask シェーダー失敗時に気象庁タイルが全世界に出る → BUG-0030"
+    },
+    {
+      "id": "M-5",
+      "status": "PROMOTED_TO_BUG",
+      "note": "等圧線の鞍点が中心値を見ない(見た目のみ) → BUG-0031"
+    },
+    {
+      "id": "M-6",
+      "status": "UNREPRODUCED",
+      "note": "走査モード 0x80 で Grid.Lo1 が不一致(GFS は到達しない) (BUG-0021 の検証追加後も走査モード 0x80 の Grid.Lo1 の食い違いは未対応)"
+    },
+    {
+      "id": "S-2/S-3/S-4/S-6/S-7/S-8",
+      "status": "DEFERRED",
+      "note": "設計意図の可能性または仕様が曖昧(survey-scene.md)。S-2 と S-8 は一部実行確認済み"
+    },
+    {
+      "id": "G-8",
+      "status": "DEFERRED",
+      "note": "Observation の値域検証なし(設計判断)"
+    },
+    {
+      "id": "P-7",
+      "status": "UNREPRODUCED",
+      "note": "NWS 観測の URL に秒単位の end が入り、呼び出しごとにキーが変わる(キャッシュが効かず、エントリが増える)。低優先度。対応案: end を丸める/省略"
+    },
+    {
+      "id": "I-3",
+      "status": "PROMOTED_TO_BUG",
+      "note": "NWS の日最高/最低が UTC 日付で集計される。直すには観測所のタイムゾーンの保存が必要(設計の追加)。Q-0005 に追加 → BUG-0035 として検証済み(9929c1c)"
+    },
+    {
+      "id": "M-6",
+      "status": "UNREPRODUCED",
+      "note": "走査モード 0x80 で Grid.Lo1 が不一致(GFS は常にモード 0 で到達しない)。低優先度"
+    },
+    {
+      "id": "M-7/M-8",
+      "status": "UNREPRODUCED",
+      "note": "タイル層ありの 1 フレーム割り当て 16 KB 超の可能性(低)、経度複製が -1〜1 までで大きな画面の両端が欠ける(ほぼ到達しない)"
+    },
+    {
+      "id": "G-5b",
+      "status": "DEFERRED",
+      "note": "半角カナで ContainsJapanese が外れ並び順が変わる(実測では結果の先頭が同じで影響なし)"
+    },
+    {
+      "id": "MET-FindZone",
+      "status": "UNREPRODUCED",
+      "note": "MetNorway.FindZone が未知の IANA ID で UTC に落ちる(BUG-0008 の発生源対策で多くは防げるが、MET 側の経路は未対応)"
+    }
+  ],
+  "human_decisions": [
+    {
+      "at": "2026-10-09T05:45:03Z",
+      "question": "BUG-0003 国境付近の表示名・TZ",
+      "answer": "同じ国の都市を優先する(推奨を採用)",
+      "scope": "BUG-0003 を実装する承認。ほかの判断には及ばない"
+    },
+    {
+      "at": "2026-10-09T05:47:19Z",
+      "question": "BUG-0012 週間予報の区域不一致",
+      "answer": "不一致なら週間予報を空にする(推奨を採用)",
+      "scope": "BUG-0012 の実装。対応表が得られたら別途判断"
+    },
+    {
+      "at": "2026-10-09T05:49:26Z",
+      "question": "BUG-0017 非循環格子の外周半セル",
+      "answer": "端の格子点の値を返す(推奨を採用)",
+      "scope": "BUG-0017 の実装"
+    },
+    {
+      "at": "2026-10-09T05:51:04Z",
+      "question": "BUG-0031 等圧線の鞍点の見た目",
+      "answer": "受け入れて、Windows でゴールデン画像を更新する(推奨を採用)",
+      "scope": "見た目の受け入れと、Windows でのゴールデン再生成・目視確認が条件。Windows の経路は Q-0002 で決める"
+    },
+    {
+      "at": "2026-10-09T05:52:14Z",
+      "question": "Q-0002 Windows での確認経路",
+      "answer": "Pull Request で CI を回す(推奨を採用)",
+      "scope": "CI(Windows)でゴールデン比較と Render_Golden を判定する。Pull Request の作成は、作成のタイミングをあらためて確認してから行う"
+    },
+    {
+      "at": "2026-10-09T05:53:02Z",
+      "question": "PR 作成",
+      "answer": "今作って CI を回す",
+      "scope": "PR #1 を作成。マージはしない"
+    },
+    {
+      "at": "2026-10-09T06:24:29Z",
+      "question": "Q-0001 次のゴールと変更範囲",
+      "answer": "現状の範囲で続ける(推奨を採用)",
+      "scope": "src/ と tests/ の不具合修正と再現テスト追加のみ"
+    },
+    {
+      "at": "2026-10-09T06:24:47Z",
+      "question": "Q-0003 QA_WORKFLOW.md の置き場所",
+      "answer": "docs/ のまま(推奨を採用)",
+      "scope": "docs/QA_WORKFLOW.md で確定"
+    },
+    {
+      "at": "2026-10-09T06:25:14Z",
+      "question": "Q-0004 実 API の契約テスト用のネットワーク許可",
+      "answer": "許可しない(推奨を採用)",
+      "scope": "この環境では実 API に通信しない。LiveTests は NOT_RUN のまま"
+    },
+    {
+      "at": "2026-10-09T06:26:05Z",
+      "question": "P-3 未知の警報コードの表示",
+      "answer": "原文で出す(推奨を採用)",
+      "scope": "名称「(未対応の警報)」・区分は注意報・原文の見出しとともに出す。実装は未着手(BUG 化して次の作業)"
+    },
+    {
+      "at": "2026-10-09T06:26:44Z",
+      "question": "I-3 NWS の日最高・最低の現地日付",
+      "answer": "今すぐ直す",
+      "scope": "観測所のタイムゾーンの保存(DB の変更)を伴う。実装は未着手。DB 変更の範囲は次に確認する"
+    },
+    {
+      "at": "2026-10-09T06:29:08Z",
+      "question": "I-3 の実装方法",
+      "answer": "観測所の位置のタイムゾーンを地点の解決で求める(DB 変更なし)",
+      "scope": "判断「今すぐ直す」の実装方法。保存の代わりに解決を使った点はレビュー対象"
+    }
+  ],
+  "pull_request": {
+    "number": 1,
+    "url": "https://github.com/AloneCraft/Weather/pull/1",
+    "head": "claude/zen-keller-0fx365",
+    "base": "main",
+    "created_at": "2026-10-09T05:53:02Z",
+    "note": "BUG-0003・0012・0017 は判断済みだが未実装(PR 本文に明記)。BUG-0031 のゴールデン画像は未更新で Render_Golden が失敗する見込み"
+  }
+}

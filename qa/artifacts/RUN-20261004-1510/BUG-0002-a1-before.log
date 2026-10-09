@@ -1,0 +1,19 @@
+Running tests from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+failed Weather.Geo.Tests.GeoDatabase.FindNearestPlace (277ms)
+  from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+  Assert.Equal() Failure: Values differ
+  Expected: 6185377
+  Actual:   null
+    at Weather.Geo.Tests.GeoDatabase.FindNearestPlace() in /home/user/Weather/tests/Weather.Geo.Tests/GeoTests.cs:131
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64) failed with 1 error(s) (1s 825ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 10
+  failed: 1
+  succeeded: 9
+  skipped: 0
+  duration: 2s 119ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

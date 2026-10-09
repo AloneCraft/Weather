@@ -10,7 +10,12 @@ public static class Units{
         if(celsius is not {} c){
             return "--";
         }
-        return string.Create(CultureInfo.InvariantCulture,$"{ToTemperature(c,units):0}°");
+        var rounded=Math.Round(ToTemperature(c,units),MidpointRounding.AwayFromZero);
+        if(rounded==0){
+            //丸めて 0 になる負の値(-0.3 など)を「-0°」と表示しない
+            rounded=0;
+        }
+        return string.Create(CultureInfo.InvariantCulture,$"{rounded:0}°");
     }
 
     public static double ToTemperature(double celsius,UnitSystem units){

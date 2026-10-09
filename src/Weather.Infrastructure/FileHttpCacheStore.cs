@@ -28,7 +28,8 @@ internal sealed record HttpCacheMetadata(
     DateTimeOffset? Expires,
     DateTimeOffset ReceivedAt,
     DateTimeOffset LastAccessedAt,
-    long Length);
+    long Length,
+    string? BodySha256=null);
 
 [JsonSerializable(typeof(HttpCacheMetadata))]
 internal sealed partial class InfrastructureJsonContext:JsonSerializerContext;
@@ -38,7 +39,8 @@ internal sealed partial class InfrastructureJsonContext:JsonSerializerContext;
 /// 本文とメタデータを別ファイルに保存する。JSON は source generator(AOT / トリミング安全)。
 /// </summary>
 public sealed class FileHttpCacheStore:IHttpCacheStore{
-    private static readonly TimeSpan AccessUpdateInterval=TimeSpan.FromHours(1);
+    private const int ReplaceAttempts=20;
+    private static readonly TimeSpan ReplaceRetryDelay=TimeSpan.FromMilliseconds(5);
     private readonly string directory;
 
     public FileHttpCacheStore(InfrastructureOptions options){
@@ -54,7 +56,7 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
         }
         HttpCacheMetadata? meta;
         try{
-            await using var stream=File.OpenRead(metaPath);
+            await using var stream=OpenShared(metaPath);
             meta=await JsonSerializer.DeserializeAsync(stream,InfrastructureJsonContext.Default.HttpCacheMetadata,cancellationToken).ConfigureAwait(false);
         }catch(JsonException){
             //壊れたメタデータはエントリごと捨てる
@@ -64,7 +66,12 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
         if(meta is null||meta.Key!=key){
             return null;
         }
-        var body=await File.ReadAllBytesAsync(bodyPath,cancellationToken).ConfigureAwait(false);
+        var body=await ReadAllSharedAsync(bodyPath,cancellationToken).ConfigureAwait(false);
+        //本文とメタは別ファイルで、書き込みと重なると食い違う組を読み得る。照合できなければキャッシュなしとして扱う
+        //(削除はしない: 書き込み中の新しいエントリを消さないため。ハッシュのない古い形式のメタは長さだけ照合する)
+        if(body.Length!=meta.Length||(meta.BodySha256 is not null&&meta.BodySha256!=Hash(body))){
+            return null;
+        }
         return new HttpCacheEntry{
             Key=meta.Key,
             StatusCode=meta.StatusCode,
@@ -84,15 +91,15 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
     public async ValueTask SetAsync(HttpCacheEntry entry,CancellationToken cancellationToken){
         ArgumentNullException.ThrowIfNull(entry);
         var (bodyPath,metaPath)=this.Paths(entry.Key);
-        var meta=new HttpCacheMetadata(entry.Key,entry.StatusCode,entry.ContentType,entry.ETag,entry.LastModified,entry.Date,entry.Age,entry.MaxAge,entry.Expires,entry.ReceivedAt,entry.LastAccessedAt,entry.Body.Length);
+        var meta=new HttpCacheMetadata(entry.Key,entry.StatusCode,entry.ContentType,entry.ETag,entry.LastModified,entry.Date,entry.Age,entry.MaxAge,entry.Expires,entry.ReceivedAt,entry.LastAccessedAt,entry.Body.Length,Hash(entry.Body));
         var tempBody=bodyPath+".tmp";
         var tempMeta=metaPath+".tmp";
         await File.WriteAllBytesAsync(tempBody,entry.Body,cancellationToken).ConfigureAwait(false);
         await using(var stream=File.Create(tempMeta)){
             await JsonSerializer.SerializeAsync(stream,meta,InfrastructureJsonContext.Default.HttpCacheMetadata,cancellationToken).ConfigureAwait(false);
         }
-        File.Move(tempBody,bodyPath,true);
-        File.Move(tempMeta,metaPath,true);
+        await ReplaceAsync(tempBody,bodyPath,cancellationToken).ConfigureAwait(false);
+        await ReplaceAsync(tempMeta,metaPath,cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask TrimAsync(long maxBytes,TimeSpan maxUnused,DateTimeOffset now,CancellationToken cancellationToken){
@@ -100,7 +107,7 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
         foreach(var metaPath in Directory.EnumerateFiles(this.directory,"*.meta")){
             var bodyPath=Path.ChangeExtension(metaPath,".body");
             try{
-                await using var stream=File.OpenRead(metaPath);
+                await using var stream=OpenShared(metaPath);
                 var meta=await JsonSerializer.DeserializeAsync(stream,InfrastructureJsonContext.Default.HttpCacheMetadata,cancellationToken).ConfigureAwait(false);
                 if(meta is null){
                     continue;
@@ -120,10 +127,37 @@ public sealed class FileHttpCacheStore:IHttpCacheStore{
         }
     }
 
-    /// <summary>最終利用時刻の更新は 1 時間に 1 回まで(読み取りのたびに書き込まないため)。</summary>
+    /// <summary>最終利用時刻の更新は 1 時間に 1 回まで(読み取りのたびに書き込まないため)。規則は HttpCacheAccess。</summary>
     public static bool NeedsAccessUpdate(HttpCacheEntry entry,DateTimeOffset now){
-        ArgumentNullException.ThrowIfNull(entry);
-        return now-entry.LastAccessedAt>AccessUpdateInterval;
+        return HttpCacheAccess.NeedsUpdate(entry,now);
+    }
+
+    private static string Hash(byte[] body){
+        return Convert.ToHexString(SHA256.HashData(body));
+    }
+
+    /// <summary>読み取り中も、別の書き込みが置き換え・削除できるように開く(Windows の既定の共有では上書き移動が失敗する)。</summary>
+    private static FileStream OpenShared(string path){
+        return new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.ReadWrite|FileShare.Delete);
+    }
+
+    private static async Task<byte[]> ReadAllSharedAsync(string path,CancellationToken cancellationToken){
+        await using var stream=OpenShared(path);
+        var buffer=new byte[stream.Length];
+        await stream.ReadExactlyAsync(buffer,cancellationToken).ConfigureAwait(false);
+        return buffer;
+    }
+
+    /// <summary>上書き移動。読み取り側が開いている一瞬だけ Windows で失敗するため、短い間隔で数回だけ再試行する。</summary>
+    private static async Task ReplaceAsync(string source,string destination,CancellationToken cancellationToken){
+        for(var attempt=1;;attempt++){
+            try{
+                File.Move(source,destination,true);
+                return;
+            }catch(Exception ex) when((ex is IOException or UnauthorizedAccessException)&&attempt<ReplaceAttempts){
+                await Task.Delay(ReplaceRetryDelay,cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     private (string Body,string Meta) Paths(string key){

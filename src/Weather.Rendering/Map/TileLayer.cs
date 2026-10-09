@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using SkiaSharp;
 using Weather.Core;
 
@@ -16,10 +17,14 @@ internal sealed class TileLayer:IDisposable{
     private readonly ConcurrentDictionary<string,SKImage?> cache=new(StringComparer.Ordinal);
     private readonly ConcurrentQueue<string> order=new();
     private readonly ConcurrentDictionary<string,byte> pending=new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string,long> failed=new(StringComparer.Ordinal);
     private readonly SKPaint paint=new(){IsAntialias=false};
     private CancellationTokenSource cancel=new();
 
     public MapTileLoader? Loader{get;set;}
+
+    /// <summary>読み込みに失敗したタイルを再び要求するまでの待ち時間。</summary>
+    public TimeSpan RetryAfter{get;set;}=TimeSpan.FromSeconds(30);
 
     /// <summary>タイルを読み終えたとき(描画スレッド以外から呼ばれる)。</summary>
     public event Action? TileLoaded;
@@ -105,6 +110,13 @@ internal sealed class TileLayer:IDisposable{
             return;
         }
         var key=Key(layer,z,x,y);
+        if(this.failed.TryGetValue(key,out var failedAt)){
+            //読めなかったタイルは待ち時間の間は要求しない(連続描画の間、毎フレーム要求しないため)
+            if(Stopwatch.GetElapsedTime(failedAt)<this.RetryAfter){
+                return;
+            }
+            this.failed.TryRemove(key,out _);
+        }
         if(!this.pending.TryAdd(key,0)){
             return;
         }
@@ -116,12 +128,14 @@ internal sealed class TileLayer:IDisposable{
                 if(bytes is not null){
                     image=SKImage.FromEncodedData(bytes);
                 }
+                this.failed.TryRemove(key,out _);
                 this.Store(key,image);
                 this.TileLoaded?.Invoke();
             }catch(OperationCanceledException){
                 //層の切り替えで取り消した
             }catch(Exception ex) when(ex is HttpRequestException or IOException or WeatherProviderException){
-                //読めないタイルは描かない(次の再描画で再び要求する)
+                //読めないタイルは描かない(待ち時間が過ぎた後の再描画で再び要求する)
+                this.failed[key]=Stopwatch.GetTimestamp();
             }finally{
                 this.pending.TryRemove(key,out _);
             }

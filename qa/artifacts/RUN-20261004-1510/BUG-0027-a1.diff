@@ -1,0 +1,65 @@
+diff --git a/src/Weather.Presentation/ViewModels/PlaceViewModels.cs b/src/Weather.Presentation/ViewModels/PlaceViewModels.cs
+index 3e79854..7aba14b 100644
+--- a/src/Weather.Presentation/ViewModels/PlaceViewModels.cs
++++ b/src/Weather.Presentation/ViewModels/PlaceViewModels.cs
+@@ -12,6 +12,11 @@ public sealed class FavoritesService(IFavoritesStore store,IWeatherService weath
+ 
+     public async Task<FavoritePlace> AddAsync(string name,GeoPoint point,CancellationToken cancellationToken){
+         var all=await store.GetAllAsync(cancellationToken);
++        //同じ予報セル(要求座標と同じ小数 2 桁の丸めで一致)の地点は追加せず、既存を返す
++        var cell=point.RoundForRequest();
++        if(all.FirstOrDefault(f=>f.Point.RoundForRequest()==cell) is {} existing){
++            return existing;
++        }
+         var id="p"+Guid.NewGuid().ToString("N")[..12];
+         string? station=null;
+         try{
+diff --git a/tests/Weather.Presentation.Tests/FavoritesServiceTests.cs b/tests/Weather.Presentation.Tests/FavoritesServiceTests.cs
+new file mode 100644
+index 0000000..7f78310
+--- /dev/null
++++ b/tests/Weather.Presentation.Tests/FavoritesServiceTests.cs
+@@ -0,0 +1,30 @@
++using Weather.Core;
++using Weather.Presentation;
++
++namespace Weather.Presentation.Tests;
++
++public class FavoritesService{
++    [Fact,Trait("Category","Unit")]public async Task AddAsync(){
++        var store=new FakeFavorites();
++        var service=new Presentation.ViewModels.FavoritesService(store,new FakeWeatherService());
++        var ct=TestContext.Current.CancellationToken;
++        var changed=0;
++        service.Changed+=(_,_)=>changed++;
++        var first=await service.AddAsync("東京",new GeoPoint(35.6894,139.6917),ct);
++        {
++            //同じ予報セル(座標を小数 2 桁に丸めて一致)の地点は追加せず、既存を返す(行・ピン・背景取得の枠が重複しない)
++            var again=await service.AddAsync("東京",new GeoPoint(35.6901,139.6949),ct);
++            Assert.Equal(first.Id,again.Id);
++            Assert.Single(store.Items);
++            Assert.Equal(1,changed);
++        }
++        {
++            //別のセルの地点は追加できる(並び順は末尾)
++            var other=await service.AddAsync("横浜",new GeoPoint(35.4437,139.6380),ct);
++            Assert.NotEqual(first.Id,other.Id);
++            Assert.Equal(2,store.Items.Count);
++            Assert.Equal(first.SortOrder+1,other.SortOrder);
++            Assert.Equal(2,changed);
++        }
++    }
++}
+diff --git a/tests/Weather.Presentation.Tests/MapTests.cs b/tests/Weather.Presentation.Tests/MapTests.cs
+index 7dc1812..c1a1dc8 100644
+--- a/tests/Weather.Presentation.Tests/MapTests.cs
++++ b/tests/Weather.Presentation.Tests/MapTests.cs
+@@ -68,7 +68,7 @@ internal sealed class MapHarness{
+         var h=this.H;
+         Presentation.ViewModels.PlaceWeatherViewModel Place(PlaceData d)=>new(d,h.Weather,h.Session,h.Settings,h.Navigator,h.Lifecycle,h.Time);
+         var places=new Presentation.ViewModels.MainViewModel(this.Favorites,new FakeLocationService(LocationStatus.Denied,null),h.Lifecycle,h.Navigator,h.Time,Place,h.Widget());
+-        return new Presentation.ViewModels.MapViewModel(this.Maps,h.Weather,new FakeJapanArea(),new FakeSampler(pixel),places,new FavoritesService(this.Favorites,h.Weather),this.Focus,h.Settings,h.Lifecycle,h.Navigator,new FakeLocationService(LocationStatus.Denied,null),Place,h.Session,h.Time);
++        return new Presentation.ViewModels.MapViewModel(this.Maps,h.Weather,new FakeJapanArea(),new FakeSampler(pixel),places,new Presentation.ViewModels.FavoritesService(this.Favorites,h.Weather),this.Focus,h.Settings,h.Lifecycle,h.Navigator,new FakeLocationService(LocationStatus.Denied,null),Place,h.Session,h.Time);
+     }
+ }
+ 

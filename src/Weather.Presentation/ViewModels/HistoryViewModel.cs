@@ -17,6 +17,7 @@ public sealed record ObservationRow(string Time,string Temperature,string Precip
 /// </summary>
 public sealed partial class HistoryViewModel(WeatherSession session,IWeatherService weather,IObservationHistoryService history,IFavoritesStore favorites,AppSettings settings,TimeProvider time):ObservableObject,INavigationAware{
     private PlaceData? data;
+    private int loadVersion;
 
     public ObservableCollection<ObservationStation> Stations{get;}=[];
     public ObservableCollection<ObservationRow> Rows{get;}=[];
@@ -103,9 +104,15 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
         var units=settings.Units;
         var now=time.GetUtcNow();
         var from=now-Span(this.Range);
+        //範囲を素早く切り替えると読み込みが重なる。後から始めた読み込みだけを反映する(先に始めた読み込みが後で終わっても、最後に選んだ範囲を残す)
+        var version=Interlocked.Increment(ref this.loadVersion);
         var observations=await history.GetObservationsAsync(station,from,now,CancellationToken.None);
+        if(version!=Volatile.Read(ref this.loadVersion)){
+            return;
+        }
         var points=new List<ChartPoint>(observations.Count);
-        foreach(var o in observations){
+        for(var i=0;i<observations.Count;i++){
+            var o=observations[i];
             double? temperature=null;
             var suspect=false;
             if(o.TemperatureC is {} t){
@@ -113,7 +120,7 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
                 suspect=t.Quality==MeasurementQuality.Suspect;
             }
             double? precipitation=null;
-            if(o.Precipitation1hMm is {} p&&o.ObservedAt.Minute==0){
+            if(o.Precipitation1hMm is {} p&&IsHourlyRow(station.Provider,observations,i)){
                 precipitation=Units.ToPrecipitation(p.Value,units);
             }
             points.Add(new ChartPoint(o.ObservedAt,temperature,precipitation,null,suspect));
@@ -135,13 +142,19 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
                 suspect));
         }
         var localToday=DateOnly.FromDateTime(TimeText.Local(now,this.Zone).DateTime);
-        var summaries=await history.GetDailySummariesAsync(station,localToday.AddDays(-1),localToday,CancellationToken.None);
-        if(summaries.LastOrDefault() is {} today){
+        var summaries=await history.GetDailySummariesAsync(station,localToday,localToday,CancellationToken.None);
+        if(version!=Volatile.Read(ref this.loadVersion)){
+            return;
+        }
+        if(summaries.LastOrDefault(s=>s.LocalDate==localToday) is {} today){
             var text=string.Format(System.Globalization.CultureInfo.CurrentCulture,Strings.TodaySummaryFormat,Units.Temperature(today.MaxTempC,units),Units.Temperature(today.MinTempC,units));
             if(today.IsDerived){
                 text+=Strings.AggregatedNote;
             }
             this.SummaryText=text;
+        }else{
+            //今日の要約がまだない(別の観測所・範囲から切り替えた直後を含む)ときは、前の値を残さない
+            this.SummaryText=null;
         }
         if(station.Provider==ProviderId.Jma){
             this.Attribution="出典:気象庁ホームページ(アメダス)";
@@ -150,7 +163,23 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
         }
         if(observations.Count==0&&this.Message is null){
             this.Message=Strings.NoSavedObservations;
+        }else if(observations.Count>0&&this.Message==Strings.NoSavedObservations){
+            //別の範囲に切り替えて観測が見つかったら消す(同期失敗など他の Message は残す)
+            this.Message=null;
         }
+    }
+
+    /// <summary>降水量の棒に使う行。気象庁(10 分値)は正時の行、NWS(毎時 52 分前後の定時観測と特別観測)は各時間帯の最後の観測(History.md)。</summary>
+    private static bool IsHourlyRow(ProviderId provider,IReadOnlyList<Observation> observations,int index){
+        var current=observations[index].ObservedAt.UtcDateTime;
+        if(provider==ProviderId.Jma){
+            return current.Minute==0;
+        }
+        if(index+1>=observations.Count){
+            return true;
+        }
+        var next=observations[index+1].ObservedAt.UtcDateTime;
+        return next.Date!=current.Date||next.Hour!=current.Hour;
     }
 
     private async Task SaveStationAsync(ObservationStation station){

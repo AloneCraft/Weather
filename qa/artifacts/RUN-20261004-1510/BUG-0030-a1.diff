@@ -1,0 +1,95 @@
+diff --git a/src/Weather.Rendering/Map/MapLayers.cs b/src/Weather.Rendering/Map/MapLayers.cs
+index af8a2c4..870cf29 100644
+--- a/src/Weather.Rendering/Map/MapLayers.cs
++++ b/src/Weather.Rendering/Map/MapLayers.cs
+@@ -127,6 +127,9 @@ internal sealed class JapanOverlay(JapanMaskTexture mask):IDisposable{
+     private readonly ShaderChildren children=new();
+     private readonly SKShader maskShader=mask.Image.ToShader(SKShaderTileMode.Decal,SKShaderTileMode.Decal,new SKSamplingOptions(SKFilterMode.Linear));
+ 
++    /// <summary>日本周辺に限るシェーダーが使えるか。使えないときは、気象庁のタイルを日本周辺の外に出さないよう、描かない側に倒す。</summary>
++    public bool CanClip=>ShaderCache.Get("japanmask") is not null;
++
+     /// <summary>直前に描いた内容(SaveLayer の中)を日本周辺だけに残す。</summary>
+     public void ClipToJapan(SKCanvas canvas,MapView view,SKSize size){
+         using var shader=this.Create(view,size,0);
+diff --git a/src/Weather.Rendering/Map/MapRenderer.cs b/src/Weather.Rendering/Map/MapRenderer.cs
+index 41ab5cb..96ce123 100644
+--- a/src/Weather.Rendering/Map/MapRenderer.cs
++++ b/src/Weather.Rendering/Map/MapRenderer.cs
+@@ -104,8 +104,8 @@ public sealed class MapRenderer:IDisposable{
+                 opacity=1f;
+             }
+             this.field.Draw(canvas,view,size,opacity);
+-            if(frame.Tiles.Count>0){
+-                //気象庁のタイルは日本周辺だけに描く(GFS との継ぎ目をそろえる)
++            if(frame.Tiles.Count>0&&this.overlay.CanClip){
++                //気象庁のタイルは日本周辺だけに描く(GFS との継ぎ目をそろえる)。日本周辺に限れないとき(シェーダーが使えない)は描かない(方針 5)
+                 canvas.SaveLayer(this.layerPaint);
+                 foreach(var layer in frame.Tiles){
+                     this.tiles.Draw(canvas,view,size,layer);
+diff --git a/tests/Weather.Rendering.Tests/MapTests.cs b/tests/Weather.Rendering.Tests/MapTests.cs
+index 576535b..a50b89d 100644
+--- a/tests/Weather.Rendering.Tests/MapTests.cs
++++ b/tests/Weather.Rendering.Tests/MapTests.cs
+@@ -2,6 +2,7 @@ using SkiaSharp;
+ using Weather.Core;
+ using Weather.Geo;
+ using Weather.Rendering.Map;
++using Weather.Rendering.Scene;
+ 
+ namespace Weather.Rendering.Tests;
+ 
+@@ -167,6 +168,7 @@ public class MapCamera{
+     }
+ }
+ 
++[Collection("ShaderCache")]
+ public class MapRenderer{
+     [Fact,Trait("Category","Unit")]public void Render_JapanArea(){
+         //方針 5: 日本周辺には GFS の色を描かない(格子の NaN とシェーダーのマスクの二重)
+@@ -212,6 +214,33 @@ public class MapRenderer{
+         }
+     }
+ 
++    [Fact,Trait("Category","Unit")]public async Task Render_TilesWithoutMask(){
++        //日本マスクのシェーダーが使えないときは、気象庁のタイルを日本周辺の外に描かない(失敗時は描かない側に倒す。方針 5)
++        using var solid=new SKBitmap(new SKImageInfo(256,256,SKColorType.Rgba8888,SKAlphaType.Premul));
++        solid.Erase(SKColors.Red);
++        using var image=SKImage.FromBitmap(solid);
++        using var data=image.Encode(SKEncodedImageFormat.Png,100);
++        var tile=data.ToArray();
++        ShaderCache.ForceFailure=static name=>name=="japanmask";
++        try{
++            using var map=new Map.MapRenderer(MapSamples.Database);
++            var loaded=new TaskCompletionSource();
++            map.RedrawRequested+=()=>loaded.TrySetResult();
++            map.TileLoader=(layer,z,x,y,ct)=>Task.FromResult<byte[]?>(tile);
++            map.Camera.CenterOn(new GeoPoint(36,135),4);
++            map.Frame=new MapFrame{Layer=FieldLayer.Precipitation,Time=MapSamples.Time,Tiles=[MapSamples.TileLayer()],Legend=MapLegends.RainRate,Japan=JapanCoverage.Available};
++            using(MapSamples.Render(map,480,360)){
++            }
++            await Task.Delay(500,TestContext.Current.CancellationToken);
++            using var bitmap=MapSamples.Render(map,480,360);
++            //全面が赤のタイルでも、朝鮮半島(日本周辺の外)は赤にならない
++            var korea=MapSamples.PixelAt(bitmap,map,36.5,127.8);
++            Assert.True(korea.Red<120,$"朝鮮半島: {korea}");
++        }finally{
++            ShaderCache.ForceFailure=null;
++        }
++    }
++
+     [Fact,Trait("Category","Unit")]public async Task Render_TileFailure(){
+         //読み込みに失敗したタイルは、連続描画の間は毎フレーム再要求しない(気象庁サーバーへの負荷・電池)。一定時間後に再び要求する
+         var requests=new System.Collections.Concurrent.ConcurrentDictionary<(int,int,int),int>();
+diff --git a/tests/Weather.Rendering.Tests/RenderingTests.cs b/tests/Weather.Rendering.Tests/RenderingTests.cs
+index 4f8585c..49ecaa5 100644
+--- a/tests/Weather.Rendering.Tests/RenderingTests.cs
++++ b/tests/Weather.Rendering.Tests/RenderingTests.cs
+@@ -50,6 +50,7 @@ internal static class Scenes{
+     }
+ }
+ 
++[Collection("ShaderCache")]
+ public class SceneRenderer{
+     [Fact,Trait("Category","Unit")]public void Render(){
+         {

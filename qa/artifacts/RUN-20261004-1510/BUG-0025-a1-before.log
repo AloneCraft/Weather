@@ -1,0 +1,20 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.NwsProvider.GetForecastAsync_Overnight (44ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  Assert.Equal() Failure: Collections differ at index 0
+             ↓ (pos 0)
+  Expected: "Overnight"
+  Actual:   "Sunday"
+             ↑ (pos 0)
+    at Weather.Providers.Tests.NwsProvider.GetForecastAsync_Overnight() in /home/user/Weather/tests/Weather.Providers.Tests/NwsProvider.cs:62
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (3s 556ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 45
+  failed: 1
+  succeeded: 44
+  skipped: 0
+  duration: 3s 852ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

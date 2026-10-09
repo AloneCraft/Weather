@@ -1,0 +1,18 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.HttpCacheHandler.SendAsync (19ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  Assert.Equal() Failure: Values differ
+  Expected: 2026-10-17T00:30:00.0000000+00:00
+  Actual:   2026-10-04T00:00:00.0000000+00:00
+    at Weather.Providers.Tests.HttpCacheHandler.SendAsync() in /home/user/Weather/tests/Weather.Providers.Tests/HttpCacheHandler.cs:40
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (1s 233ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 44
+  failed: 1
+  succeeded: 43
+  skipped: 0
+  duration: 1s 505ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

@@ -12,6 +12,11 @@ public sealed class FavoritesService(IFavoritesStore store,IWeatherService weath
 
     public async Task<FavoritePlace> AddAsync(string name,GeoPoint point,CancellationToken cancellationToken){
         var all=await store.GetAllAsync(cancellationToken);
+        //同じ予報セル(要求座標と同じ小数 2 桁の丸めで一致)の地点は追加せず、既存を返す
+        var cell=point.RoundForRequest();
+        if(all.FirstOrDefault(f=>f.Point.RoundForRequest()==cell) is {} existing){
+            return existing;
+        }
         var id="p"+Guid.NewGuid().ToString("N")[..12];
         string? station=null;
         try{

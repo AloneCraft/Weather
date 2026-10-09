@@ -127,6 +127,9 @@ internal sealed class JapanOverlay(JapanMaskTexture mask):IDisposable{
     private readonly ShaderChildren children=new();
     private readonly SKShader maskShader=mask.Image.ToShader(SKShaderTileMode.Decal,SKShaderTileMode.Decal,new SKSamplingOptions(SKFilterMode.Linear));
 
+    /// <summary>日本周辺に限るシェーダーが使えるか。使えないときは、気象庁のタイルを日本周辺の外に出さないよう、描かない側に倒す。</summary>
+    public bool CanClip=>ShaderCache.Get("japanmask") is not null;
+
     /// <summary>直前に描いた内容(SaveLayer の中)を日本周辺だけに残す。</summary>
     public void ClipToJapan(SKCanvas canvas,MapView view,SKSize size){
         using var shader=this.Create(view,size,0);
@@ -341,12 +344,24 @@ internal sealed class IsobarLayer:IDisposable{
                 Add(Left(),Bottom());
                 break;
             case 5:
-                Add(Left(),Top());
-                Add(Right(),Bottom());
+                //左上と右下が高い(鞍点)。4 隅の平均がレベル以上なら高い角がつながるので、低い角(右上・左下)を孤立させる
+                if((v00+v10+v01+v11)/4>=level){
+                    Add(Top(),Right());
+                    Add(Left(),Bottom());
+                }else{
+                    Add(Left(),Top());
+                    Add(Right(),Bottom());
+                }
                 break;
             default:
-                Add(Top(),Right());
-                Add(Left(),Bottom());
+                //右上と左下が高い(鞍点)。同じく平均で決める
+                if((v00+v10+v01+v11)/4>=level){
+                    Add(Left(),Top());
+                    Add(Right(),Bottom());
+                }else{
+                    Add(Top(),Right());
+                    Add(Left(),Bottom());
+                }
                 break;
         }
     }

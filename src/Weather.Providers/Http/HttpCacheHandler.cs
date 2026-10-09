@@ -54,6 +54,11 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
         var now=time.GetUtcNow();
         var entry=await this.TryGetAsync(key,cancellationToken).ConfigureAwait(false);
         if(entry is not null&&HttpFreshness.IsFresh(entry,now,rule.MinimumFreshness)){
+            if(HttpCacheAccess.NeedsUpdate(entry,now)){
+                //最終利用時刻を更新する(容量・未使用期限の削除は最終利用時刻の古い順。1 時間に 1 回まで)
+                entry=entry with{LastAccessedAt=now};
+                await this.TrySetAsync(entry,cancellationToken).ConfigureAwait(false);
+            }
             return CreateResponse(request,entry,"hit");
         }
         if(entry is not null){
@@ -85,7 +90,15 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
             return CreateResponse(request,entry!,"stale");
         }
         if(response.StatusCode is HttpStatusCode.OK or HttpStatusCode.PartialContent&&HttpFreshness.IsStorable(response)){
-            var body=await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+            byte[] body;
+            try{
+                body=await this.ReadBodyWithTimeoutAsync(response,cancellationToken).ConfigureAwait(false);
+            }catch(Exception ex) when((ex is HttpRequestException or TimeoutException)&&HttpFreshness.CanServeStale(entry,now,rule.MaxStale)){
+                //ヘッダーの後、本文の途中で切れた / 止まった場合も、通信失敗と同じく古いエントリを返す
+                LogServingStale(logger,request.RequestUri!,ex.GetType().Name);
+                response.Dispose();
+                return CreateResponse(request,entry!,"stale");
+            }
             var stored=HttpFreshness.CreateEntry(key,response,body,now);
             response.Dispose();
             await this.TrySetAsync(stored,cancellationToken).ConfigureAwait(false);
@@ -104,6 +117,17 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
         }
     }
 
+    /// <summary>本文の読み込みにも、ヘッダー受信と同じタイムアウトを適用する(CacheAndRouting.md「構成」: タイムアウトもここで扱う)。</summary>
+    private async Task<byte[]> ReadBodyWithTimeoutAsync(HttpResponseMessage response,CancellationToken cancellationToken){
+        using var timeout=new CancellationTokenSource(options.Timeout,time);
+        using var linked=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,timeout.Token);
+        try{
+            return await response.Content.ReadAsByteArrayAsync(linked.Token).ConfigureAwait(false);
+        }catch(OperationCanceledException ex) when(!cancellationToken.IsCancellationRequested&&timeout.IsCancellationRequested){
+            throw new TimeoutException($"本文の読み込みがタイムアウトしました: {response.RequestMessage?.RequestUri}",ex);
+        }
+    }
+
     private async ValueTask<HttpCacheEntry?> TryGetAsync(string key,CancellationToken cancellationToken){
         try{
             return await store.GetAsync(key,cancellationToken).ConfigureAwait(false);
@@ -116,8 +140,8 @@ public sealed partial class HttpCacheHandler(IHttpCacheStore store,HttpCachePoli
     private async ValueTask TrySetAsync(HttpCacheEntry entry,CancellationToken cancellationToken){
         try{
             await store.SetAsync(entry,cancellationToken).ConfigureAwait(false);
-        }catch(IOException ex){
-            //キャッシュの書き込み失敗は取得結果に影響させない(記録は残す)
+        }catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){
+            //キャッシュの書き込み失敗は取得結果に影響させない(記録は残す。Windows では置き換えの拒否が UnauthorizedAccessException で届く)
             LogStoreFailure(logger,entry.Key,ex);
         }
     }

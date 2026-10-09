@@ -1,0 +1,16 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.JmaProvider.GetAlertsAsync_UnknownCode (42ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  Assert.Single() Failure: The collection was empty
+    at Weather.Providers.Tests.JmaProvider.GetAlertsAsync_UnknownCode() in /home/user/Weather/tests/Weather.Providers.Tests/JmaProvider.cs:150
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (4s 308ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 49
+  failed: 1
+  succeeded: 48
+  skipped: 0
+  duration: 4s 775ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

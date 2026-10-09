@@ -146,6 +146,13 @@ internal sealed class InProcessHandler(Server.WeatherApi api):HttpMessageHandler
     }
 }
 
+/// <summary>決まった JSON を 200 で返す(サーバーの誤った応答の再現用)。</summary>
+internal sealed class FixedJsonHandler(string json):HttpMessageHandler{
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken cancellationToken){
+        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent(json,Encoding.UTF8,"application/json")});
+    }
+}
+
 internal sealed class RemoteHarness{
     public FakeWeatherService Server{get;}=new();
     public InProcessHandler Handler{get;}
@@ -170,6 +177,13 @@ public class ContractMapper{
             Assert.Equal(original.Issues,restored.Forecast.Issues);
             Assert.Equal(original.Daily[0].TemperatureSource,restored.Forecast.Daily[0].TemperatureSource);
             Assert.Equal(2,restored.Forecast.Daily[0].Parts.Count);
+        }
+        {
+            //日本周辺で気象庁の区域から遠い地点(OutOfCoverage)の距離は無限大。直列化で失敗せず、往復で値が保たれる
+            var location=Sample.Tokyo with{JmaArea=new JmaAreaMatch(JmaAreaMatchKind.OutOfCoverage,null,double.PositiveInfinity)};
+            var json=RemoteJson.Serialize(new ResolveResponse(Contracts.ContractMapper.ToDto(location),Availability.NotSupported,false,[]));
+            var restored=Contracts.ContractMapper.ToModel(RemoteJson.Deserialize<ResolveResponse>(json).Location);
+            Assert.Equal(location,restored);
         }
         {
             //出典は表に 1 回だけ載せる(8 区間 + 日別で出典は 2 種類)
@@ -281,12 +295,57 @@ public class RemoteWeatherService{
             Assert.Equal(ProviderId.Jma,ex.Provider);
         }
         {
+            //方針 5: 日本域の予報に MET の出典を含む応答はクライアントで拒否し、WeatherProviderException(InvalidResponse)にする
+            var dto=Contracts.ContractMapper.ToDto(new ForecastResult(Availability.Available,Sample.JmaForecast()));
+            var met=Contracts.ContractMapper.ToDto(Sample.Source(ProviderId.MetNorway));
+            var broken=dto with{Forecast=dto.Forecast! with{Sources=[met,..dto.Forecast.Sources.Skip(1)]}};
+            var client=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(RemoteJson.Serialize(broken))){BaseAddress=new Uri("https://example.test/api/")});
+            var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await client.GetForecastAsync(Sample.Tokyo,ct));
+            Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
+        }
+        {
+            //範囲外の座標を含む地点の解決・観測所の応答も InvalidResponse
+            var station=new StationDto("44132",ProviderId.Jma,"東京",new GeoPointDto(95,139.75),25);
+            var client=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(RemoteJson.Serialize(new StationsResponse([station])))){BaseAddress=new Uri("https://example.test/api/")});
+            var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await client.FindStationsAsync(Sample.Tokyo,3,ct));
+            Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
+            var bad=new ResolveResponse(Contracts.ContractMapper.ToDto(Sample.Tokyo) with{Point=new GeoPointDto(95,139.75)},Availability.Available,true,[]);
+            var resolver=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(RemoteJson.Serialize(bad))){BaseAddress=new Uri("https://example.test/api/")});
+            var ex2=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await resolver.ResolveAsync(new GeoPoint(35.69,139.75),ct));
+            Assert.Equal(ProviderFailure.InvalidResponse,ex2.Failure);
+        }
+        {
             //サーバーに届かないときは Network / Timeout
             var h=new RemoteHarness();
             h.Handler.Failure=new HttpRequestException("down");
             Assert.Equal(ProviderFailure.Network,(await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await h.Client.GetForecastAsync(Sample.Oslo,ct))).Failure);
             h.Handler.Failure=new TaskCanceledException("timeout");
             Assert.Equal(ProviderFailure.Timeout,(await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await h.Client.GetForecastAsync(Sample.Oslo,ct))).Failure);
+        }
+    }
+
+    [Fact,Trait("Category","Unit")]public async Task InvalidResponses(){
+        //サーバーの応答の JSON の 1 か所を壊す(固定シード)。どう壊れていても WeatherProviderException(InvalidResponse)以外の例外を漏らさない
+        var ct=TestContext.Current.CancellationToken;
+        var ops=new List<(string Name,string Json,Func<Remote.RemoteWeatherService,Task> Call)>{
+            ("forecast",RemoteJson.Serialize(Contracts.ContractMapper.ToDto(new ForecastResult(Availability.Available,Sample.JmaForecast()))),async c=>await c.GetForecastAsync(Sample.Tokyo,ct)),
+            ("alerts",RemoteJson.Serialize(Contracts.ContractMapper.ToDto(new AlertResult(Availability.Available,Sample.JmaAlerts()))),async c=>await c.GetAlertsAsync(Sample.Tokyo,ct)),
+            ("resolve",RemoteJson.Serialize(new ResolveResponse(Contracts.ContractMapper.ToDto(Sample.Tokyo),Availability.Available,true,[new RetentionDto(ProviderId.Jma,10)])),async c=>await c.ResolveAsync(new GeoPoint(35.69,139.75),ct)),
+            ("stations",RemoteJson.Serialize(new StationsResponse([new StationDto("44132",ProviderId.Jma,"東京",new GeoPointDto(35.69,139.75),25)])),async c=>await c.FindStationsAsync(Sample.Tokyo,3,ct)),
+            ("observations",RemoteJson.Serialize(Contracts.ContractMapper.ToDto(Sample.Observations())),async c=>await c.GetObservationsAsync(Sample.Station,Sample.Now.AddDays(-1),Sample.Now,ct)),
+        };
+        foreach(var (name,json,call) in ops){
+            for(var i=0;i<200;i++){
+                var mutated=JsonMutator.Mutate(json,new Random(HashCode.Combine(name,i)));
+                var client=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(mutated)){BaseAddress=new Uri("https://example.test/api/")});
+                try{
+                    await call(client);
+                }catch(WeatherProviderException ex){
+                    Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
+                }catch(Exception ex){
+                    Assert.Fail($"{name} #{i}: {ex.GetType().Name} が漏れた: {ex.Message}\n{mutated}");
+                }
+            }
         }
     }
 

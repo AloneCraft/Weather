@@ -1,0 +1,70 @@
+diff --git a/src/Weather.Providers/Gfs/GfsProvider.cs b/src/Weather.Providers/Gfs/GfsProvider.cs
+index 0d9a3af..aa0c818 100644
+--- a/src/Weather.Providers/Gfs/GfsProvider.cs
++++ b/src/Weather.Providers/Gfs/GfsProvider.cs
+@@ -121,6 +121,11 @@ public sealed partial class GfsProvider(IHttpClientFactory httpClientFactory,IJa
+         var uri=this.FileUri(cycle,forecastHour);
+         var fetch=await ProviderHttp.GetAsync(client,ProviderId.Gfs,uri,time,cancellationToken,(entry.Offset,entry.End)).ConfigureAwait(false);
+         var message=ProviderHttp.Map(ProviderId.Gfs,uri,()=>Grib2Decoder.Decode(fetch.Body));
++        var expected=ExpectedParameter(element);
++        if((message.Discipline,message.Category,message.Number)!=expected){
++            //Range を無視した応答や索引のずれで別の要素が返ったとき、誤った物理量を地図に出さない
++            throw new WeatherProviderException(ProviderId.Gfs,ProviderFailure.InvalidResponse,$"GFS の応答が要求した要素 {element} ではありません: 分野 {message.Discipline} カテゴリ {message.Category} 番号 {message.Number}(期待 {expected})。");
++        }
+         var g=message.Grid;
+         var geometry=new GridGeometry(g.Ni,g.Nj,Math.Max(g.La1,g.La2),g.Lo1,Math.Abs(g.Dj),Math.Abs(g.Di));
+         var values=message.Values;
+@@ -140,6 +145,24 @@ public sealed partial class GfsProvider(IHttpClientFactory httpClientFactory,IJa
+         return new GridField(geometry,values,quantity,cycle.AddHours(forecastHour),cycle,source);
+     }
+ 
++    /// <summary>GRIB2 の (分野, カテゴリ, 番号)。0.0.0 気温、0.1.7 降水強度、0.2.2/0.2.3 風の U/V、0.3.1 海面気圧、0.6.1 雲量。</summary>
++    private static (int Discipline,int Category,int Number) ExpectedParameter(GfsElement element){
++        switch(element){
++            case GfsElement.WindU:
++                return (0,2,2);
++            case GfsElement.WindV:
++                return (0,2,3);
++            case GfsElement.Temperature:
++                return (0,0,0);
++            case GfsElement.PrecipitationRate:
++                return (0,1,7);
++            case GfsElement.CloudCover:
++                return (0,6,1);
++            default:
++                return (0,3,1);
++        }
++    }
++
+     public static LicenseInfo License{get;}=new("Public domain (U.S. Government / NOAA)",new Uri("https://www.weather.gov/disclaimer"));
+ 
+     private async ValueTask<(IReadOnlyList<GfsIndexEntry> Entries,FetchResult Fetch)> GetIndexAsync(DateTimeOffset cycle,int forecastHour,CancellationToken cancellationToken){
+diff --git a/tests/Weather.Providers.Tests/GfsProvider.cs b/tests/Weather.Providers.Tests/GfsProvider.cs
+index f32d8a2..b7699eb 100644
+--- a/tests/Weather.Providers.Tests/GfsProvider.cs
++++ b/tests/Weather.Providers.Tests/GfsProvider.cs
+@@ -36,6 +36,24 @@ public class GfsProvider{
+         Assert.Equal(Cycle.AddHours(120),times[^1]);
+     }
+ 
++    [Fact,Trait("Category","Unit")]public async Task GetFieldAsync_WrongMessage(){
++        //Range を無視して全ファイルを 200 で返す応答は、先頭のメッセージ(気温)が要求した要素(風 V)になってしまう。要素が違えば InvalidResponse
++        var ct=TestContext.Current.CancellationToken;
++        using var host=TestHost.Create(Fixtures.MapGfs());
++        var mapped=host.Handler.Override;
++        var full=File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath(GfsFixture.File));
++        host.Handler.Override=r=>{
++            if(r.Headers.Range is not null&&!r.RequestUri!.AbsolutePath.EndsWith(".idx",StringComparison.Ordinal)){
++                var response=new HttpResponseMessage(System.Net.HttpStatusCode.OK){Content=new ByteArrayContent(full),RequestMessage=r};
++                response.Headers.TryAddWithoutValidation("Cache-Control","max-age=60");
++                return response;
++            }
++            return mapped!(r);
++        };
++        var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await host.Get<Target>().GetFieldAsync(GfsElement.WindV,Cycle,3,ct));
++        Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
++    }
++
+     [Fact,Trait("Category","Unit")]public async Task GetFieldAsync(){
+         var ct=TestContext.Current.CancellationToken;
+         using var host=TestHost.Create(Fixtures.MapGfs());

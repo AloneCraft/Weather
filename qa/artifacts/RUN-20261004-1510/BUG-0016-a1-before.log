@@ -1,0 +1,20 @@
+Running tests from /home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64)
+failed Weather.Presentation.Tests.HistoryViewModel.LoadAsync (61ms)
+  from /home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64)
+  Assert.Equal() Failure: Collections differ
+                                                     ↓ (pos 0)
+  Expected: <generated>                             [1, 2]
+  Actual:   ListSelectIterator<ChartPoint, double?> [null, null]
+                                                     ↑ (pos 0)
+    at Weather.Presentation.Tests.HistoryViewModel.LoadAsync() in /home/user/Weather/tests/Weather.Presentation.Tests/HistoryViewModelTests.cs:101
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Presentation.Tests/bin/Debug/net10.0/Weather.Presentation.Tests.dll (net10.0|x64) failed with 1 error(s) (786ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 43
+  failed: 1
+  succeeded: 42
+  skipped: 0
+  duration: 1s 022ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

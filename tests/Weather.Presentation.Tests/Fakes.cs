@@ -44,6 +44,9 @@ internal sealed class FakeWeatherService:IWeatherService{
     public int AlertCalls{get;private set;}
     public Func<GeoPoint,ResolvedLocation>? Resolver{get;set;}
 
+    /// <summary>設定すると、予報の取得はこの関数(引数は何回目の呼び出しか)の完了を待つ(完了順の制御用)。</summary>
+    public Func<int,Task<ForecastResult>>? ForecastFactory{get;set;}
+
     public ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
         if(this.Resolver is not null){
             return ValueTask.FromResult(this.Resolver(point));
@@ -55,6 +58,9 @@ internal sealed class FakeWeatherService:IWeatherService{
         this.ForecastCalls++;
         if(this.ForecastError is not null){
             throw this.ForecastError;
+        }
+        if(this.ForecastFactory is not null){
+            return new ValueTask<ForecastResult>(this.ForecastFactory(this.ForecastCalls));
         }
         return ValueTask.FromResult(this.Forecast!);
     }

@@ -1,0 +1,81 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.TmpFuzz.FuzzGrib (2m 31s 306ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  実行 24000 回 / 最大割り当て 9600.3 MB (VGRD 先頭 200 バイト内を 7 か所書き換え) / 最長 37757 ms
+   6908x FormatException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 35
+          例: PRMSL 49140 バイトで切り詰め → GRIB メッセージが途中で切れています。
+   1790x FormatException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 53
+          例: PRMSL 先頭 200 バイト内を 3 か所書き換え → 節の長さが不正です: 2883605
+   1074x FormatException | at Weather.Providers.Grib.Grib2Decoder.ReadGrid(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 149
+          例: PRMSL 先頭 200 バイト内の 1 か所を 0/255 → 格子の点数が一致しません: 360×181 と 65279
+    832x FormatException | at Weather.Providers.Grib.Grib2Decoder.BitReader.Read(Int32 count) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 386
+          例: PRMSL 全体でビット反転 1 か所 → データ節が途中で切れています。
+    634x FormatException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 27
+          例: PRMSL 先頭 200 バイト内を 2 か所書き換え → GRIB メッセージではありません。
+    591x FormatException | at Weather.Providers.Grib.Grib2Decoder.UnpackComplex(ReadOnlySpan`1 drs, ReadOnlySpan`1 payload, Single[] output, Boolean spatial) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 227
+          例: PRMSL 全体でビット反転 2 か所 → 群の長さの合計が値の数を超えています。
+    572x ArgumentOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.ReadReferenceTime(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 115
+          例: PRMSL 先頭 200 バイト内を 7 か所書き換え → Hour, Minute, and Second parameters describe an un-representable DateTime.
+    492x FormatException | at Weather.Providers.Grib.Grib2Decoder.UnpackComplex(ReadOnlySpan`1 drs, ReadOnlySpan`1 payload, Single[] output, Boolean spatial) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 249
+          例: PRMSL 先頭 200 バイト内の 1 か所を 0/255 → 復号した値の数 65056 が期待値 65160 と一致しません。
+    224x FormatException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 85
+          例: PRMSL 先頭 200 バイト内の 1 か所を 0/255 → GRIB メッセージに必要な節がありません。
+    206x NotSupportedException | at Weather.Providers.Grib.Grib2Decoder.BitReader.Read(Int32 count) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 379
+          例: PRMSL 先頭 200 バイト内の 1 か所を 0/255 → 2039 ビットの値には対応していません。
+    157x NotSupportedException | at Weather.Providers.Grib.Grib2Decoder.ReadGrid(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 122
+          例: PRMSL 先頭 200 バイト内を 4 か所書き換え → 格子テンプレート 3.41472 には対応していません。
+    151x FormatException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 30
+          例: PRMSL 先頭 200 バイト内を 8 か所書き換え → GRIB の版 193 には対応していません。
+     98x NotSupportedException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 99
+          例: PRMSL 先頭 200 バイト内の 1 か所を 0/255 → データ表現テンプレート 5.65283 には対応していません。
+     82x NotSupportedException | at Weather.Providers.Grib.Grib2Decoder.UnpackComplex(ReadOnlySpan`1 drs, ReadOnlySpan`1 payload, Single[] output, Boolean spatial) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 194
+          例: PRMSL 先頭 200 バイト内を 3 か所書き換え → 空間差分の次数 55(記述子 3 バイト)には対応していません。
+     36x NotSupportedException | at Weather.Providers.Grib.Grib2Decoder.Reorder(Single[] values, Grib2LatLonGrid grid) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 321
+          例: PRMSL 先頭 200 バイト内を 1 か所書き換え → 走査モード 121 には対応していません。
+     34x OverflowException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 89
+          例: PRMSL 先頭 200 バイト内を 4 か所書き換え → Arithmetic operation resulted in an overflow.
+     33x NotSupportedException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 75
+          例: PRMSL 先頭 200 バイト内を 4 か所書き換え → ビットマップの指示 198 には対応していません。
+     25x OverflowException | at Weather.Providers.Grib.Grib2Decoder.UnpackComplex(ReadOnlySpan`1 drs, ReadOnlySpan`1 payload, Single[] output, Boolean spatial) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 202
+          例: PRMSL 先頭 200 バイト内の 1 か所を 0/255 → Arithmetic operation resulted in an overflow.
+     18x IndexOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.Expand(Single[] packed, Int32 points, Boolean hasBitmap, ReadOnlySpan`1 bitmap) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 308
+          例: PRMSL 先頭 200 バイト内の 1 か所を 0/255 → Index was outside the bounds of the array.
+      8x OutOfMemoryException | at Weather.Providers.Grib.Grib2Decoder.UnpackComplex(ReadOnlySpan`1 drs, ReadOnlySpan`1 payload, Single[] output, Boolean spatial) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 202
+          例: TMP 先頭 200 バイト内を 4 か所書き換え → Exception of type 'System.OutOfMemoryException' was thrown.
+      7x ArgumentOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.SignedInt32(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 347
+          例: TMP 先頭 200 バイト内を 5 か所書き換え → Specified argument was out of the range of valid values. (Parameter 'length')
+      5x ArgumentOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.ReadGrid(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 124
+          例: PRMSL 先頭 200 バイト内を 8 か所書き換え → Specified argument was out of the range of valid values.
+      4x OutOfMemoryException | at Weather.Providers.Grib.Grib2Decoder.UnpackComplex(ReadOnlySpan`1 drs, ReadOnlySpan`1 payload, Single[] output, Boolean spatial) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 220
+          例: VGRD 先頭 200 バイト内を 3 か所書き換え → Exception of type 'System.OutOfMemoryException' was thrown.
+      3x OutOfMemoryException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 89
+          例: PRMSL 先頭 200 バイト内を 5 か所書き換え → Exception of type 'System.OutOfMemoryException' was thrown.
+      3x ArgumentOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.ReadGrid(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 120
+          例: TMP 先頭 200 バイト内を 7 か所書き換え → Specified argument was out of the range of valid values. (Parameter 'length')
+      2x ArgumentOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.ReadGrid(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 125
+          例: PRMSL 先頭 200 バイト内を 7 か所書き換え → Specified argument was out of the range of valid values. (Parameter 'length')
+      2x IndexOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.ReadReferenceTime(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 115
+          例: PRMSL 先頭 200 バイト内を 4 か所書き換え → Index was outside the bounds of the array.
+      2x ArgumentOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.ReadReferenceTime(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 114
+          例: UGRD 先頭 200 バイト内を 5 か所書き換え → Specified argument was out of the range of valid values.
+      2x ArgumentOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.ReadGrid(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 119
+          例: VGRD 先頭 200 バイト内を 1 か所書き換え → Specified argument was out of the range of valid values. (Parameter 'length')
+      1x IndexOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 65
+          例: PRMSL 先頭 200 バイト内を 5 か所書き換え → Index was outside the bounds of the array.
+      1x ArgumentOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.Decode(ReadOnlySpan`1 data) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 87
+          例: UGRD 先頭 200 バイト内を 5 か所書き換え → Specified argument was out of the range of valid values.
+      1x ArgumentOutOfRangeException | at Weather.Providers.Grib.Grib2Decoder.ReadGrid(ReadOnlySpan`1 s) in /home/user/Weather/src/Weather.Providers/Grib/Grib2Decoder.cs:line 127
+          例: PRATE 先頭 200 バイト内を 3 か所書き換え → Specified argument was out of the range of valid values. (Parameter 'length')
+    at Weather.Providers.Tests.TmpFuzz.FuzzGrib() in /home/user/Weather/tests/Weather.Providers.Tests/TmpFuzz.cs:64
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (2m 31s 860ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 1
+  failed: 1
+  succeeded: 0
+  skipped: 0
+  duration: 2m 32s 172ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

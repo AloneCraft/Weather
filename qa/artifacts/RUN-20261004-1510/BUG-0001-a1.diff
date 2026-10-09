@@ -1,0 +1,31 @@
+diff --git a/src/Weather.Remote/Contracts/RemoteJson.cs b/src/Weather.Remote/Contracts/RemoteJson.cs
+index 2b0150c..a6ac22c 100644
+--- a/src/Weather.Remote/Contracts/RemoteJson.cs
++++ b/src/Weather.Remote/Contracts/RemoteJson.cs
+@@ -21,6 +21,8 @@ public static class RemoteJson{
+ [JsonSourceGenerationOptions(
+     PropertyNamingPolicy=JsonKnownNamingPolicy.CamelCase,
+     UseStringEnumConverter=true,
++    //OutOfCoverage の距離は無限大(区域が 20 km 以内にない)。JSON の数値には書けないので "Infinity" の文字列で往復する
++    NumberHandling=JsonNumberHandling.AllowNamedFloatingPointLiterals,
+     DefaultIgnoreCondition=JsonIgnoreCondition.WhenWritingNull)]
+ [JsonSerializable(typeof(ResolveResponse))]
+ [JsonSerializable(typeof(ForecastResponse))]
+diff --git a/tests/Weather.Remote.Tests/RemoteTests.cs b/tests/Weather.Remote.Tests/RemoteTests.cs
+index e85fc8d..eacde47 100644
+--- a/tests/Weather.Remote.Tests/RemoteTests.cs
++++ b/tests/Weather.Remote.Tests/RemoteTests.cs
+@@ -171,6 +171,13 @@ public class ContractMapper{
+             Assert.Equal(original.Daily[0].TemperatureSource,restored.Forecast.Daily[0].TemperatureSource);
+             Assert.Equal(2,restored.Forecast.Daily[0].Parts.Count);
+         }
++        {
++            //日本周辺で気象庁の区域から遠い地点(OutOfCoverage)の距離は無限大。直列化で失敗せず、往復で値が保たれる
++            var location=Sample.Tokyo with{JmaArea=new JmaAreaMatch(JmaAreaMatchKind.OutOfCoverage,null,double.PositiveInfinity)};
++            var json=RemoteJson.Serialize(new ResolveResponse(Contracts.ContractMapper.ToDto(location),Availability.NotSupported,false,[]));
++            var restored=Contracts.ContractMapper.ToModel(RemoteJson.Deserialize<ResolveResponse>(json).Location);
++            Assert.Equal(location,restored);
++        }
+         {
+             //出典は表に 1 回だけ載せる(8 区間 + 日別で出典は 2 種類)
+             var dto=Contracts.ContractMapper.ToDto(Sample.JmaForecast());

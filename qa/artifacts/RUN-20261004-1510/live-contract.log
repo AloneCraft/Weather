@@ -1,0 +1,326 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+failed Weather.Providers.LiveTests.LiveContractTests.GetAlertsAsync(lat: 45.415199999999999, lon: 141.67310000000001) (592ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://www.jma.go.jp/bosai/warning/data/r8/011000.json
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.Jma.JmaProvider.GetAlertsAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Jma/JmaProvider.cs:68
+    at Weather.Providers.WeatherService.GetAlertsAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/WeatherService.cs:39
+    at Weather.Providers.LiveTests.LiveContractTests.GetAlertsAsync(Double lat, Double lon) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:53
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+failed Weather.Providers.LiveTests.LiveContractTests.GetAlertsAsync(lat: 35.694000000000003, lon: 139.75360000000001) (349ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://www.jma.go.jp/bosai/warning/data/r8/130000.json
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.Jma.JmaProvider.GetAlertsAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Jma/JmaProvider.cs:68
+    at Weather.Providers.WeatherService.GetAlertsAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/WeatherService.cs:39
+    at Weather.Providers.LiveTests.LiveContractTests.GetAlertsAsync(Double lat, Double lon) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:53
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+failed Weather.Providers.LiveTests.LiveContractTests.GetAlertsAsync(lat: 40.712800000000001, lon: -74.006) (989ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://api.weather.gov/alerts/active?point=40.71,-74.01
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.Nws.NwsProvider.GetAlertsAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:73
+    at Weather.Providers.WeatherService.GetAlertsAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/WeatherService.cs:39
+    at Weather.Providers.LiveTests.LiveContractTests.GetAlertsAsync(Double lat, Double lon) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:53
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+failed Weather.Providers.LiveTests.LiveContractTests.GetFrameAsync(layer: Clouds) (751ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.InvalidOperationException : Nullable object must have a value.
+    at System.Nullable`1.get_Value()
+    at Weather.Providers.LiveTests.LiveContractTests.GetFrameAsync(FieldLayer layer) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:94
+    --- End of stack trace from previous location ---
+failed Weather.Providers.LiveTests.LiveContractTests.GetFrameAsync(layer: Precipitation) (594ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.InvalidOperationException : Nullable object must have a value.
+    at System.Nullable`1.get_Value()
+    at Weather.Providers.LiveTests.LiveContractTests.GetFrameAsync(FieldLayer layer) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:94
+    --- End of stack trace from previous location ---
+failed Weather.Providers.LiveTests.LiveContractTests.GetFrameAsync(layer: Temperature) (502ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.InvalidOperationException : Nullable object must have a value.
+    at System.Nullable`1.get_Value()
+    at Weather.Providers.LiveTests.LiveContractTests.GetFrameAsync(FieldLayer layer) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:94
+    --- End of stack trace from previous location ---
+failed Weather.Providers.LiveTests.LiveContractTests.GetFrameAsync(layer: Wind) (457ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.InvalidOperationException : Nullable object must have a value.
+    at System.Nullable`1.get_Value()
+    at Weather.Providers.LiveTests.LiveContractTests.GetFrameAsync(FieldLayer layer) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:94
+    --- End of stack trace from previous location ---
+failed Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(lat: 43.062100000000001, lon: 141.3544, expected: Jma) (396ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://www.jma.go.jp/bosai/forecast/data/forecast/016000.json
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.Jma.JmaProvider.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Jma/JmaProvider.cs:36
+    at Weather.Providers.WeatherService.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/WeatherService.cs:21
+    at Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(Double lat, Double lon, ProviderId expected) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:35
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+failed Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(lat: 51.507399999999997, lon: -0.1278, expected: MetNorway) (873ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=51.51&lon=-0.13
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.MetNorway.MetNorwayProvider.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/MetNorway/MetNorway.cs:324
+    at Weather.Providers.WeatherService.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/WeatherService.cs:21
+    at Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(Double lat, Double lon, ProviderId expected) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:35
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+failed Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(lat: 35.694000000000003, lon: 139.75360000000001, expected: Jma) (344ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://www.jma.go.jp/bosai/forecast/data/forecast/130000.json
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.Jma.JmaProvider.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Jma/JmaProvider.cs:36
+    at Weather.Providers.WeatherService.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/WeatherService.cs:21
+    at Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(Double lat, Double lon, ProviderId expected) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:35
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+failed Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(lat: 21.306899999999999, lon: -157.85830000000001, expected: Nws) (709ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://api.weather.gov/points/21.31,-157.86
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.Nws.NwsProvider.GetPointAsync(HttpClient client, GeoPoint location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:112
+    at Weather.Providers.Nws.NwsProvider.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:21
+    at Weather.Providers.WeatherService.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/WeatherService.cs:21
+    at Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(Double lat, Double lon, ProviderId expected) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:35
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+failed Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(lat: -33.8688, lon: 151.20930000000001, expected: MetNorway) (607ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=-33.87&lon=151.21
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.MetNorway.MetNorwayProvider.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/MetNorway/MetNorway.cs:324
+    at Weather.Providers.WeatherService.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/WeatherService.cs:21
+    at Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(Double lat, Double lon, ProviderId expected) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:35
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+failed Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(lat: 40.712800000000001, lon: -74.006, expected: Nws) (559ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://api.weather.gov/points/40.71,-74.01
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.Nws.NwsProvider.GetPointAsync(HttpClient client, GeoPoint location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:112
+    at Weather.Providers.Nws.NwsProvider.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:21
+    at Weather.Providers.WeatherService.GetForecastAsync(ResolvedLocation location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/WeatherService.cs:21
+    at Weather.Providers.LiveTests.LiveContractTests.GetForecastAsync(Double lat, Double lon, ProviderId expected) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:35
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+failed Weather.Providers.LiveTests.LiveContractTests.GetAvailabilityAsync (803ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Assert.NotEmpty() Failure: Collection was empty
+    at Weather.Providers.LiveTests.LiveContractTests.GetAvailabilityAsync() in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:78
+    --- End of stack trace from previous location ---
+failed Weather.Providers.LiveTests.LiveContractTests.GetObservationsAsync(lat: 38.890000000000001, lon: -77.040000000000006) (400ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://api.weather.gov/points/38.89,-77.04
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.Nws.NwsProvider.GetPointAsync(HttpClient client, GeoPoint location, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:112
+    at Weather.Providers.Nws.NwsProvider.FindStationsAsync(ResolvedLocation location, Int32 maxCount, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Nws/NwsProvider.cs:81
+    at Weather.Providers.WeatherService.FindStationsAsync(ResolvedLocation location, Int32 maxCount, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/WeatherService.cs:63
+    at Weather.Providers.LiveTests.LiveContractTests.GetObservationsAsync(Double lat, Double lon) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:63
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+failed Weather.Providers.LiveTests.LiveContractTests.GetObservationsAsync(lat: 35.694000000000003, lon: 139.75360000000001) (332ms)
+  from /home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: Weather.Core.WeatherProviderException : 通信エラー: https://www.jma.go.jp/bosai/amedas/data/latest_time.txt
+  ---- System.Net.Http.HttpRequestException : The proxy tunnel request to proxy 'http://127.0.0.1:35895/' failed with status code '403'."
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:23
+    at Weather.Providers.Jma.JmaProvider.GetObservationsAsync(ObservationStation station, DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Jma/JmaProvider.cs:96
+    at Weather.Providers.LiveTests.LiveContractTests.GetObservationsAsync(Double lat, Double lon) in /home/user/Weather/tests/Weather.Providers.LiveTests/LiveContractTests.cs:66
+    --- End of stack trace from previous location ---
+    ----- Inner Stack Trace -----
+    at System.Net.Http.HttpConnectionPool.EstablishProxyTunnelAsync(Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+    at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+    at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+    at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+    at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at Weather.Providers.Http.HttpCacheHandler.SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:101
+    at Weather.Providers.Http.HttpCacheHandler.SendCoreAsync(HttpRequestMessage request, String key, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:70
+    at Weather.Providers.Http.HttpCacheHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in /home/user/Weather/src/Weather.Providers/Http/HttpCacheHandler.cs:46
+    at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+    at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+    at Weather.Providers.Http.ProviderHttp.GetAsync(HttpClient client, ProviderId provider, Uri uri, TimeProvider time, CancellationToken cancellationToken, Nullable`1 range) in /home/user/Weather/src/Weather.Providers/Http/ProviderHttp.cs:19
+/home/user/Weather/tests/Weather.Providers.LiveTests/bin/Debug/net10.0/Weather.Providers.LiveTests.dll (net10.0|x64) failed with 16 error(s) (10s 027ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 16
+  failed: 16
+  succeeded: 0
+  skipped: 0
+  duration: 10s 355ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

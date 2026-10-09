@@ -65,6 +65,12 @@ public sealed class MapRenderer:IDisposable{
         set=>this.tiles.Loader=value;
     }
 
+    /// <summary>読み込みに失敗したタイルを再び要求するまでの待ち時間(既定 30 秒)。</summary>
+    internal TimeSpan TileRetryAfter{
+        get=>this.tiles.RetryAfter;
+        set=>this.tiles.RetryAfter=value;
+    }
+
     /// <summary>表示するコマ。次の描画で切り替える。</summary>
     public MapFrame? Frame{
         get=>Volatile.Read(ref this.pending)??this.current;
@@ -98,8 +104,8 @@ public sealed class MapRenderer:IDisposable{
                 opacity=1f;
             }
             this.field.Draw(canvas,view,size,opacity);
-            if(frame.Tiles.Count>0){
-                //気象庁のタイルは日本周辺だけに描く(GFS との継ぎ目をそろえる)
+            if(frame.Tiles.Count>0&&this.overlay.CanClip){
+                //気象庁のタイルは日本周辺だけに描く(GFS との継ぎ目をそろえる)。日本周辺に限れないとき(シェーダーが使えない)は描かない(方針 5)
                 canvas.SaveLayer(this.layerPaint);
                 foreach(var layer in frame.Tiles){
                     this.tiles.Draw(canvas,view,size,layer);

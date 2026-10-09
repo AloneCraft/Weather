@@ -1,0 +1,30 @@
+Running tests from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+failed Weather.Geo.Tests.TextNormalizer.Normalize (26ms)
+  from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.ArgumentException : String contains invalid Unicode code points. (Parameter 'strInput')
+    at System.Globalization.Normalization.ValidateArguments(ReadOnlySpan`1 strInput, NormalizationForm normalizationForm, String paramName)
+    at System.Globalization.Normalization.IcuNormalize(String strInput, NormalizationForm normalizationForm)
+    at Weather.Geo.TextNormalizer.Normalize(String text) in /home/user/Weather/src/Weather.Geo/PlaceSearch.cs:15
+    at Weather.Geo.Tests.TextNormalizer.Normalize() in /home/user/Weather/tests/Weather.Geo.Tests/GeoTests.cs:126
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+failed Weather.Geo.Tests.PlaceSearch.Search_ (781ms)
+  from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.ArgumentException : String contains invalid Unicode code points. (Parameter 'strInput')
+    at System.Globalization.Normalization.ValidateArguments(ReadOnlySpan`1 strInput, NormalizationForm normalizationForm, String paramName)
+    at System.Globalization.Normalization.IcuNormalize(String strInput, NormalizationForm normalizationForm)
+    at Weather.Geo.TextNormalizer.Normalize(String text) in /home/user/Weather/src/Weather.Geo/PlaceSearch.cs:15
+    at Weather.Geo.PlaceSearch.Search(String query, Int32 maxCount) in /home/user/Weather/src/Weather.Geo/PlaceSearch.cs:62
+    at Weather.Geo.Tests.PlaceSearch.Search_() in /home/user/Weather/tests/Weather.Geo.Tests/GeoTests.cs:104
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64) failed with 2 error(s) (7s 724ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 10
+  failed: 2
+  succeeded: 8
+  skipped: 0
+  duration: 7s 983ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

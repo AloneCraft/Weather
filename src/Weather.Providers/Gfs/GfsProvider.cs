@@ -121,6 +121,11 @@ public sealed partial class GfsProvider(IHttpClientFactory httpClientFactory,IJa
         var uri=this.FileUri(cycle,forecastHour);
         var fetch=await ProviderHttp.GetAsync(client,ProviderId.Gfs,uri,time,cancellationToken,(entry.Offset,entry.End)).ConfigureAwait(false);
         var message=ProviderHttp.Map(ProviderId.Gfs,uri,()=>Grib2Decoder.Decode(fetch.Body));
+        var expected=ExpectedParameter(element);
+        if((message.Discipline,message.Category,message.Number)!=expected){
+            //Range を無視した応答や索引のずれで別の要素が返ったとき、誤った物理量を地図に出さない
+            throw new WeatherProviderException(ProviderId.Gfs,ProviderFailure.InvalidResponse,$"GFS の応答が要求した要素 {element} ではありません: 分野 {message.Discipline} カテゴリ {message.Category} 番号 {message.Number}(期待 {expected})。");
+        }
         var g=message.Grid;
         var geometry=new GridGeometry(g.Ni,g.Nj,Math.Max(g.La1,g.La2),g.Lo1,Math.Abs(g.Dj),Math.Abs(g.Di));
         var values=message.Values;
@@ -138,6 +143,24 @@ public sealed partial class GfsProvider(IHttpClientFactory httpClientFactory,IJa
             IsStale=fetch.IsStale,
         };
         return new GridField(geometry,values,quantity,cycle.AddHours(forecastHour),cycle,source);
+    }
+
+    /// <summary>GRIB2 の (分野, カテゴリ, 番号)。0.0.0 気温、0.1.7 降水強度、0.2.2/0.2.3 風の U/V、0.3.1 海面気圧、0.6.1 雲量。</summary>
+    private static (int Discipline,int Category,int Number) ExpectedParameter(GfsElement element){
+        switch(element){
+            case GfsElement.WindU:
+                return (0,2,2);
+            case GfsElement.WindV:
+                return (0,2,3);
+            case GfsElement.Temperature:
+                return (0,0,0);
+            case GfsElement.PrecipitationRate:
+                return (0,1,7);
+            case GfsElement.CloudCover:
+                return (0,6,1);
+            default:
+                return (0,3,1);
+        }
     }
 
     public static LicenseInfo License{get;}=new("Public domain (U.S. Government / NOAA)",new Uri("https://www.weather.gov/disclaimer"));

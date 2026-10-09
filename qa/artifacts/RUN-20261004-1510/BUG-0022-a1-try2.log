@@ -1,0 +1,17 @@
+Running tests from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+failed Weather.Remote.Tests.TmpFuzz.Fuzz (1s 065ms)
+  from /home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64)
+  実行 3000 回 / WeatherProviderException 以外 0 種類
+  
+    at Weather.Remote.Tests.TmpFuzz.Fuzz() in /home/user/Weather/tests/Weather.Remote.Tests/TmpFuzz.cs:92
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Remote.Tests/bin/Debug/net10.0/Weather.Remote.Tests.dll (net10.0|x64) failed with 1 error(s) (1s 541ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 7
+  failed: 1
+  succeeded: 6
+  skipped: 0
+  duration: 1s 829ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

@@ -1,0 +1,27 @@
+Running tests from /home/user/Weather/tests/Weather.Core.Tests/bin/Debug/net10.0/Weather.Core.Tests.dll (net10.0|x64)
+failed Weather.Core.Tests.GridGeometry.TryGetPosition (4ms)
+  from /home/user/Weather/tests/Weather.Core.Tests/bin/Debug/net10.0/Weather.Core.Tests.dll (net10.0|x64)
+  Assert.InRange() Failure: Value not in range
+  Range:  (0 - 719.999999)
+  Actual: 720
+    at Weather.Core.Tests.GridGeometry.TryGetPosition() in /home/user/Weather/tests/Weather.Core.Tests/FieldTests.cs:18
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+failed Weather.Core.Tests.GridField.Sample (1ms)
+  from /home/user/Weather/tests/Weather.Core.Tests/bin/Debug/net10.0/Weather.Core.Tests.dll (net10.0|x64)
+  Xunit.MicrosoftTestingPlatform.XunitException: System.IndexOutOfRangeException : Index was outside the bounds of the array.
+    at Weather.Core.GridField.get_Item(Int32 column, Int32 row) in /home/user/Weather/src/Weather.Core/Fields/GridField.cs:107
+    at Weather.Core.GridField.Sample(Double latitude, Double longitude) in /home/user/Weather/src/Weather.Core/Fields/GridField.cs:130
+    at Weather.Core.Tests.GridField.Sample() in /home/user/Weather/tests/Weather.Core.Tests/FieldTests.cs:64
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Core.Tests/bin/Debug/net10.0/Weather.Core.Tests.dll (net10.0|x64) failed with 2 error(s) (575ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 14
+  failed: 2
+  succeeded: 12
+  skipped: 0
+  duration: 843ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

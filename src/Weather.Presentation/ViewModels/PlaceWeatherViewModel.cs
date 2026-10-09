@@ -24,6 +24,7 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
     private readonly INavigator navigator;
     private readonly IAppLifecycle lifecycle;
     private readonly TimeProvider time;
+    private int refreshVersion;
     private readonly SceneConverter converter=new();
 
     public PlaceWeatherViewModel(PlaceData data,IWeatherService weather,WeatherSession session,AppSettings settings,INavigator navigator,IAppLifecycle lifecycle,TimeProvider time){
@@ -73,6 +74,9 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
         if(!this.lifecycle.IsForeground){
             return;
         }
+        //更新が重なる(定期更新・地図からの更新・手動更新)と、先に始めた更新が後で終わることがある。最後に始めた更新の結果だけを反映する
+        var version=Interlocked.Increment(ref this.refreshVersion);
+        bool IsLatest()=>version==Volatile.Read(ref this.refreshVersion);
         this.IsBusy=true;
         if(this.Data.Forecast is null){
             this.State=PlaceState.Loading;
@@ -83,13 +87,23 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
             this.AreaNote=AreaNoteFor(location);
             this.ObservationsAvailable=this.weather.GetObservationAvailability(location)==Availability.Available;
             var forecastTask=this.weather.GetForecastAsync(location,cancellationToken).AsTask();
-            var alertsTask=this.LoadAlertsAsync(location,cancellationToken);
+            var alertsTask=this.LoadAlertsAsync(location,IsLatest,cancellationToken);
             var forecast=await forecastTask;
+            if(!IsLatest()){
+                await alertsTask;
+                return;
+            }
             this.Data.Forecast=forecast;
             await alertsTask;
+            if(!IsLatest()){
+                return;
+            }
             this.LastUpdated=this.time.GetUtcNow();
             this.Apply();
         }catch(WeatherProviderException ex){
+            if(!IsLatest()){
+                return;
+            }
             this.StatusMessage=FailureMessage(ex.Failure);
             if(this.Data.Forecast?.Forecast is not null){
                 this.State=PlaceState.Stale;
@@ -98,7 +112,9 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
                 this.Scene=this.converter.ConvertSkyOnly(this.Data.Point,this.time.GetUtcNow(),SceneOriginKind.None);
             }
         }finally{
-            this.IsBusy=false;
+            if(IsLatest()){
+                this.IsBusy=false;
+            }
             this.session.NotifyUpdated(this.Data.PlaceId);
         }
     }
@@ -152,15 +168,23 @@ public sealed partial class PlaceWeatherViewModel:ObservableObject{
         return new Dictionary<string,string>{["place"]=this.Data.PlaceId};
     }
 
-    private async Task LoadAlertsAsync(ResolvedLocation location,CancellationToken cancellationToken){
+    private async Task LoadAlertsAsync(ResolvedLocation location,Func<bool> isLatest,CancellationToken cancellationToken){
+        AlertResult alerts;
         try{
-            this.Data.Alerts=await this.weather.GetAlertsAsync(location,cancellationToken);
+            alerts=await this.weather.GetAlertsAsync(location,cancellationToken);
         }catch(WeatherProviderException){
+            if(!isLatest()){
+                return;
+            }
             this.Data.Alerts=null;
             this.AlertSummary=Strings.AlertsFetchFailed;
             this.HasActiveAlerts=false;
             return;
         }
+        if(!isLatest()){
+            return;
+        }
+        this.Data.Alerts=alerts;
         this.ApplyAlerts();
     }
 

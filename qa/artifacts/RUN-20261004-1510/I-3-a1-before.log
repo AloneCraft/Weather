@@ -1,0 +1,18 @@
+Running tests from /home/user/Weather/tests/Weather.Infrastructure.Tests/bin/Debug/net10.0/Weather.Infrastructure.Tests.dll (net10.0|x64)
+failed Weather.Infrastructure.Tests.ObservationHistoryService.SyncAsync_LocalDay (41ms)
+  from /home/user/Weather/tests/Weather.Infrastructure.Tests/bin/Debug/net10.0/Weather.Infrastructure.Tests.dll (net10.0|x64)
+  Assert.Equal() Failure: Values differ
+  Expected: 10
+  Actual:   20
+    at Weather.Infrastructure.Tests.ObservationHistoryService.SyncAsync_LocalDay() in /home/user/Weather/tests/Weather.Infrastructure.Tests/InfrastructureTests.cs:272
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Infrastructure.Tests/bin/Debug/net10.0/Weather.Infrastructure.Tests.dll (net10.0|x64) failed with 1 error(s) (2s 115ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 10
+  failed: 1
+  succeeded: 9
+  skipped: 0
+  duration: 2s 566ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

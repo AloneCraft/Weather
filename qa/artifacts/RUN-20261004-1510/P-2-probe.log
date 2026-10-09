@@ -1,0 +1,34 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.TmpP2.Probe (189ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  
+  千代田区 10/05/2026 code=200 pop= rel= tmax=22 tmin=17 tempPoint=東京
+  千代田区 10/06/2026 code=200 pop=40 rel=B tmax=28 tmin=19 tempPoint=東京
+  千代田区 10/07/2026 code=200 pop=40 rel=B tmax=26 tmin=19 tempPoint=東京
+  千代田区 10/08/2026 code=101 pop=20 rel=A tmax=24 tmin=17 tempPoint=東京
+  千代田区 10/09/2026 code=101 pop=20 rel=A tmax=24 tmin=16 tempPoint=東京
+  千代田区 10/10/2026 code=201 pop=30 rel=A tmax=25 tmin=16 tempPoint=東京
+  大島町 10/05/2026 code=200 pop= rel= tmax=22 tmin=19 tempPoint=大島
+  大島町 10/06/2026 code=200 pop=40 rel=B tmax=28 tmin=19 tempPoint=東京
+  大島町 10/07/2026 code=200 pop=40 rel=B tmax=26 tmin=19 tempPoint=東京
+  大島町 10/08/2026 code=101 pop=20 rel=A tmax=24 tmin=17 tempPoint=東京
+  大島町 10/09/2026 code=101 pop=20 rel=A tmax=24 tmin=16 tempPoint=東京
+  大島町 10/10/2026 code=201 pop=30 rel=A tmax=25 tmin=16 tempPoint=東京
+  八丈町 10/05/2026 code=200 pop= rel= tmax=26 tmin=21 tempPoint=八丈島
+  八丈町 10/06/2026 code=200 pop=40 rel=B tmax=26 tmin=22 tempPoint=八丈島
+  八丈町 10/07/2026 code=200 pop=40 rel=B tmax=25 tmin=21 tempPoint=八丈島
+  八丈町 10/08/2026 code=101 pop=20 rel=A tmax=26 tmin=20 tempPoint=八丈島
+  八丈町 10/09/2026 code=101 pop=20 rel=A tmax=25 tmin=20 tempPoint=八丈島
+  八丈町 10/10/2026 code=201 pop=30 rel=A tmax=25 tmin=20 tempPoint=八丈島
+    at Weather.Providers.Tests.TmpP2.Probe() in /home/user/Weather/tests/Weather.Providers.Tests/TmpP2.cs:17
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (692ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 1
+  failed: 1
+  succeeded: 0
+  skipped: 0
+  duration: 962ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

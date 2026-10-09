@@ -32,6 +32,9 @@ public sealed class SceneConverter(SceneTuning tuning){
 
     public SceneTuning Tuning{get;}=tuning;
 
+    /// <summary>「後」(Later)で副天気へ切り替える区間の最小の長さ。これより短い区間は主天気のみ(SceneState.md)。</summary>
+    internal static readonly TimeSpan LaterMinimumDuration=TimeSpan.FromHours(6);
+
     public SceneState Convert(Forecast forecast,DateTimeOffset time){
         ArgumentNullException.ThrowIfNull(forecast);
         var location=forecast.Location;
@@ -87,7 +90,7 @@ public sealed class SceneConverter(SceneTuning tuning){
         if(c.Transition is {} transition&&c.Secondary is {} secondary){
             switch(transition){
                 case ConditionTransition.Later:
-                    if(end-start>=TimeSpan.FromHours(6)&&time>=start+(end-start)/2){
+                    if(end-start>=LaterMinimumDuration&&time>=start+(end-start)/2){
                         primary=secondary;
                     }
                     break;

@@ -6,6 +6,7 @@ namespace Weather.Geo;
 
 /// <summary>埋め込みリソースの地理データと索引。読み込みは初回利用時(遅延)。</summary>
 public sealed class GeoDatabase{
+    private const double KmPerDegree=111;
     private readonly Lazy<IReadOnlyList<JmaAreaRecord>> areas;
     private readonly Lazy<IReadOnlyList<CountryRecord>> countries;
     private readonly Lazy<IReadOnlyList<PlaceRecord>> places;
@@ -80,20 +81,25 @@ public sealed class GeoDatabase{
         return null;
     }
 
-    public PlaceRecord? FindNearestPlace(double lat,double lon,double maxKm){
+    /// <summary>最寄りの都市。country を指定すると、その国の都市だけを候補にする(国境の向こうの都市を名前・タイムゾーンに使わない)。</summary>
+    public PlaceRecord? FindNearestPlace(double lat,double lon,double maxKm,string? country=null){
         var buckets=this.placeBuckets.Value;
-        var range=(int)Math.Ceiling(maxKm/100)+1;
+        var latRange=(int)Math.Ceiling(maxKm/100)+1;
+        var lonRange=LongitudeRange(lat,maxKm,latRange);
         var bLat=(int)Math.Floor(lat);
         var bLon=(int)Math.Floor(lon);
         PlaceRecord? best=null;
         var bestDistance=maxKm;
-        for(var dy=-range;dy<=range;dy++){
-            for(var dx=-range;dx<=range;dx++){
+        for(var dy=-latRange;dy<=latRange;dy++){
+            for(var dx=-lonRange;dx<=lonRange;dx++){
                 var key=(bLat+dy,Wrap(bLon+dx));
                 if(!buckets.TryGetValue(key,out var list)){
                     continue;
                 }
                 foreach(var place in list){
+                    if(country is not null&&place.Country!=country){
+                        continue;
+                    }
                     var d=GeoMath.HaversineKm(lat,lon,place.Latitude,place.Longitude);
                     if(d<=bestDistance){
                         bestDistance=d;
@@ -103,6 +109,16 @@ public sealed class GeoDatabase{
             }
         }
         return best;
+    }
+
+    /// <summary>経度 1° の距離は緯度とともに縮むので、探索円が届く最も高い緯度での長さから、東西に調べる区画数を決める。極に届くときは全周。</summary>
+    private static int LongitudeRange(double lat,double maxKm,int latRange){
+        var farthestLat=Math.Abs(lat)+maxKm/KmPerDegree;
+        if(farthestLat>=89){
+            return 180;
+        }
+        var degrees=maxKm/(KmPerDegree*Math.Cos(farthestLat*Math.PI/180));
+        return Math.Min(180,Math.Max(latRange,(int)Math.Ceiling(degrees)+1));
     }
 
     private Dictionary<(int,int),List<PlaceRecord>> BuildBuckets(){

@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json.Nodes;
 using Weather.Core;
 using Target=Weather.Providers.Jma.JmaProvider;
 
@@ -61,6 +63,34 @@ public class JmaProvider{
         }
     }
 
+    private static JsonNode? FindFirst(JsonNode? node,string name){
+        if(node is JsonObject o){
+            foreach(var pair in o){
+                if(pair.Key==name){
+                    return pair.Value;
+                }
+                if(FindFirst(pair.Value,name) is {} found){
+                    return found;
+                }
+            }
+        }else if(node is JsonArray a){
+            foreach(var item in a){
+                if(FindFirst(item,name) is {} found){
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    [Fact,Trait("Category","Unit")]public async Task GetForecastAsync_WeeklyAreaMismatch(){
+        //伊豆諸島(大島町)は週間予報の区域が一致しない。東京地方の値で代用せず、週間予報を空にして注記を出す
+        using var host=TestHost.Create(Fixtures.MapJmaTokyo);
+        var forecast=await host.Get<Target>().GetForecastAsync(Locations.Japan("1336100","大島町"),TestContext.Current.CancellationToken);
+        Assert.All(forecast.Daily.Where(static d=>d.Date>=new DateOnly(2026,10,6)),static d=>Assert.Null(d.PrecipitationProbability));
+        Assert.Contains(forecast.Issues,static i=>i.ProductName=="府県週間天気予報");
+    }
+
     [Fact,Trait("Category","Unit")]public async Task GetForecastAsync_SecondaryFailure(){
         {
             //時系列予報が取れなくても日別は返し、Issues に記録する
@@ -70,6 +100,31 @@ public class JmaProvider{
             Assert.NotEmpty(forecast.Daily);
             var issue=Assert.Single(forecast.Issues);
             Assert.Equal("時系列予報",issue.ProductName);
+        }
+        {
+            //時系列予報の時刻が重複・逆順でも、重なる点を除いて返し、日別を含む予報全体は失わない
+            foreach(var mode in new[]{"重複","逆順"}){
+                var root=JsonNode.Parse(File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath("jma/wdist_130010.json")))!;
+                var times=(JsonArray)FindFirst(root,"timeDefines")!;
+                if(mode=="重複"){
+                    times.Insert(0,times[0]!.DeepClone());
+                }else{
+                    var first=times[0]!.DeepClone();
+                    times[0]=times[1]!.DeepClone();
+                    times[1]=first;
+                }
+                var broken=Encoding.UTF8.GetBytes(root.ToJsonString());
+                using var host=TestHost.Create(Fixtures.MapJmaTokyo);
+                host.Handler.Override=r=>{
+                    if(r.RequestUri!.AbsoluteUri=="https://www.jma.go.jp/bosai/jmatile/data/wdist/VPFD/130010.json"){
+                        return FixtureHttpMessageHandler.Respond(r,broken);
+                    }
+                    return null;
+                };
+                var forecast=await host.Get<Target>().GetForecastAsync(Locations.Tokyo,TestContext.Current.CancellationToken);
+                Assert.NotEmpty(forecast.Daily);
+                Assert.NotEmpty(forecast.TimeSeries);
+            }
         }
         {
             //主プロダクトが取れなければ例外
@@ -85,6 +140,20 @@ public class JmaProvider{
         }
     }
 
+    [Fact,Trait("Category","Unit")]public async Task GetAlertsAsync_UnknownCode(){
+        //警報コードが表にない(未知)ときも警報を落とさない。名称は「(未対応の警報)」、区分は注意報、見出しは原文のまま
+        var original=File.ReadAllText(FixtureHttpMessageHandler.FixturePath("jma/warning_011000.json"));
+        var bytes=Encoding.UTF8.GetBytes(original.Replace("\"code\":\"20\"","\"code\":\"99\"",StringComparison.Ordinal));
+        using var host=TestHost.Create(Fixtures.MapJmaTokyo);
+        host.Handler.Override=r=>r.RequestUri!.AbsoluteUri=="https://www.jma.go.jp/bosai/warning/data/r8/011000.json"?FixtureHttpMessageHandler.Respond(r,bytes):null;
+        var alerts=await host.Get<Target>().GetAlertsAsync(Locations.Japan("0121400","稚内市"),TestContext.Current.CancellationToken);
+        var alert=Assert.Single(alerts.Active);
+        Assert.Equal("99",alert.EventCode);
+        Assert.Equal("(未対応の警報)",alert.EventName);
+        Assert.Equal(AlertTier.Advisory,alert.Tier);
+        Assert.False(string.IsNullOrEmpty(alerts.Headline));
+    }
+
     [Fact,Trait("Category","Unit")]public async Task GetAlertsAsync(){
         using var host=TestHost.Create(Fixtures.MapJmaTokyo);
         var provider=host.Get<Target>();
@@ -96,11 +165,18 @@ public class JmaProvider{
             Assert.Equal(AlertTier.Advisory,alert.Tier);
             Assert.Null(alert.WarningLevel);
             Assert.Equal("気象警報・注意報",alert.Source.ProductName);
+            //警報がある区域では、その電文の見出しを付ける
+            Assert.False(string.IsNullOrEmpty(alerts.Headline));
         }
         {
             //千代田区: 発表中の警報・注意報はない(空の一覧 = 警報なし)
             var alerts=await provider.GetAlertsAsync(Locations.Tokyo,TestContext.Current.CancellationToken);
             Assert.Empty(alerts.Active);
+        }
+        {
+            //警報のない地点には、他の区域の電文の見出し(伊豆諸島・小笠原諸島の注意喚起など)を付けない
+            var alerts=await provider.GetAlertsAsync(Locations.Tokyo,TestContext.Current.CancellationToken);
+            Assert.Null(alerts.Headline);
         }
     }
 

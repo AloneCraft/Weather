@@ -1,0 +1,19 @@
+Running tests from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+failed Weather.Providers.Tests.TmpFuzz.Probe (229ms)
+  from /home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64)
+  
+  重複: ArgumentException: 時系列が昇順でないか区間が重なっています: 2026-10-04T06:00:00.0000000+09:00 / 2026-10-04T06:00:00.0000000+09:00 (Parameter 'points')
+  逆順: ArgumentException: 時系列が昇順でないか区間が重なっています: 2026-10-04T09:00:00.0000000+09:00 / 2026-10-04T06:00:00.0000000+09:00 (Parameter 'points')
+  なし: 成功 時系列=14 日別=7 Issues=
+    at Weather.Providers.Tests.TmpFuzz.Probe() in /home/user/Weather/tests/Weather.Providers.Tests/TmpFuzz.cs:61
+    --- End of stack trace from previous location ---
+/home/user/Weather/tests/Weather.Providers.Tests/bin/Debug/net10.0/Weather.Providers.Tests.dll (net10.0|x64) failed with 1 error(s) (760ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 1
+  failed: 1
+  succeeded: 0
+  skipped: 0
+  duration: 1s 013ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

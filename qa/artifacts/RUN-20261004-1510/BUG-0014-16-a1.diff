@@ -1,0 +1,176 @@
+diff --git a/src/Weather.Presentation/ViewModels/HistoryViewModel.cs b/src/Weather.Presentation/ViewModels/HistoryViewModel.cs
+index a343e5c..6255b2b 100644
+--- a/src/Weather.Presentation/ViewModels/HistoryViewModel.cs
++++ b/src/Weather.Presentation/ViewModels/HistoryViewModel.cs
+@@ -105,7 +105,8 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
+         var from=now-Span(this.Range);
+         var observations=await history.GetObservationsAsync(station,from,now,CancellationToken.None);
+         var points=new List<ChartPoint>(observations.Count);
+-        foreach(var o in observations){
++        for(var i=0;i<observations.Count;i++){
++            var o=observations[i];
+             double? temperature=null;
+             var suspect=false;
+             if(o.TemperatureC is {} t){
+@@ -113,7 +114,7 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
+                 suspect=t.Quality==MeasurementQuality.Suspect;
+             }
+             double? precipitation=null;
+-            if(o.Precipitation1hMm is {} p&&o.ObservedAt.Minute==0){
++            if(o.Precipitation1hMm is {} p&&IsHourlyRow(station.Provider,observations,i)){
+                 precipitation=Units.ToPrecipitation(p.Value,units);
+             }
+             points.Add(new ChartPoint(o.ObservedAt,temperature,precipitation,null,suspect));
+@@ -135,13 +136,16 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
+                 suspect));
+         }
+         var localToday=DateOnly.FromDateTime(TimeText.Local(now,this.Zone).DateTime);
+-        var summaries=await history.GetDailySummariesAsync(station,localToday.AddDays(-1),localToday,CancellationToken.None);
+-        if(summaries.LastOrDefault() is {} today){
++        var summaries=await history.GetDailySummariesAsync(station,localToday,localToday,CancellationToken.None);
++        if(summaries.LastOrDefault(s=>s.LocalDate==localToday) is {} today){
+             var text=string.Format(System.Globalization.CultureInfo.CurrentCulture,Strings.TodaySummaryFormat,Units.Temperature(today.MaxTempC,units),Units.Temperature(today.MinTempC,units));
+             if(today.IsDerived){
+                 text+=Strings.AggregatedNote;
+             }
+             this.SummaryText=text;
++        }else{
++            //今日の要約がまだない(別の観測所・範囲から切り替えた直後を含む)ときは、前の値を残さない
++            this.SummaryText=null;
+         }
+         if(station.Provider==ProviderId.Jma){
+             this.Attribution="出典:気象庁ホームページ(アメダス)";
+@@ -150,7 +154,23 @@ public sealed partial class HistoryViewModel(WeatherSession session,IWeatherServ
+         }
+         if(observations.Count==0&&this.Message is null){
+             this.Message=Strings.NoSavedObservations;
++        }else if(observations.Count>0&&this.Message==Strings.NoSavedObservations){
++            //別の範囲に切り替えて観測が見つかったら消す(同期失敗など他の Message は残す)
++            this.Message=null;
++        }
++    }
++
++    /// <summary>降水量の棒に使う行。気象庁(10 分値)は正時の行、NWS(毎時 52 分前後の定時観測と特別観測)は各時間帯の最後の観測(History.md)。</summary>
++    private static bool IsHourlyRow(ProviderId provider,IReadOnlyList<Observation> observations,int index){
++        var current=observations[index].ObservedAt.UtcDateTime;
++        if(provider==ProviderId.Jma){
++            return current.Minute==0;
++        }
++        if(index+1>=observations.Count){
++            return true;
+         }
++        var next=observations[index+1].ObservedAt.UtcDateTime;
++        return next.Date!=current.Date||next.Hour!=current.Hour;
+     }
+ 
+     private async Task SaveStationAsync(ObservationStation station){
+diff --git a/tests/Weather.Presentation.Tests/HistoryViewModelTests.cs b/tests/Weather.Presentation.Tests/HistoryViewModelTests.cs
+new file mode 100644
+index 0000000..78bf74d
+--- /dev/null
++++ b/tests/Weather.Presentation.Tests/HistoryViewModelTests.cs
+@@ -0,0 +1,104 @@
++using Microsoft.Extensions.Time.Testing;
++using Weather.Core;
++using Weather.Presentation;
++using Weather.Presentation.ViewModels;
++
++namespace Weather.Presentation.Tests;
++
++/// <summary>期間ごとに観測と日別の要約を返す(同期で完了する)。</summary>
++internal sealed class StubHistory:IObservationHistoryService{
++    public Func<DateTimeOffset,DateTimeOffset,IReadOnlyList<Observation>> Observations{get;set;}=static (_,_)=>[];
++    public List<DailyObservationSummary> Summaries{get;}=[];
++
++    public ValueTask<HistorySyncResult> SyncAsync(ObservationStation station,CancellationToken cancellationToken){
++        return ValueTask.FromResult(new HistorySyncResult(0,null,false));
++    }
++
++    public ValueTask<IReadOnlyList<Observation>> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken){
++        return ValueTask.FromResult(this.Observations(from,to));
++    }
++
++    public ValueTask<IReadOnlyList<DailyObservationSummary>> GetDailySummariesAsync(ObservationStation station,DateOnly from,DateOnly to,CancellationToken cancellationToken){
++        IReadOnlyList<DailyObservationSummary> list=[..this.Summaries.Where(s=>s.LocalDate>=from&&s.LocalDate<=to).OrderBy(static s=>s.LocalDate)];
++        return ValueTask.FromResult(list);
++    }
++
++    public ValueTask ApplyRetentionAsync(TimeSpan retention,CancellationToken cancellationToken){
++        return ValueTask.CompletedTask;
++    }
++
++    public ValueTask DeleteAllAsync(CancellationToken cancellationToken){
++        return ValueTask.CompletedTask;
++    }
++}
++
++public class HistoryViewModel{
++    private static readonly ObservationStation Jma=new("44132",ProviderId.Jma,"東京",new GeoPoint(35.69,139.75),25);
++    private static readonly ObservationStation Nws=new("KDCA",ProviderId.Nws,"Washington",new GeoPoint(38.85,-77.04),3);
++
++    private static Presentation.ViewModels.HistoryViewModel Create(StubHistory history){
++        var settings=new Presentation.AppSettings(new FakeSettingsStore()){Units=UnitSystem.Metric};
++        return new Presentation.ViewModels.HistoryViewModel(new WeatherSession(),new FakeWeatherService(),history,new FakeFavorites(),settings,new FakeTimeProvider(Sample.Now));
++    }
++
++    [Fact,Trait("Category","Unit")]public async Task LoadAsync(){
++        {
++            //今日の要約がまだなければ、昨日の値を「今日の最高/最低」として表示しない
++            var history=new StubHistory();
++            history.Summaries.Add(new DailyObservationSummary(Jma.Key,new DateOnly(2026,10,3)){MaxTempC=25,MinTempC=15});
++            var vm=Create(history);
++            vm.Station=Jma;
++            await vm.LoadAsync();
++            Assert.Null(vm.SummaryText);
++        }
++        {
++            //今日の要約があれば今日の値を表示する(昨日の値ではない)
++            var history=new StubHistory();
++            history.Summaries.Add(new DailyObservationSummary(Jma.Key,new DateOnly(2026,10,3)){MaxTempC=25,MinTempC=15});
++            history.Summaries.Add(new DailyObservationSummary(Jma.Key,new DateOnly(2026,10,4)){MaxTempC=28,MinTempC=17});
++            var vm=Create(history);
++            vm.Station=Jma;
++            await vm.LoadAsync();
++            Assert.Contains("28",vm.SummaryText,StringComparison.Ordinal);
++            Assert.DoesNotContain("25",vm.SummaryText,StringComparison.Ordinal);
++        }
++        {
++            //範囲を切り替えて観測が見つかったら、「保存済みの観測はまだありません」を消す
++            var history=new StubHistory();
++            history.Observations=static (from,to)=>{
++                if(to-from>TimeSpan.FromDays(2)){
++                    return [new Observation(Sample.Now.AddDays(-3)){TemperatureC=new Measurement(20)}];
++                }
++                return [];
++            };
++            var vm=Create(history);
++            vm.Station=Jma;
++            await vm.LoadAsync();
++            Assert.NotNull(vm.Message);
++            vm.Range=HistoryRange.Month;
++            Assert.NotEmpty(vm.Rows);
++            Assert.Null(vm.Message);
++        }
++        {
++            //降水量の棒: 気象庁(10 分値)は正時の行、NWS(毎時 52 分前後)は時間帯の最後の観測を使う
++            var jma=new StubHistory();
++            jma.Observations=static (_,_)=>[
++                new Observation(Sample.Now.AddMinutes(-60)){Precipitation1hMm=new Measurement(4)},
++                new Observation(Sample.Now.AddMinutes(-50)){Precipitation1hMm=new Measurement(3)},
++            ];
++            var jmaVm=Create(jma);
++            jmaVm.Station=Jma;
++            await jmaVm.LoadAsync();
++            Assert.Equal([4d,null],jmaVm.Chart.Select(static p=>p.Precipitation));
++            var nws=new StubHistory();
++            nws.Observations=static (_,_)=>[
++                new Observation(new DateTimeOffset(2026,10,4,1,52,0,TimeSpan.Zero)){Precipitation1hMm=new Measurement(1)},
++                new Observation(new DateTimeOffset(2026,10,4,2,52,0,TimeSpan.Zero)){Precipitation1hMm=new Measurement(2)},
++            ];
++            var nwsVm=Create(nws);
++            nwsVm.Station=Nws;
++            await nwsVm.LoadAsync();
++            Assert.Equal([1d,2d],nwsVm.Chart.Select(static p=>p.Precipitation));
++        }
++    }
++}

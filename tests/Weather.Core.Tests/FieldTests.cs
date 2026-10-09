@@ -13,6 +13,13 @@ public class GridGeometry{
             Assert.Equal(180,y,6);
         }
         {
+            //循環の継ぎ目: 経度が 0 のすぐ手前(丸めで 360 ちょうどになる値)でも列は [0, Columns) に収まる
+            Assert.True(global.TryGetPosition(0,-1e-15,out var seam,out _));
+            Assert.InRange(seam,0,719.999999);
+            Assert.True(global.TryGetPosition(0,360,out var full,out _));
+            Assert.Equal(0,full,6);
+        }
+        {
             //緯度の範囲外は false
             Assert.False(global.TryGetPosition(91,0,out _,out _));
         }
@@ -52,6 +59,12 @@ public class GridField{
             Assert.Equal(15f,f.Sample(1,315));
         }
         {
+            //循環の継ぎ目のすぐ手前(丸めで列数ちょうどになる経度)は、経度 0 と同じ値(最南行でも例外にしない)
+            var f=Field([0,10,20,30,40,50,60,70],4,2);
+            Assert.Equal(f.Sample(1,0),f.Sample(1,-1e-15));
+            Assert.Equal(f.Sample(0,0),f.Sample(0,-1e-15));
+        }
+        {
             //周囲に NaN(欠損・日本周辺)があれば NaN
             var f=Field([0,float.NaN,20,30,40,50,60,70],4,2);
             Assert.True(float.IsNaN(f.Sample(1,45)));
@@ -72,6 +85,25 @@ public class GridField{
             Assert.Equal(50f,f.SampleNearest(0.2,80));
             //経度方向に循環する(最後の列の右半分は最初の列)
             Assert.Equal(40f,f.SampleNearest(0.2,350));
+        }
+        {
+            //緯度経度が NaN・無限大なら NaN(北西端の値を返さない)。Sample と同じ
+            var f=Field([0,10,20,30,40,50,60,70],4,2);
+            Assert.True(float.IsNaN(f.SampleNearest(double.NaN,double.NaN)));
+            Assert.True(float.IsNaN(f.SampleNearest(0.5,double.NaN)));
+            Assert.True(float.IsNaN(f.SampleNearest(double.NaN,90)));
+            Assert.True(float.IsNaN(f.SampleNearest(0.5,double.PositiveInfinity)));
+            Assert.True(float.IsNaN(f.Sample(double.NaN,double.NaN)));
+            Assert.True(float.IsNaN(f.Sample(0.5,double.NegativeInfinity)));
+        }
+        {
+            //格子の外周の半セル(0.5 格子分)は端の格子点の値。さらに外側は NaN
+            var f=Field([0,10,20,30,40,50,60,70],4,2);
+            var local=new Core.GridField(new Core.GridGeometry(10,10,40,130,1,1),new float[100].Select((_,i)=>(float)i).ToArray(),FieldQuantity.TemperatureC,DateTimeOffset.UnixEpoch,DateTimeOffset.UnixEpoch,Source);
+            Assert.Equal(local[0,5],local.SampleNearest(35,129.7));
+            Assert.Equal(local[9,5],local.SampleNearest(35,139.3));
+            Assert.True(float.IsNaN(local.SampleNearest(35,129.4)));
+            Assert.Equal(f[0,0],f.SampleNearest(0.9,-0.4));
         }
         {
             //最も近い点が欠けていれば NaN(隣の点の値で埋めない)

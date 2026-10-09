@@ -128,8 +128,14 @@ public sealed partial class MainViewModel:ObservableObject,IDisposable{
             return;
         }
         this.lastRefresh=this.time.GetUtcNow();
-        foreach(var place in this.Places.ToList()){
-            await place.RefreshAsync(cancellationToken);
+        try{
+            foreach(var place in this.Places.ToList()){
+                await place.RefreshAsync(cancellationToken);
+            }
+        }catch(OperationCanceledException){
+            //取り消された(背景に回した・非表示にした)ときは更新時刻を戻し、次の周期ですぐ再取得する(予報のない地点が 10 分間「読み込み中」のままにならない)
+            this.lastRefresh=DateTimeOffset.MinValue;
+            throw;
         }
         //前面で取得した内容をウィジェットに反映する(MET の地点のウィジェットはこの経路でだけ更新される)
         this.widget.Publish(this.Places.Select(static p=>p.Data));

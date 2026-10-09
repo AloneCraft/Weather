@@ -1,0 +1,18 @@
+Running tests from /home/user/Weather/tests/Weather.Scene.Tests/bin/Debug/net10.0/Weather.Scene.Tests.dll (net10.0|x64)
+failed Weather.Scene.Tests.TmpProps.Probe (236ms)
+  from /home/user/Weather/tests/Weather.Scene.Tests/bin/Debug/net10.0/Weather.Scene.Tests.dll (net10.0|x64)
+  実行 6000 回 / 違反の種類 0
+  
+    at Weather.Scene.Tests.TmpProps.Probe() in /home/user/Weather/tests/Weather.Scene.Tests/TmpProps.cs:120
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Scene.Tests/bin/Debug/net10.0/Weather.Scene.Tests.dll (net10.0|x64) failed with 1 error(s) (755ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 1
+  failed: 1
+  succeeded: 0
+  skipped: 0
+  duration: 1s 010ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

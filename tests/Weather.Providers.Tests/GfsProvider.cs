@@ -36,6 +36,24 @@ public class GfsProvider{
         Assert.Equal(Cycle.AddHours(120),times[^1]);
     }
 
+    [Fact,Trait("Category","Unit")]public async Task GetFieldAsync_WrongMessage(){
+        //Range を無視して全ファイルを 200 で返す応答は、先頭のメッセージ(気温)が要求した要素(風 V)になってしまう。要素が違えば InvalidResponse
+        var ct=TestContext.Current.CancellationToken;
+        using var host=TestHost.Create(Fixtures.MapGfs());
+        var mapped=host.Handler.Override;
+        var full=File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath(GfsFixture.File));
+        host.Handler.Override=r=>{
+            if(r.Headers.Range is not null&&!r.RequestUri!.AbsolutePath.EndsWith(".idx",StringComparison.Ordinal)){
+                var response=new HttpResponseMessage(System.Net.HttpStatusCode.OK){Content=new ByteArrayContent(full),RequestMessage=r};
+                response.Headers.TryAddWithoutValidation("Cache-Control","max-age=60");
+                return response;
+            }
+            return mapped!(r);
+        };
+        var ex=await Assert.ThrowsAsync<WeatherProviderException>(async ()=>await host.Get<Target>().GetFieldAsync(GfsElement.WindV,Cycle,3,ct));
+        Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
+    }
+
     [Fact,Trait("Category","Unit")]public async Task GetFieldAsync(){
         var ct=TestContext.Current.CancellationToken;
         using var host=TestHost.Create(Fixtures.MapGfs());

@@ -1,0 +1,151 @@
+diff --git a/src/Weather.Remote/Contracts/RemoteJson.cs b/src/Weather.Remote/Contracts/RemoteJson.cs
+index a6ac22c..a790b8c 100644
+--- a/src/Weather.Remote/Contracts/RemoteJson.cs
++++ b/src/Weather.Remote/Contracts/RemoteJson.cs
+@@ -23,6 +23,8 @@ public static class RemoteJson{
+     UseStringEnumConverter=true,
+     //OutOfCoverage の距離は無限大(区域が 20 km 以内にない)。JSON の数値には書けないので "Infinity" の文字列で往復する
+     NumberHandling=JsonNumberHandling.AllowNamedFloatingPointLiterals,
++    //サーバーの応答は信頼しない: 非 null の項目への null は JsonException にして InvalidResponse にする(null を省略する項目は nullable のまま)
++    RespectNullableAnnotations=true,
+     DefaultIgnoreCondition=JsonIgnoreCondition.WhenWritingNull)]
+ [JsonSerializable(typeof(ResolveResponse))]
+ [JsonSerializable(typeof(ForecastResponse))]
+diff --git a/src/Weather.Remote/RemoteWeatherService.cs b/src/Weather.Remote/RemoteWeatherService.cs
+index 4147869..eed5ac0 100644
+--- a/src/Weather.Remote/RemoteWeatherService.cs
++++ b/src/Weather.Remote/RemoteWeatherService.cs
+@@ -22,10 +22,10 @@ public sealed class RemoteWeatherService(HttpClient http):IWeatherService{
+     private readonly ConcurrentDictionary<ProviderId,TimeSpan> retention=new();
+ 
+     public async ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
+-        var (response,location)=await this.GetAsync<ResolveResponse,(ResolveResponse Response,ResolvedLocation Location)>(WeatherApi.ResolveRoute,PointQuery(point),null,static r=>(r,ContractMapper.ToModel(r.Location)),cancellationToken).ConfigureAwait(false);
++        var (response,location,retentions)=await this.GetAsync<ResolveResponse,(ResolveResponse Response,ResolvedLocation Location,List<(ProviderId Provider,TimeSpan Retention)> Retentions)>(WeatherApi.ResolveRoute,PointQuery(point),null,static r=>(r,ContractMapper.ToModel(r.Location),[..r.Retention.Select(static i=>(i.Provider,TimeSpan.FromDays(i.Days)))]),cancellationToken).ConfigureAwait(false);
+         this.resolved[location.Point.RoundForRequest()]=response;
+-        foreach(var item in response.Retention){
+-            this.retention[item.Provider]=TimeSpan.FromDays(item.Days);
++        foreach(var (provider,retention) in retentions){
++            this.retention[provider]=retention;
+         }
+         return location;
+     }
+@@ -96,8 +96,8 @@ public sealed class RemoteWeatherService(HttpClient http):IWeatherService{
+                 return map(RemoteJson.Deserialize<T>(json));
+             }catch(Exception ex) when(ex is JsonException or NotSupportedException){
+                 throw new WeatherProviderException(label,ProviderFailure.InvalidResponse,$"サーバーの応答を読み取れません: {route}",ex);
+-            }catch(Exception ex) when(ex is ArgumentException or InvalidOperationException){
+-                //モデルの検証(範囲・昇順・日本域は気象庁のみ)に反する応答
++            }catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or OverflowException or NullReferenceException){
++                //モデルの検証(範囲・昇順・日本域は気象庁のみ)・数値の範囲・配列の null 要素(型の注釈では検出できない)に反する応答
+                 throw new WeatherProviderException(label,ProviderFailure.InvalidResponse,$"サーバーの応答が不変条件に反しています: {route}",ex);
+             }
+         }
+diff --git a/tests/Weather.Remote.Tests/JsonMutator.cs b/tests/Weather.Remote.Tests/JsonMutator.cs
+new file mode 100644
+index 0000000..f43b29e
+--- /dev/null
++++ b/tests/Weather.Remote.Tests/JsonMutator.cs
+@@ -0,0 +1,67 @@
++using System.Text;
++using System.Text.Json.Nodes;
++
++namespace Weather.Remote.Tests;
++
++/// <summary>JSON の 1 か所を壊す(削除・null・型違い・空・極端な値)。サーバーの誤った応答の再現用(固定シードで決定的)。</summary>
++internal static class JsonMutator{
++    public static string Mutate(string json,Random random){
++        var root=JsonNode.Parse(json)!;
++        var nodes=new List<(JsonNode? Parent,object? Key)>();
++        void Walk(JsonNode? parent,object? key,JsonNode? node){
++            nodes.Add((parent,key));
++            if(node is JsonObject o){
++                foreach(var pair in o.ToList()){
++                    Walk(o,pair.Key,pair.Value);
++                }
++            }else if(node is JsonArray a){
++                for(var i=0;i<a.Count;i++){
++                    Walk(a,i,a[i]);
++                }
++            }
++        }
++        Walk(null,null,root);
++        var (parent,key)=nodes[random.Next(nodes.Count)];
++        if(parent is null){
++            return json;
++        }
++        var op=random.Next(7);
++        JsonNode? replacement=null;
++        switch(op){
++            case 2:
++                replacement=JsonValue.Create("x");
++                break;
++            case 3:
++                replacement=JsonValue.Create(-1);
++                break;
++            case 4:
++                if(random.Next(2)==0){
++                    replacement=new JsonArray();
++                }else{
++                    replacement=new JsonObject();
++                }
++                break;
++            case 5:
++                replacement=JsonValue.Create(1e308);
++                break;
++            case 6:
++                replacement=JsonValue.Create(true);
++                break;
++        }
++        if(parent is JsonObject po){
++            if(op==0){
++                po.Remove((string)key!);
++            }else{
++                po[(string)key!]=replacement;
++            }
++        }else if(parent is JsonArray pa){
++            var index=(int)key!;
++            if(op==0){
++                pa.RemoveAt(index);
++            }else{
++                pa[index]=replacement;
++            }
++        }
++        return root.ToJsonString();
++    }
++}
+diff --git a/tests/Weather.Remote.Tests/RemoteTests.cs b/tests/Weather.Remote.Tests/RemoteTests.cs
+index af6edb0..4c68b4e 100644
+--- a/tests/Weather.Remote.Tests/RemoteTests.cs
++++ b/tests/Weather.Remote.Tests/RemoteTests.cs
+@@ -324,6 +324,31 @@ public class RemoteWeatherService{
+         }
+     }
+ 
++    [Fact,Trait("Category","Unit")]public async Task InvalidResponses(){
++        //サーバーの応答の JSON の 1 か所を壊す(固定シード)。どう壊れていても WeatherProviderException(InvalidResponse)以外の例外を漏らさない
++        var ct=TestContext.Current.CancellationToken;
++        var ops=new List<(string Name,string Json,Func<Remote.RemoteWeatherService,Task> Call)>{
++            ("forecast",RemoteJson.Serialize(Contracts.ContractMapper.ToDto(new ForecastResult(Availability.Available,Sample.JmaForecast()))),async c=>await c.GetForecastAsync(Sample.Tokyo,ct)),
++            ("alerts",RemoteJson.Serialize(Contracts.ContractMapper.ToDto(new AlertResult(Availability.Available,Sample.JmaAlerts()))),async c=>await c.GetAlertsAsync(Sample.Tokyo,ct)),
++            ("resolve",RemoteJson.Serialize(new ResolveResponse(Contracts.ContractMapper.ToDto(Sample.Tokyo),Availability.Available,true,[new RetentionDto(ProviderId.Jma,10)])),async c=>await c.ResolveAsync(new GeoPoint(35.69,139.75),ct)),
++            ("stations",RemoteJson.Serialize(new StationsResponse([new StationDto("44132",ProviderId.Jma,"東京",new GeoPointDto(35.69,139.75),25)])),async c=>await c.FindStationsAsync(Sample.Tokyo,3,ct)),
++            ("observations",RemoteJson.Serialize(Contracts.ContractMapper.ToDto(Sample.Observations())),async c=>await c.GetObservationsAsync(Sample.Station,Sample.Now.AddDays(-1),Sample.Now,ct)),
++        };
++        foreach(var (name,json,call) in ops){
++            for(var i=0;i<200;i++){
++                var mutated=JsonMutator.Mutate(json,new Random(HashCode.Combine(name,i)));
++                var client=new Remote.RemoteWeatherService(new HttpClient(new FixedJsonHandler(mutated)){BaseAddress=new Uri("https://example.test/api/")});
++                try{
++                    await call(client);
++                }catch(WeatherProviderException ex){
++                    Assert.Equal(ProviderFailure.InvalidResponse,ex.Failure);
++                }catch(Exception ex){
++                    Assert.Fail($"{name} #{i}: {ex.GetType().Name} が漏れた: {ex.Message}\n{mutated}");
++                }
++            }
++        }
++    }
++
+     [Fact,Trait("Category","Unit")]public async Task GetObservationsAsync(){
+         //観測所は要求元のものを使い、観測値はそのまま戻る
+         var h=new RemoteHarness();
