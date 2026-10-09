@@ -1,0 +1,19 @@
+diff --git a/src/Weather.Providers/Nws/NwsProvider.cs b/src/Weather.Providers/Nws/NwsProvider.cs
+index bcc26a4..a42effc 100644
+--- a/src/Weather.Providers/Nws/NwsProvider.cs
++++ b/src/Weather.Providers/Nws/NwsProvider.cs
+@@ -93,8 +93,13 @@ public sealed partial class NwsProvider(IHttpClientFactory httpClientFactory,Tim
+         if(start<now-this.ServerRetention){
+             start=now-this.ServerRetention;
+         }
++        //終了時刻は次の分の境界まで切り上げる。秒まで入ると、取り直すたびに URL(キャッシュの鍵)が変わり、鮮度内でもネットワークに出てしまう
++        var end=to.UtcDateTime;
++        if(end.Second!=0||end.Millisecond!=0){
++            end=end.AddSeconds(60-end.Second).AddMilliseconds(-end.Millisecond);
++        }
+         var uri=new Uri(BaseUri,string.Create(CultureInfo.InvariantCulture,
+-            $"stations/{Uri.EscapeDataString(station.Id)}/observations?start={start.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}&end={to.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}"));
++            $"stations/{Uri.EscapeDataString(station.Id)}/observations?start={start.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}&end={end:yyyy-MM-ddTHH:mm:ssZ}"));
+         var fetch=await ProviderHttp.GetAsync(client,ProviderId.Nws,uri,time,cancellationToken).ConfigureAwait(false);
+         using var doc=ProviderHttp.ParseJson(ProviderId.Nws,fetch,uri);
+         var unknown=new List<string>();
