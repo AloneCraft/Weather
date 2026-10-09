@@ -838,12 +838,17 @@
         "full_regression": "未実施"
       },
       "live_check": {
-        "run": 37901006176,
-        "at": "2026-10-09T08:15:16Z",
-        "probe": "Weather.Providers.LiveTests LiveContractTests.GetForecastAsync(43.0621, 141.3544, Jma)(札幌)",
-        "result": "Issues に「府県週間天気予報 NotFound」。LiveContract の Assert.Empty(Issues) が失敗",
+        "run": 37922579395,
+        "at": "2026-10-09T11:24:51Z",
+        "probe": "LiveContractTests.GetForecastAsync(札幌 43.0621, 141.3544, Jma) と診断(forecast/016000.json の区域一覧)",
+        "result": "週間予報の区域は 016000「石狩・空知・後志地方」の 1 件のみ(府県の区域 016010 は無い)。FindArea(class10=016010) が一致せず、週間を空にして「府県週間天気予報 NotFound」の注記が出る",
+        "root_cause": "週間予報は気象台(016000)単位の 1 区域。区域が一致しなければ空にする修正(BUG-0012)が、本来は全域に当たる 016000 の区域も不一致として扱っている",
         "status": "NEEDS_HUMAN",
-        "note": "BUG-0012 の修正(区域が一致しなければ週間を空にして注記)が札幌で発動している可能性。対応表が正しくない、または区域の照合キーが違う。JMA の実データで確認が必要(この環境では通信不可)"
+        "options": [
+          "(A) 週間予報の区域の照合に、気象台の区域(code=016000)も一致とみなす。伊豆諸島の不一致の修正は残す(推奨の候補。製品コードの変更)",
+          "(B) LiveContract の期待値を変える(札幌は注記が出てよい)。製品の挙動は変えない"
+        ],
+        "note": "製品コードは未変更。札幌の週間予報が出ない状態が main にある"
       }
     },
     {
