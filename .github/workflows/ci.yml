@@ -18,6 +18,8 @@ jobs:
         with:
           global-json-file: global.json
       - name: Test(ライブラリ・ゴールデン画像)
+        # 既定の pwsh は途中の dotnet test の失敗を見逃すため、bash(-eo pipefail)で実行する
+        shell: bash
         run: |
           dotnet test --project tests/Weather.Core.Tests
           dotnet test --project tests/Weather.Providers.Tests
