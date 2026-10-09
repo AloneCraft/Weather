@@ -97,6 +97,15 @@ public class GridField{
             Assert.True(float.IsNaN(f.Sample(0.5,double.NegativeInfinity)));
         }
         {
+            //格子の外周の半セル(0.5 格子分)は端の格子点の値。さらに外側は NaN
+            var f=Field([0,10,20,30,40,50,60,70],4,2);
+            var local=new Core.GridField(new Core.GridGeometry(10,10,40,130,1,1),new float[100].Select((_,i)=>(float)i).ToArray(),FieldQuantity.TemperatureC,DateTimeOffset.UnixEpoch,DateTimeOffset.UnixEpoch,Source);
+            Assert.Equal(local[0,5],local.SampleNearest(35,129.7));
+            Assert.Equal(local[9,5],local.SampleNearest(35,139.3));
+            Assert.True(float.IsNaN(local.SampleNearest(35,129.4)));
+            Assert.Equal(f[0,0],f.SampleNearest(0.9,-0.4));
+        }
+        {
             //最も近い点が欠けていれば NaN(隣の点の値で埋めない)
             var f=Field([0,float.NaN,20,30,40,50,60,70],4,2);
             Assert.True(float.IsNaN(f.SampleNearest(0.9,80)));

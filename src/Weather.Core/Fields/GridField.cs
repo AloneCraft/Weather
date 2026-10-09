@@ -51,6 +51,20 @@ public readonly record struct GridGeometry{
 
     /// <summary>緯度経度 → 格子座標(小数)。範囲外は false(経度が一周する格子では経度は常に範囲内)。</summary>
     public bool TryGetPosition(double latitude,double longitude,out double column,out double row){
+        if(!this.Locate(latitude,longitude,out column,out row)){
+            return false;
+        }
+        if(row<0||row>this.Rows-1){
+            return false;
+        }
+        if(!this.WrapsLongitude&&(column<0||column>this.Columns-1)){
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>緯度経度 → 格子座標(範囲の判定なし。経度が一周する格子では列を 0 以上 Columns 未満に収める)。</summary>
+    internal bool Locate(double latitude,double longitude,out double column,out double row){
         if(!double.IsFinite(latitude)||!double.IsFinite(longitude)){
             //NaN は比較がすべて偽になり範囲内として扱われてしまうので、ここで範囲外にする
             column=double.NaN;
@@ -70,12 +84,6 @@ public readonly record struct GridGeometry{
             }
         }
         column=x;
-        if(row<0||row>this.Rows-1){
-            return false;
-        }
-        if(!this.WrapsLongitude&&(x<0||x>this.Columns-1)){
-            return false;
-        }
         return true;
     }
 }
@@ -151,7 +159,14 @@ public sealed class GridField{
     /// </summary>
     public float SampleNearest(double latitude,double longitude){
         var g=this.Geometry;
-        if(!g.TryGetPosition(latitude,longitude,out var x,out var y)){
+        if(!g.Locate(latitude,longitude,out var x,out var y)){
+            return float.NaN;
+        }
+        //外周の半セル(格子の外側 0.5 格子分)は端の格子点の区画に含める。さらに外側は範囲外
+        if(y<-0.5||y>g.Rows-0.5){
+            return float.NaN;
+        }
+        if(!g.WrapsLongitude&&(x<-0.5||x>g.Columns-0.5)){
             return float.NaN;
         }
         var column=(int)Math.Round(x,MidpointRounding.AwayFromZero);
@@ -163,7 +178,8 @@ public sealed class GridField{
                 column=g.Columns-1;
             }
         }
-        row=Math.Min(row,g.Rows-1);
+        column=Math.Max(column,0);
+        row=Math.Clamp(row,0,g.Rows-1);
         return this[column,row];
     }
 }
