@@ -112,7 +112,7 @@ internal static class JmaForecastMapper{
                 var series=weeklySeries[0];
                 var times=ReadTimes(series);
                 //区域が一致しないときは先頭の区域で代用しない(伊豆諸島などは別の区域の値になるため)。週間予報は出さない
-                var target=FindArea(series,area.Class10Code,false);
+                var target=FindWeeklyArea(series,area);
                 weeklyMatched&=target is not null;
                 if(target is {} t){
                     var codes=t.ItemList("weatherCodes");
@@ -276,6 +276,22 @@ internal static class JmaForecastMapper{
 
     private static List<DateTimeOffset> ReadTimes(JsonElement series){
         return [..series.Items("timeDefines").Select(static e=>DateTimeOffset.Parse(e.GetString()!,System.Globalization.CultureInfo.InvariantCulture))];
+    }
+
+    /// <summary>
+    /// 週間予報の区域。府県の区域(class10)が一致すればそれを使う。無いときは、気象台の区域(office の code)が
+    /// 1 件だけ入っている場合に限りそれを使う(札幌は 016000「石狩・空知・後志地方」の 1 件のみ)。
+    /// 伊豆諸島などは別の区域が並ぶため、この規則には当たらず、一致しないままになる。
+    /// </summary>
+    private static JsonElement? FindWeeklyArea(JsonElement series,JmaArea area){
+        if(FindArea(series,area.Class10Code,false) is {} byClass10){
+            return byClass10;
+        }
+        var areas=series.Items("areas").ToList();
+        if(areas.Count==1&&areas[0].Prop("area")?.Str("code")==area.ForecastOfficeCode){
+            return areas[0];
+        }
+        return null;
     }
 
     /// <summary>area.code が一致する要素。fallbackToFirst なら一致しないとき先頭を返す(週間予報の区域対応)。</summary>
