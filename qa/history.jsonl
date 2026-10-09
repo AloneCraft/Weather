@@ -176,3 +176,4 @@
 {"seq":176,"ts":"2026-10-09T05:28:35Z","type":"NOTE","run_id":"RUN-20261004-1510","summary":"ユーザー指示「続けて」で再開。新しい予算は与えず、判断に依存しない候補(BUG-0034)のみ処理。BUG-0003・0012・0017・0031 は回答待ちのため未着手"}
 {"seq":177,"ts":"2026-10-09T05:28:54Z","type":"NOTE","run_id":"RUN-20261004-1510","summary":"訂正: BUG-0034 の修正(src/Weather.Providers/Nws/NwsProvider.cs・tests)は 6e68b27 に入った。6e68b27 のコミットメッセージは記録のみに見えるが誤り(git add が証拠の gitignore で途中失敗し、ステージ済みの変更が記録と一緒に入った)。履歴は書き換えない"}
 {"seq":178,"ts":"2026-10-09T05:45:03Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0005","answer":"BUG-0003: 同じ国の都市を優先する","scope_confirmed":"BUG-0003 のみ"}
+{"seq":179,"ts":"2026-10-09T05:47:19Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0005","answer":"BUG-0012: 不一致なら週間予報を空にする","scope_confirmed":"BUG-0012 のみ"}
