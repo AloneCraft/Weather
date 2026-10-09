@@ -9,7 +9,7 @@ public sealed class DiagJmaWeekly{
     [Fact(Explicit=true),Trait("Category","Live")]
     public async Task Diag_SapporoWeeklyAreas(){
         using var http=new HttpClient();
-        http.DefaultRequestHeaders.UserAgent.ParseAdd("WeatherAppLiveTests/0.1 github.com/AloneCraft/Weather");
+        http.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent","WeatherAppLiveTests/0.1 (github.com/AloneCraft/Weather)");
         var text=await http.GetStringAsync("https://www.jma.go.jp/bosai/forecast/data/forecast/016000.json",TestContext.Current.CancellationToken);
         var root=JsonNode.Parse(text)!.AsArray();
         var sb=new StringBuilder();
