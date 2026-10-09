@@ -89,6 +89,27 @@ public class NwsProvider{
         }
     }
 
+    [Fact,Trait("Category","Unit")]public async Task GetObservationsAsync_CacheKey(){
+        //同じ分の中で取り直すとき、終了時刻の秒が違ってもキャッシュの鍵は同じ(鮮度内はネットワークに出ない)
+        using var host=TestHost.Create(static h=>h.Override=static r=>{
+            if(r.RequestUri!.AbsolutePath=="/stations/KDCA/observations"){
+                var response=new HttpResponseMessage(System.Net.HttpStatusCode.OK){Content=new ByteArrayContent(File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath("nws/observations.json"))),RequestMessage=r};
+                response.Headers.TryAddWithoutValidation("Cache-Control","max-age=60");
+                return response;
+            }
+            return null;
+        });
+        var station=new ObservationStation("KDCA",ProviderId.Nws,"Washington/Reagan National Airport",new GeoPoint(38.85,-77.03),5);
+        var provider=host.Get<Target>();
+        var ct=TestContext.Current.CancellationToken;
+        //同じ分(00:00:10 と 00:00:30 はどちらも 00:01:00 まで)の中で取り直す
+        host.Time.Advance(TimeSpan.FromSeconds(10));
+        await provider.GetObservationsAsync(station,TestHost.Now.AddDays(-2),host.Time.GetUtcNow(),ct);
+        host.Time.Advance(TimeSpan.FromSeconds(20));
+        await provider.GetObservationsAsync(station,TestHost.Now.AddDays(-2),host.Time.GetUtcNow(),ct);
+        Assert.Equal(1,host.Handler.Requests.Count(static r=>r.RequestUri!.AbsolutePath=="/stations/KDCA/observations"));
+    }
+
     [Fact,Trait("Category","Unit")]public async Task GetObservationsAsync(){
         using var host=TestHost.Create(static h=>h.Override=static r=>{
             if(r.RequestUri!.AbsolutePath=="/stations/KDCA/observations"){
