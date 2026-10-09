@@ -187,3 +187,4 @@
 {"seq":187,"ts":"2026-10-09T06:24:29Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0001","answer":"現状の範囲で続ける","scope_confirmed":"src/ と tests/ の不具合修正と再現テスト追加"}
 {"seq":188,"ts":"2026-10-09T06:24:47Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0003","answer":"docs/ のまま","scope_confirmed":"QA_WORKFLOW.md の置き場所"}
 {"seq":189,"ts":"2026-10-09T06:25:14Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0004","answer":"許可しない","scope_confirmed":"この環境で実 API に通信しない"}
+{"seq":190,"ts":"2026-10-09T06:26:05Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0005","answer":"P-3: 未知の警報コードは原文で出す","scope_confirmed":"表示方針のみ。実装は未着手"}
