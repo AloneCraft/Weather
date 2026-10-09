@@ -83,6 +83,14 @@ public class JmaProvider{
         return null;
     }
 
+    [Fact,Trait("Category","Unit")]public async Task GetForecastAsync_WeeklyAreaMismatch(){
+        //伊豆諸島(大島町)は週間予報の区域が一致しない。東京地方の値で代用せず、週間予報を空にして注記を出す
+        using var host=TestHost.Create(Fixtures.MapJmaTokyo);
+        var forecast=await host.Get<Target>().GetForecastAsync(Locations.Japan("1336100","大島町"),TestContext.Current.CancellationToken);
+        Assert.All(forecast.Daily.Where(static d=>d.Date>=new DateOnly(2026,10,6)),static d=>Assert.Null(d.PrecipitationProbability));
+        Assert.Contains(forecast.Issues,static i=>i.ProductName=="府県週間天気予報");
+    }
+
     [Fact,Trait("Category","Unit")]public async Task GetForecastAsync_SecondaryFailure(){
         {
             //時系列予報が取れなくても日別は返し、Issues に記録する

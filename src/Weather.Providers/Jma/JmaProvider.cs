@@ -57,6 +57,10 @@ public sealed partial class JmaProvider:IForecastProvider,IAlertProvider,IObserv
             LogSecondaryFailed(this.logger,"時系列予報",ex);
             issues.Add(new DataIssue(ProviderId.Jma,"時系列予報",ex.Failure));
         }
+        if(!daily.WeeklyMatched){
+            //週間予報の区域が一致しない地域は週間予報を出さず、利用者に分かるように記録する
+            issues.Add(new DataIssue(ProviderId.Jma,"府県週間天気予報",ProviderFailure.NotFound));
+        }
         return new Forecast(location,timeSeries,daily.Daily,daily.AreaName??area.Class10Name,issues);
     }
 
