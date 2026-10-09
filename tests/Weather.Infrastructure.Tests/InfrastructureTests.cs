@@ -251,6 +251,66 @@ public class ObservationHistoryService{
         }
     }
 
+    [Fact,Trait("Category","Unit")]public async Task SyncAsync_LocalDay(){
+        //NWS の日最高・最低は観測所の現地日付で集計する(UTC の日付だと、米国では 1 つの現地日が 2 日に分かれる)
+        using var temp=new TempDirectory();
+        var ct=TestContext.Current.CancellationToken;
+        var items=new[]{
+            new DateTimeOffset(2026,10,3,18,0,0,TimeSpan.Zero),   //10/3 14:00 EDT
+            new DateTimeOffset(2026,10,4,2,0,0,TimeSpan.Zero),    //10/3 22:00 EDT
+            new DateTimeOffset(2026,10,4,4,0,0,TimeSpan.Zero),    //10/4 00:00 EDT
+        };
+        var weather=new ZonedWeatherService(items,[20,10,12],"America/New_York");
+        var store=new Infrastructure.SqliteObservationHistoryStore(new Infrastructure.WeatherDatabase(temp.Options));
+        var service=new Infrastructure.ObservationHistoryService(weather,store,new FakeTimeProvider(new DateTimeOffset(2026,10,4,6,0,0,TimeSpan.Zero)),NullLogger<Infrastructure.ObservationHistoryService>.Instance);
+        var station=new ObservationStation("KDCA",ProviderId.Nws,"DCA",new GeoPoint(38.85,-77.03),5);
+        await service.SyncAsync(station,ct);
+        var summaries=await service.GetDailySummariesAsync(station,new DateOnly(2026,10,3),new DateOnly(2026,10,4),ct);
+        //10/3 の現地日付は 14:00(20)と 22:00(10)。10/4 の現地日付は 00:00(12)
+        var day3=summaries.Single(static s=>s.LocalDate==new DateOnly(2026,10,3));
+        Assert.Equal(20,day3.MaxTempC);
+        Assert.Equal(10,day3.MinTempC);
+        var day4=summaries.Single(static s=>s.LocalDate==new DateOnly(2026,10,4));
+        Assert.Equal(12,day4.MaxTempC);
+        Assert.Equal(12,day4.MinTempC);
+    }
+
+    private sealed class ZonedWeatherService(IReadOnlyList<DateTimeOffset> times,IReadOnlyList<double> temperatures,string zone):IWeatherService{
+        public ValueTask<ObservationSeries> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken){
+            var items=times.Select((t,i)=>new Observation(t){TemperatureC=new Measurement(temperatures[i])}).ToList();
+            var source=new SourceAttribution{Provider=ProviderId.Nws,AgencyName="NWS",ProductName="Observations",RetrievedAt=times[^1],License=new LicenseInfo("t",null)};
+            return ValueTask.FromResult(new ObservationSeries(station,items,source));
+        }
+
+        public ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
+            return ValueTask.FromResult(new ResolvedLocation{Point=point,CountryCode="US",DisplayName="Washington",TimeZoneId=zone});
+        }
+
+        public TimeSpan GetObservationServerRetention(ProviderId provider){
+            return TimeSpan.FromDays(7);
+        }
+
+        public bool AllowsBackgroundFetch(ResolvedLocation location){
+            return true;
+        }
+
+        public ValueTask<ForecastResult> GetForecastAsync(ResolvedLocation location,CancellationToken cancellationToken){
+            throw new NotSupportedException();
+        }
+
+        public ValueTask<AlertResult> GetAlertsAsync(ResolvedLocation location,CancellationToken cancellationToken){
+            throw new NotSupportedException();
+        }
+
+        public Availability GetObservationAvailability(ResolvedLocation location){
+            return Availability.Available;
+        }
+
+        public ValueTask<IReadOnlyList<ObservationStation>> FindStationsAsync(ResolvedLocation location,int maxCount,CancellationToken cancellationToken){
+            throw new NotSupportedException();
+        }
+    }
+
     private sealed class FakeWeatherService:IWeatherService{
         public bool Fail{get;set;}
         public DateTimeOffset LastFrom{get;private set;}
@@ -277,7 +337,7 @@ public class ObservationHistoryService{
         }
 
         public ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
-            throw new NotSupportedException();
+            return ValueTask.FromResult(new ResolvedLocation{Point=point,CountryCode="US",DisplayName="x",TimeZoneId="Etc/UTC"});
         }
 
         public ValueTask<ForecastResult> GetForecastAsync(ResolvedLocation location,CancellationToken cancellationToken){

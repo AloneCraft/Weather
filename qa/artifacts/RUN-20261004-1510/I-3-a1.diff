@@ -1,0 +1,130 @@
+diff --git a/src/Weather.Infrastructure/ObservationHistory.cs b/src/Weather.Infrastructure/ObservationHistory.cs
+index 7b7e438..53e15a6 100644
+--- a/src/Weather.Infrastructure/ObservationHistory.cs
++++ b/src/Weather.Infrastructure/ObservationHistory.cs
+@@ -283,13 +283,15 @@ public sealed partial class ObservationHistoryService(IWeatherService weather,IO
+         return store.DeleteAllAsync(cancellationToken);
+     }
+ 
+-    /// <summary>NWS の日最高・最低は保存した観測から計算する(IsDerived、UI に「アプリで集計」)。</summary>
++    /// <summary>NWS の日最高・最低は保存した観測から計算する(IsDerived、UI に「アプリで集計」)。日付は観測所の現地日付。</summary>
+     private async Task<List<DailyObservationSummary>> DeriveSummariesAsync(ObservationStation station,IReadOnlyList<Observation> items,CancellationToken cancellationToken){
+-        var dates=items.Select(static o=>DateOnly.FromDateTime(o.ObservedAt.UtcDateTime)).Distinct().ToList();
++        var zone=await this.ZoneOfAsync(station,cancellationToken).ConfigureAwait(false);
++        var dates=items.Select(o=>LocalDate(o.ObservedAt,zone)).Distinct().ToList();
+         var result=new List<DailyObservationSummary>();
+         foreach(var date in dates){
+-            var start=new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue),TimeSpan.Zero);
+-            var day=await store.GetObservationsAsync(station.Key,start,start.AddDays(1).AddSeconds(-1),cancellationToken).ConfigureAwait(false);
++            var start=LocalMidnight(date,zone);
++            var end=LocalMidnight(date.AddDays(1),zone).AddSeconds(-1);
++            var day=await store.GetObservationsAsync(station.Key,start,end,cancellationToken).ConfigureAwait(false);
+             var temps=day.Where(static o=>o.TemperatureC is not null).ToList();
+             if(temps.Count==0){
+                 continue;
+@@ -307,6 +309,25 @@ public sealed partial class ObservationHistoryService(IWeatherService weather,IO
+         return result;
+     }
+ 
++    /// <summary>観測所の位置のタイムゾーン。解決できなければ UTC(日付がずれるが、例外にはしない)。</summary>
++    private async Task<TimeZoneInfo> ZoneOfAsync(ObservationStation station,CancellationToken cancellationToken){
++        try{
++            var location=await weather.ResolveAsync(station.Location,cancellationToken).ConfigureAwait(false);
++            return TimeZoneInfo.FindSystemTimeZoneById(location.TimeZoneId);
++        }catch(Exception ex) when(ex is WeatherProviderException or TimeZoneNotFoundException or InvalidTimeZoneException){
++            return TimeZoneInfo.Utc;
++        }
++    }
++
++    private static DateOnly LocalDate(DateTimeOffset time,TimeZoneInfo zone){
++        return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(time,zone).DateTime);
++    }
++
++    private static DateTimeOffset LocalMidnight(DateOnly date,TimeZoneInfo zone){
++        var local=date.ToDateTime(TimeOnly.MinValue);
++        return new DateTimeOffset(local,zone.GetUtcOffset(local));
++    }
++
+     [LoggerMessage(Level=LogLevel.Warning,Message="観測履歴の同期に失敗しました: {Station}")]
+     private static partial void LogSyncFailed(ILogger logger,string station,Exception exception);
+ }
+diff --git a/tests/Weather.Infrastructure.Tests/InfrastructureTests.cs b/tests/Weather.Infrastructure.Tests/InfrastructureTests.cs
+index cc61457..76904d2 100644
+--- a/tests/Weather.Infrastructure.Tests/InfrastructureTests.cs
++++ b/tests/Weather.Infrastructure.Tests/InfrastructureTests.cs
+@@ -251,6 +251,66 @@ public class ObservationHistoryService{
+         }
+     }
+ 
++    [Fact,Trait("Category","Unit")]public async Task SyncAsync_LocalDay(){
++        //NWS の日最高・最低は観測所の現地日付で集計する(UTC の日付だと、米国では 1 つの現地日が 2 日に分かれる)
++        using var temp=new TempDirectory();
++        var ct=TestContext.Current.CancellationToken;
++        var items=new[]{
++            new DateTimeOffset(2026,10,3,18,0,0,TimeSpan.Zero),   //10/3 14:00 EDT
++            new DateTimeOffset(2026,10,4,2,0,0,TimeSpan.Zero),    //10/3 22:00 EDT
++            new DateTimeOffset(2026,10,4,4,0,0,TimeSpan.Zero),    //10/4 00:00 EDT
++        };
++        var weather=new ZonedWeatherService(items,[20,10,12],"America/New_York");
++        var store=new Infrastructure.SqliteObservationHistoryStore(new Infrastructure.WeatherDatabase(temp.Options));
++        var service=new Infrastructure.ObservationHistoryService(weather,store,new FakeTimeProvider(new DateTimeOffset(2026,10,4,6,0,0,TimeSpan.Zero)),NullLogger<Infrastructure.ObservationHistoryService>.Instance);
++        var station=new ObservationStation("KDCA",ProviderId.Nws,"DCA",new GeoPoint(38.85,-77.03),5);
++        await service.SyncAsync(station,ct);
++        var summaries=await service.GetDailySummariesAsync(station,new DateOnly(2026,10,3),new DateOnly(2026,10,4),ct);
++        //10/3 の現地日付は 14:00(20)と 22:00(10)。10/4 の現地日付は 00:00(12)
++        var day3=summaries.Single(static s=>s.LocalDate==new DateOnly(2026,10,3));
++        Assert.Equal(20,day3.MaxTempC);
++        Assert.Equal(10,day3.MinTempC);
++        var day4=summaries.Single(static s=>s.LocalDate==new DateOnly(2026,10,4));
++        Assert.Equal(12,day4.MaxTempC);
++        Assert.Equal(12,day4.MinTempC);
++    }
++
++    private sealed class ZonedWeatherService(IReadOnlyList<DateTimeOffset> times,IReadOnlyList<double> temperatures,string zone):IWeatherService{
++        public ValueTask<ObservationSeries> GetObservationsAsync(ObservationStation station,DateTimeOffset from,DateTimeOffset to,CancellationToken cancellationToken){
++            var items=times.Select((t,i)=>new Observation(t){TemperatureC=new Measurement(temperatures[i])}).ToList();
++            var source=new SourceAttribution{Provider=ProviderId.Nws,AgencyName="NWS",ProductName="Observations",RetrievedAt=times[^1],License=new LicenseInfo("t",null)};
++            return ValueTask.FromResult(new ObservationSeries(station,items,source));
++        }
++
++        public ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
++            return ValueTask.FromResult(new ResolvedLocation{Point=point,CountryCode="US",DisplayName="Washington",TimeZoneId=zone});
++        }
++
++        public TimeSpan GetObservationServerRetention(ProviderId provider){
++            return TimeSpan.FromDays(7);
++        }
++
++        public bool AllowsBackgroundFetch(ResolvedLocation location){
++            return true;
++        }
++
++        public ValueTask<ForecastResult> GetForecastAsync(ResolvedLocation location,CancellationToken cancellationToken){
++            throw new NotSupportedException();
++        }
++
++        public ValueTask<AlertResult> GetAlertsAsync(ResolvedLocation location,CancellationToken cancellationToken){
++            throw new NotSupportedException();
++        }
++
++        public Availability GetObservationAvailability(ResolvedLocation location){
++            return Availability.Available;
++        }
++
++        public ValueTask<IReadOnlyList<ObservationStation>> FindStationsAsync(ResolvedLocation location,int maxCount,CancellationToken cancellationToken){
++            throw new NotSupportedException();
++        }
++    }
++
+     private sealed class FakeWeatherService:IWeatherService{
+         public bool Fail{get;set;}
+         public DateTimeOffset LastFrom{get;private set;}
+@@ -277,7 +337,7 @@ public class ObservationHistoryService{
+         }
+ 
+         public ValueTask<ResolvedLocation> ResolveAsync(GeoPoint point,CancellationToken cancellationToken){
+-            throw new NotSupportedException();
++            return ValueTask.FromResult(new ResolvedLocation{Point=point,CountryCode="US",DisplayName="x",TimeZoneId="Etc/UTC"});
+         }
+ 
+         public ValueTask<ForecastResult> GetForecastAsync(ResolvedLocation location,CancellationToken cancellationToken){
