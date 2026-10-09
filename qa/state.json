@@ -2568,14 +2568,16 @@
   "sapporo_fix": {
     "commit": "7276c4c",
     "branch": "claude/zen-keller-0fx365",
-    "merged_to_main": false,
-    "ci_run": 37927361381,
+    "merged_to_main": true,
+    "merge_commit": "b3df9d5",
+    "merged_at": "2026-10-09T12:20:57Z",
+    "ci_run_branch": 37927361381,
     "ci": {
       "test": "success",
       "build-android": "success",
       "build-ios": "success",
       "live": "success(札幌の注記が消えた)"
     },
-    "note": "main へのマージは判断待ち"
+    "note": "main へマージ済み。マージ後の main の CI(push と手動)で再確認"
   }
 }
