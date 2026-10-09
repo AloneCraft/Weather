@@ -2122,10 +2122,11 @@
     {
       "id": "Q-0004",
       "related_bugs": [],
-      "status": "OPEN",
+      "status": "ANSWERED",
       "asked_at": "2026-10-04T15:00:00Z",
       "summary": "実 API の契約テストのためのネットワーク許可(jma.go.jp・weather.gov・met.no・noaa-gfs-bdp-pds.s3.amazonaws.com)",
-      "answer": null
+      "answer": "許可しない(推奨を採用)。実 API の契約テストは CI の週次(schedule)か手元で確認する",
+      "answered_at": "2026-10-09T06:25:14Z"
     },
     {
       "id": "Q-0005",
@@ -2369,6 +2370,12 @@
       "question": "Q-0003 QA_WORKFLOW.md の置き場所",
       "answer": "docs/ のまま(推奨を採用)",
       "scope": "docs/QA_WORKFLOW.md で確定"
+    },
+    {
+      "at": "2026-10-09T06:25:14Z",
+      "question": "Q-0004 実 API の契約テスト用のネットワーク許可",
+      "answer": "許可しない(推奨を採用)",
+      "scope": "この環境では実 API に通信しない。LiveTests は NOT_RUN のまま"
     }
   ],
   "pull_request": {
