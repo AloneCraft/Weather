@@ -140,6 +140,20 @@ public class JmaProvider{
         }
     }
 
+    [Fact,Trait("Category","Unit")]public async Task GetAlertsAsync_UnknownCode(){
+        //警報コードが表にない(未知)ときも警報を落とさない。名称は「(未対応の警報)」、区分は注意報、見出しは原文のまま
+        var original=File.ReadAllText(FixtureHttpMessageHandler.FixturePath("jma/warning_011000.json"));
+        var bytes=Encoding.UTF8.GetBytes(original.Replace("\"code\":\"20\"","\"code\":\"99\"",StringComparison.Ordinal));
+        using var host=TestHost.Create(Fixtures.MapJmaTokyo);
+        host.Handler.Override=r=>r.RequestUri!.AbsoluteUri=="https://www.jma.go.jp/bosai/warning/data/r8/011000.json"?FixtureHttpMessageHandler.Respond(r,bytes):null;
+        var alerts=await host.Get<Target>().GetAlertsAsync(Locations.Japan("0121400","稚内市"),TestContext.Current.CancellationToken);
+        var alert=Assert.Single(alerts.Active);
+        Assert.Equal("99",alert.EventCode);
+        Assert.Equal("(未対応の警報)",alert.EventName);
+        Assert.Equal(AlertTier.Advisory,alert.Tier);
+        Assert.False(string.IsNullOrEmpty(alerts.Headline));
+    }
+
     [Fact,Trait("Category","Unit")]public async Task GetAlertsAsync(){
         using var host=TestHost.Create(Fixtures.MapJmaTokyo);
         var provider=host.Get<Target>();

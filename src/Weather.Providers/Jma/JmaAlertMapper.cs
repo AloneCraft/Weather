@@ -50,8 +50,9 @@ internal static class JmaAlertMapper{
                     }
                     var definition=JmaWarningCodes.Find(code);
                     if(definition is null){
+                        //表にない警報も落とさない(安全情報)。名称は「(未対応の警報)」、区分は注意報とし、見出しは原文のまま出す
                         unknownCodes.Add(code);
-                        continue;
+                        definition=new JmaWarningCode("(未対応の警報)","unknown",AlertTier.Advisory,null);
                     }
                     var status=MapStatus(kind.Str("status"),unknownStatuses);
                     if(status is null){
