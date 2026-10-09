@@ -181,3 +181,6 @@
 {"seq":181,"ts":"2026-10-09T05:51:04Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0005","answer":"BUG-0031: 受け入れて Windows でゴールデン画像を更新する","scope_confirmed":"見た目の受け入れ。実行経路は Q-0002 待ち"}
 {"seq":182,"ts":"2026-10-09T05:52:14Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0002","answer":"Pull Request で CI を回す","scope_confirmed":"CI での判定。PR の作成時期は別途確認"}
 {"seq":183,"ts":"2026-10-09T05:53:02Z","type":"NOTE","run_id":null,"summary":"PR #1 を作成(AloneCraft/Weather#1、main ← claude/zen-keller-0fx365)。本文の誤り(BUG-0003・0012・0017 を修正済みと書いた)を、未実装と明記して訂正"}
+{"seq":184,"ts":"2026-10-09T05:59:25Z","type":"FIX_ATTEMPT","run_id":"RUN-20261004-1510","bug_id":"BUG-0012","attempt":1,"result":"VERIFIED","commit":"0021c57","hypothesis":"区域が一致しないときは週間の値を入れず注記を出す"}
+{"seq":185,"ts":"2026-10-09T05:59:25Z","type":"FIX_ATTEMPT","run_id":"RUN-20261004-1510","bug_id":"BUG-0003","attempt":1,"result":"VERIFIED","commit":"5464bbf","hypothesis":"国の判明している地点は同じ国の都市だけを候補にする"}
+{"seq":186,"ts":"2026-10-09T05:59:25Z","type":"FIX_ATTEMPT","run_id":"RUN-20261004-1510","bug_id":"BUG-0017","attempt":1,"result":"VERIFIED","commit":"9b7d74f","hypothesis":"外周の半セルは端の格子点の値を使う"}

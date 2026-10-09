@@ -585,18 +585,36 @@
         "unknown": []
       },
       "reproduced": true,
-      "state": "NEEDS_HUMAN",
+      "state": "VERIFIED",
       "depends_on": [],
       "affects": [],
-      "attempts": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T05:59:25Z",
+          "commit": "5464bbf",
+          "hypothesis": "同じ国の都市を優先(判断: 同じ国の都市の中から最寄り)",
+          "evidence": [
+            "Geo 10/10(修正前 FAIL: ブラガンサ)・Providers/Presentation/Remote/Scene/Infrastructure PASS"
+          ]
+        }
+      ],
       "rejected_hypotheses": [],
       "related_tests": [
         "Weather.Geo.Tests/*"
       ],
       "retry_when": "Q-0005 の回答(国境付近で同じ国の都市を優先するか)",
       "evidence": [],
-      "human_needed": "既知の制約の範囲か仕様判断",
-      "found_at": "2026-10-04T15:30:42Z"
+      "human_needed": null,
+      "found_at": "2026-10-04T15:30:42Z",
+      "verified": {
+        "commit": "5464bbf",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ 関連プロジェクトの全テスト",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     },
     {
       "id": "BUG-0008",
@@ -789,18 +807,36 @@
         ]
       },
       "reproduced": true,
-      "state": "NEEDS_HUMAN",
+      "state": "VERIFIED",
       "depends_on": [],
       "affects": [],
-      "attempts": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T05:59:25Z",
+          "commit": "0021c57",
+          "hypothesis": "不一致なら週間予報を空にし、注記を出す(判断)",
+          "evidence": [
+            "Providers 48/48(修正前 FAIL: 5 件に値)・Presentation/Remote PASS"
+          ]
+        }
+      ],
       "rejected_hypotheses": [],
       "related_tests": [],
       "retry_when": "WEEK_AREAS の対応表を得る、または方針(不一致のとき週間を出さない / 近い区域で代用)をユーザーが決める",
       "evidence": [
         "qa/artifacts/RUN-20261004-1510/P-2-probe.log"
       ],
-      "human_needed": "対応表が必要か、不一致時の表示方針の判断",
-      "found_at": "2026-10-04T15:44:27Z"
+      "human_needed": null,
+      "found_at": "2026-10-04T15:44:27Z",
+      "verified": {
+        "commit": "0021c57",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ 関連プロジェクトの全テスト",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     },
     {
       "id": "BUG-0013",
@@ -1047,18 +1083,36 @@
         "unknown": []
       },
       "reproduced": true,
-      "state": "NEEDS_HUMAN",
+      "state": "VERIFIED",
       "depends_on": [],
       "affects": [],
-      "attempts": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T05:59:25Z",
+          "commit": "9b7d74f",
+          "hypothesis": "端の格子点の値を返す(判断)",
+          "evidence": [
+            "Core 14/14(修正前 FAIL: NaN)・Providers/Presentation/Geo PASS・Rendering は既知のゴールデン以外 PASS"
+          ]
+        }
+      ],
       "rejected_hypotheses": [],
       "related_tests": [
         "Weather.Core.Tests/GridField.SampleNearest"
       ],
       "retry_when": "ユーザーが外周の扱い(区画として値を返す / NaN のまま)を決める",
       "evidence": [],
-      "human_needed": "外周の半セルの扱い",
-      "found_at": "2026-10-04T15:53:13Z"
+      "human_needed": null,
+      "found_at": "2026-10-04T15:53:13Z",
+      "verified": {
+        "commit": "9b7d74f",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ 関連プロジェクトの全テスト",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     },
     {
       "id": "BUG-0018",
@@ -2078,10 +2132,10 @@
         "BUG-0017",
         "BUG-0003"
       ],
-      "status": "OPEN",
+      "status": "ANSWERED",
       "asked_at": "2026-10-04T16:05:24Z",
       "summary": "設計判断のまとめ: 週間予報の区域対応(BUG-0012)、非循環格子の外周半セル(BUG-0017)、国境付近の表示名・TZ(BUG-0003)、未知の警報コード(P-3)、NWS 日最高/最低の現地日付(I-3。観測所のタイムゾーンの保存が必要)",
-      "answer": null
+      "answer": "BUG-0003・0012・0017 は推奨どおり。BUG-0031 は受け入れてゴールデン更新。P-3・I-3 は未回答"
     }
   ],
   "consolidation_candidates": [],
