@@ -1,0 +1,19 @@
+Running tests from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+failed Weather.Geo.Tests.LocationResolver.Resolve (211ms)
+  from /home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64)
+  Assert.NotEqual() Failure: Strings are equal
+  Expected: Not "ブラガンサ"
+  Actual:       "ブラガンサ"
+    at Weather.Geo.Tests.LocationResolver.Resolve() in /home/user/Weather/tests/Weather.Geo.Tests/GeoTests.cs:68
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/home/user/Weather/tests/Weather.Geo.Tests/bin/Debug/net10.0/Weather.Geo.Tests.dll (net10.0|x64) failed with 1 error(s) (5s 441ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 10
+  failed: 1
+  succeeded: 9
+  skipped: 0
+  duration: 5s 698ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

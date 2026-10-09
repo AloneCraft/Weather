@@ -81,7 +81,8 @@ public sealed class GeoDatabase{
         return null;
     }
 
-    public PlaceRecord? FindNearestPlace(double lat,double lon,double maxKm){
+    /// <summary>最寄りの都市。country を指定すると、その国の都市だけを候補にする(国境の向こうの都市を名前・タイムゾーンに使わない)。</summary>
+    public PlaceRecord? FindNearestPlace(double lat,double lon,double maxKm,string? country=null){
         var buckets=this.placeBuckets.Value;
         var latRange=(int)Math.Ceiling(maxKm/100)+1;
         var lonRange=LongitudeRange(lat,maxKm,latRange);
@@ -96,6 +97,9 @@ public sealed class GeoDatabase{
                     continue;
                 }
                 foreach(var place in list){
+                    if(country is not null&&place.Country!=country){
+                        continue;
+                    }
                     var d=GeoMath.HaversineKm(lat,lon,place.Latitude,place.Longitude);
                     if(d<=bestDistance){
                         bestDistance=d;

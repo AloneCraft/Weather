@@ -59,7 +59,8 @@ public sealed class LocationResolver(GeoDatabase database):ILocationResolver{
         if(country is not null){
             countryCode=country.Iso2;
         }
-        var place=database.FindNearestPlace(lat,lon,NearestPlaceKm);
+        //国が判明していれば、その国の都市だけを候補にする(国境の向こうの都市の名前・行政区・タイムゾーンを出さない)
+        var place=database.FindNearestPlace(lat,lon,NearestPlaceKm,country?.Iso2);
         string displayName;
         string? admin;
         if(place is not null){
@@ -77,13 +78,13 @@ public sealed class LocationResolver(GeoDatabase database):ILocationResolver{
             CountryCode=countryCode,
             DisplayName=displayName,
             AdminName=admin,
-            TimeZoneId=this.ResolveTimeZone(lat,lon),
+            TimeZoneId=this.ResolveTimeZone(lat,lon,country?.Iso2),
         };
     }
 
     /// <summary>最寄り都市の timezone。近くに都市がない海上、または端末が知らない ID(tzdata が古い端末の新しい IANA ID)は経度から Etc/GMT±n を使う。</summary>
-    private string ResolveTimeZone(double lat,double lon){
-        if(database.FindNearestPlace(lat,lon,800) is {} place&&IsKnownZone(place.TimeZone)){
+    private string ResolveTimeZone(double lat,double lon,string? country){
+        if(database.FindNearestPlace(lat,lon,800,country) is {} place&&IsKnownZone(place.TimeZone)){
             return place.TimeZone;
         }
         var offset=(int)Math.Round(lon/15);

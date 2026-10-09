@@ -62,6 +62,14 @@ public class LocationResolver{
             Assert.Equal("Etc/GMT-2",resolver.Resolve(new GeoPoint(50.45,30.52)).TimeZoneId);
         }
         {
+            //国境の近く(スペイン側・国境から約 18 km): 国境の向こうの都市(ブラガンサ・Europe/Lisbon)を使わず、同じ国の都市のタイムゾーンにする
+            var border=ResolveAt(41.85,-6.3);
+            Assert.Equal("ES",border.CountryCode);
+            Assert.NotEqual("ブラガンサ",border.DisplayName);
+            Assert.DoesNotContain("ポルトガル",border.AdminName??"",StringComparison.Ordinal);
+            Assert.Equal("Europe/Madrid",border.TimeZoneId);
+        }
+        {
             //米国と準州は NWS の国コード
             Assert.Equal("GU",ResolveAt(13.4443,144.7937).CountryCode);
             Assert.Equal("PR",ResolveAt(18.4655,-66.1057).CountryCode);
