@@ -190,3 +190,4 @@
 {"seq":190,"ts":"2026-10-09T06:26:05Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0005","answer":"P-3: 未知の警報コードは原文で出す","scope_confirmed":"表示方針のみ。実装は未着手"}
 {"seq":191,"ts":"2026-10-09T06:26:44Z","type":"HUMAN_DECISION","run_id":null,"question_id":"Q-0005","answer":"I-3: 今すぐ直す","scope_confirmed":"NWS の日最高・最低の現地日付。実装は未着手"}
 {"seq":192,"ts":"2026-10-09T06:29:08Z","type":"FIX_ATTEMPT","run_id":"RUN-20261004-1510","bug_id":"BUG-0035","attempt":1,"result":"VERIFIED","commit":"9929c1c","hypothesis":"観測所のタイムゾーンで現地日付の範囲を決める(DB 変更なし)"}
+{"seq":193,"ts":"2026-10-09T06:30:14Z","type":"FIX_ATTEMPT","run_id":"RUN-20261004-1510","bug_id":"BUG-0036","attempt":1,"result":"VERIFIED","commit":"843f475","hypothesis":"未知コードは注意報の「(未対応の警報)」として残す"}

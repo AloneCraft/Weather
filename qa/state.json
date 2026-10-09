@@ -2132,6 +2132,56 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0036",
+      "title": "警報: 表にない警報コードの警報を丸ごと落とし、見出しだけが残る(「警報なし」と表示)",
+      "source_ids": [
+        "P-3"
+      ],
+      "severity": "中(安全情報)",
+      "fix_priority": 12,
+      "symptom": "JmaAlertMapper が未知コードの警報を Alert にせず捨てる。見出し(原文)は残るため、警報が無いように見える(修正前テストで警報 0 件)",
+      "expected": "警報を落とさない。名称「(未対応の警報)」、区分は注意報、見出しは原文(WeatherProviders.md ガードレール 6・Q-0005 の回答)",
+      "cause": {
+        "confirmed": "未知コードで continue していた(コード読み+テストで確認)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T06:30:14Z",
+          "commit": "843f475",
+          "hypothesis": "未知コードは注意報の「(未対応の警報)」として残す",
+          "evidence": [
+            "qa/artifacts/RUN-20261004-1510/P-3-a1-before.log",
+            "qa/artifacts/RUN-20261004-1510/P-3-a1-after-Weather.Providers.Tests.log"
+          ]
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Providers.Tests/JmaProvider.GetAlertsAsync_UnknownCode"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/P-3-a1-before.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-09T06:30:14Z",
+      "verified": {
+        "commit": "843f475",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ Providers/Presentation/Remote の全テスト",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -2254,8 +2304,8 @@
     },
     {
       "id": "P-3",
-      "status": "DECIDED",
-      "note": "未知の警報コードを丸ごと落とす(ガードレール 6 は原文表示を求める) → 判断: 原文で出す(名称「(未対応の警報)」、区分は注意報)。実装は未着手"
+      "status": "PROMOTED_TO_BUG",
+      "note": "未知の警報コードを丸ごと落とす(ガードレール 6 は原文表示を求める) → 判断: 原文で出す(名称「(未対応の警報)」、区分は注意報)。実装は未着手 → BUG-0036 として検証済み"
     },
     {
       "id": "P-4",
