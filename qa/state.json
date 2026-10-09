@@ -2052,7 +2052,7 @@
       "status": "ANSWERED",
       "asked_at": "2026-10-04T15:00:00Z",
       "summary": "検証手段: (a) Pull Request で CI(Windows・Android・iOS)(b) 手元で dotnet test を実行して結果を共有 (c) Linux のみ。.NET SDK は実行枠でコンテナへ導入済み。BUG-0031(等圧線の見た目)の確認と Render_Golden の判定も、この経路で行う",
-      "answer": "Pull Request で CI を回す(推奨を採用)",
+      "answer": "Pull Request で CI を回す(推奨を採用)。PR は作成済み(AloneCraft/Weather#1)",
       "answered_at": "2026-10-09T05:52:14Z"
     },
     {
@@ -2295,6 +2295,20 @@
       "question": "Q-0002 Windows での確認経路",
       "answer": "Pull Request で CI を回す(推奨を採用)",
       "scope": "CI(Windows)でゴールデン比較と Render_Golden を判定する。Pull Request の作成は、作成のタイミングをあらためて確認してから行う"
+    },
+    {
+      "at": "2026-10-09T05:53:02Z",
+      "question": "PR 作成",
+      "answer": "今作って CI を回す",
+      "scope": "PR #1 を作成。マージはしない"
     }
-  ]
+  ],
+  "pull_request": {
+    "number": 1,
+    "url": "https://github.com/AloneCraft/Weather/pull/1",
+    "head": "claude/zen-keller-0fx365",
+    "base": "main",
+    "created_at": "2026-10-09T05:53:02Z",
+    "note": "BUG-0003・0012・0017 は判断済みだが未実装(PR 本文に明記)。BUG-0031 のゴールデン画像は未更新で Render_Golden が失敗する見込み"
+  }
 }
