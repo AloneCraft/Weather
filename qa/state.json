@@ -2263,5 +2263,13 @@
       "status": "UNREPRODUCED",
       "note": "MetNorway.FindZone が未知の IANA ID で UTC に落ちる(BUG-0008 の発生源対策で多くは防げるが、MET 側の経路は未対応)"
     }
+  ],
+  "human_decisions": [
+    {
+      "at": "2026-10-09T05:45:03Z",
+      "question": "BUG-0003 国境付近の表示名・TZ",
+      "answer": "同じ国の都市を優先する(推奨を採用)",
+      "scope": "BUG-0003 を実装する承認。ほかの判断には及ばない"
+    }
   ]
 }
