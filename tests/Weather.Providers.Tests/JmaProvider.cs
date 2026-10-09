@@ -91,6 +91,25 @@ public class JmaProvider{
         Assert.Contains(forecast.Issues,static i=>i.ProductName=="府県週間天気予報");
     }
 
+    [Fact,Trait("Category","Unit")]public async Task GetForecastAsync_WeeklyOfficeArea(){
+        //週間予報の区域が気象台(札幌なら 016000)の 1 件だけのときは、その区域を府県の区域の代わりに使う。府県の区域が無いことで週間を落とさない
+        var root=JsonNode.Parse(File.ReadAllBytes(FixtureHttpMessageHandler.FixturePath("jma/forecast_130000.json")))!;
+        var weekly=root.AsArray()[1]!["timeSeries"]!.AsArray()[0]!["areas"]!.AsArray();
+        var office=weekly[0]!.DeepClone();
+        office["area"]!["code"]="130000";
+        weekly.Clear();
+        weekly.Add(office);
+        var bytes=Encoding.UTF8.GetBytes(root.ToJsonString());
+        using var host=TestHost.Create(Fixtures.MapJmaTokyo);
+        host.Handler.Override=r=>r.RequestUri!.AbsoluteUri=="https://www.jma.go.jp/bosai/forecast/data/forecast/130000.json"?FixtureHttpMessageHandler.Respond(r,bytes):null;
+        var forecast=await host.Get<Target>().GetForecastAsync(Locations.Tokyo,TestContext.Current.CancellationToken);
+        {
+            //府県の区域(130010)は無いが、気象台の区域で週間予報の値(降水確率 40)が出て、注記は付かない
+            Assert.Equal(40,forecast.Daily[2].PrecipitationProbability);
+            Assert.DoesNotContain(forecast.Issues,static i=>i.ProductName=="府県週間天気予報");
+        }
+    }
+
     [Fact,Trait("Category","Unit")]public async Task GetForecastAsync_SecondaryFailure(){
         {
             //時系列予報が取れなくても日別は返し、Issues に記録する
