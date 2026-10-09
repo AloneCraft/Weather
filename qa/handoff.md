@@ -8,6 +8,13 @@
 
 - ゴール「探索的デバッグ(最大 12 時間)」。開始 2026-10-04T15:10Z、終了は約 102 分後。予算の約 8% を使用。
 - 終了理由: 優先度の高い実行可能な既知の作業を処理し、残りは人間判断待ち・目視/Windows 確認待ち・低優先度の未再現候補だけになった。「実行枠を終了できた」ことは「製品の品質が合格した」ことではない。
+## 追記(2026-10-09): PR #1 のマージと CI
+
+- PR #1 を `main` にマージ(merge commit `9350d32`)。マージ前のヘッド `9edc416` は CI 全 success。
+- BUG-0024 は Windows CI で検証済み(VERIFIED)。BUG-0019 のテストは Windows CI で通過。
+- `Render_Allocation` は、判定を 5 区間の最小値に変えた(閾値 4096 は不変)。Windows での安定性は、main の CI で数回確認中。
+- 以下の「現状」の記述は、この追記より前の時点のもの。
+
 - コード状態: 作業ブランチ `claude/zen-keller-0fx365`(`main` から 61 コミット。うち製品・テストの変更は 29 コミットで、`src/`・`tests/` の 44 ファイル)。製品コードの未コミット差分なし。Pull Request は作っていない。
 - 最終テスト(Linux・Debug・.NET 10.0.401): Core 14 / Geo 10 / Scene 8 / Infrastructure 9 / Providers 46 / Presentation 48 / Remote 7 はすべて成功、Functions のビルド(`-warnaserror`)も成功。Rendering は 19/20 で、失敗は `MapRenderer.Render_Golden` の map-temperature(平均差 3.53。許容 3)のみ。Windows 生成のゴールデン画像を Linux で比べた差で、開始時のベースラインと同値のため、製品の合否の証拠にしない。
 - 未実施: 実 API の契約テスト(通信制限)、Android/iOS のビルドと実機、Windows のゴールデン画像、CI の Full Regression。
