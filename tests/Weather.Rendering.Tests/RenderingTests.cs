@@ -120,12 +120,15 @@ public class SceneRenderer{
         for(var i=0;i<60;i++){
             renderer.Render(canvas,new SKSizeI(120,200),i/30d);
         }
-        var before=GC.GetAllocatedBytesForCurrentThread();
+        var deltas=new List<long>();
         for(var i=60;i<120;i++){
+            var b=GC.GetAllocatedBytesForCurrentThread();
             renderer.Render(canvas,new SKSizeI(120,200),i/30d);
+            deltas.Add(GC.GetAllocatedBytesForCurrentThread()-b);
         }
-        var perFrame=(GC.GetAllocatedBytesForCurrentThread()-before)/60;
-        Assert.True(perFrame<4096,$"1 フレームあたり {perFrame} バイト");
+        var perFrame=deltas.Sum()/60;
+        var spikes=string.Join(",",deltas.Select(static (d,i)=>(d,i)).Where(static p=>p.d>400).Select(static p=>$"{p.i+60}:{p.d}"));
+        Assert.True(perFrame<4096,$"1 フレームあたり {perFrame} バイト / min {deltas.Min()} max {deltas.Max()} / 大きい割り当て(フレーム:バイト) {spikes}");
     }
 
     [Fact,Trait("Category","Golden")]public void Render_Golden(){
