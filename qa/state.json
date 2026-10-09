@@ -2082,6 +2082,56 @@
         "visual_check_required": false,
         "full_regression": "未実施"
       }
+    },
+    {
+      "id": "BUG-0035",
+      "title": "観測履歴: NWS の日最高・最低を UTC の日付で集計し、米国で 1 つの現地日が 2 日に分かれる",
+      "source_ids": [
+        "I-3"
+      ],
+      "severity": "中",
+      "fix_priority": 12,
+      "symptom": "ObservationHistoryService.DeriveSummariesAsync が UTC の日付で日を区切る。夕方以降の観測が翌日の日付に入り、現地日の最低・最高が誤る(修正前テストで 10/3 の最低が 20、期待 10)",
+      "expected": "観測所の現地日付で集計する(History.md の local_date の定義)",
+      "cause": {
+        "confirmed": "日付キーと範囲が UTC(コード読み+テストで確認)",
+        "hypotheses": [],
+        "unknown": []
+      },
+      "reproduced": true,
+      "state": "VERIFIED",
+      "depends_on": [],
+      "affects": [],
+      "attempts": [
+        {
+          "n": 1,
+          "result": "VERIFIED",
+          "ended_at": "2026-10-09T06:29:08Z",
+          "commit": "9929c1c",
+          "hypothesis": "観測所の位置のタイムゾーン(地点の解決)で現地日付の範囲を決める。DB の変更はしない(判断「今すぐ直す」。保存の代わりに解決を使う)",
+          "evidence": [
+            "qa/artifacts/RUN-20261004-1510/I-3-a1-before.log",
+            "qa/artifacts/RUN-20261004-1510/I-3-a1-after.log"
+          ]
+        }
+      ],
+      "rejected_hypotheses": [],
+      "related_tests": [
+        "Weather.Infrastructure.Tests/ObservationHistoryService.SyncAsync_LocalDay"
+      ],
+      "retry_when": null,
+      "evidence": [
+        "qa/artifacts/RUN-20261004-1510/I-3-a1-before.log"
+      ],
+      "human_needed": null,
+      "found_at": "2026-10-09T06:29:08Z",
+      "verified": {
+        "commit": "9929c1c",
+        "environment": "Linux x64 / .NET 10.0.401 / Debug",
+        "method": "再現テスト(修正前 FAIL → 修正後 PASS)+ Infrastructure/Presentation の全テスト + Functions ビルド",
+        "visual_check_required": false,
+        "full_regression": "未実施"
+      }
     }
   ],
   "queue": [
@@ -2234,8 +2284,8 @@
     },
     {
       "id": "I-3",
-      "status": "UNREPRODUCED",
-      "note": "NWS 日最高/最低が UTC 日付集計(設計追加が要る可能性)"
+      "status": "PROMOTED_TO_BUG",
+      "note": "NWS 日最高/最低が UTC 日付集計(設計追加が要る可能性) → BUG-0035 として検証済み(9929c1c)"
     },
     {
       "id": "I-5",
@@ -2299,8 +2349,8 @@
     },
     {
       "id": "I-3",
-      "status": "NEEDS_HUMAN",
-      "note": "NWS の日最高/最低が UTC 日付で集計される。直すには観測所のタイムゾーンの保存が必要(設計の追加)。Q-0005 に追加"
+      "status": "PROMOTED_TO_BUG",
+      "note": "NWS の日最高/最低が UTC 日付で集計される。直すには観測所のタイムゾーンの保存が必要(設計の追加)。Q-0005 に追加 → BUG-0035 として検証済み(9929c1c)"
     },
     {
       "id": "M-6",
@@ -2389,6 +2439,12 @@
       "question": "I-3 NWS の日最高・最低の現地日付",
       "answer": "今すぐ直す",
       "scope": "観測所のタイムゾーンの保存(DB の変更)を伴う。実装は未着手。DB 変更の範囲は次に確認する"
+    },
+    {
+      "at": "2026-10-09T06:29:08Z",
+      "question": "I-3 の実装方法",
+      "answer": "観測所の位置のタイムゾーンを地点の解決で求める(DB 変更なし)",
+      "scope": "判断「今すぐ直す」の実装方法。保存の代わりに解決を使った点はレビュー対象"
     }
   ],
   "pull_request": {
